@@ -1,0 +1,3706 @@
+<!DOCTYPE html>
+<!-- =========================================================================
+     Project: KNOCK！KNOCK！ 小門應援市集
+     Author: From @onedoor_boice_0820
+     Version: V4.8.2
+     Notice: 該網站由 @onedoor_boice_0820 維護，非官方正式應援團隊維護。
+     ========================================================================= -->
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="author" content="From @onedoor_boice_0820">
+  <title>KNOCK！KNOCK！ 小門應援市集</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Noto Sans TC & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;900&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans TC"', 'Outfit', 'sans-serif'],
+            mono: ['Outfit', 'monospace']
+          },
+          colors: {
+            skyBlue: {
+              DEFAULT: '#00A0E9',
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#00A0E9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e'
+            }
+          },
+          screens: {
+            'xs': '375px',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background: linear-gradient(180deg, #dcf2fd 0%, #edf7fd 35%, #f7fbfe 70%, #ffffff 100%);
+      color: #1e293b;
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 24px);
+    }
+
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.86);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.92);
+      box-shadow: 0 12px 32px 0 rgba(0, 160, 233, 0.08), 0 2px 6px 0 rgba(0, 0, 0, 0.03);
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.96);
+      box-shadow: 0 6px 20px -2px rgba(0, 160, 233, 0.09), 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease, border-color 0.22s ease;
+    }
+    .glass-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(0, 160, 233, 0.4);
+      box-shadow: 0 12px 24px -4px rgba(0, 160, 233, 0.16);
+    }
+
+    body.lite-mode {
+      background: #f1f8fc !important;
+    }
+    body.lite-mode .glass-panel,
+    body.lite-mode .glass-card {
+      background: #ffffff !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
+    }
+    body.lite-mode #snowCanvas {
+      display: none !important;
+    }
+    body.lite-mode .active-dot {
+      animation: none !important;
+    }
+
+    #snowCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    @keyframes pulseActive {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(0.9); opacity: 0.6; }
+    }
+    .active-dot {
+      animation: pulseActive 1.8s infinite ease-in-out;
+    }
+
+    @keyframes heartPop {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.35); }
+      100% { transform: scale(1); }
+    }
+    .heart-pop {
+      animation: heartPop 0.3s ease-out;
+    }
+
+    @keyframes highlightTarget {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+      50% { box-shadow: 0 0 0 6px rgba(244, 63, 94, 0.35); }
+    }
+    .card-flash {
+      animation: highlightTarget 1.2s ease-in-out 2;
+    }
+  </style>
+</head>
+<body class="font-sans antialiased pb-28 select-none text-slate-800" oncontextmenu="return false;">
+
+  <!-- 輕量六角分支雪花飄雪特效 -->
+  <canvas id="snowCanvas"></canvas>
+
+  <!-- 置頂強提醒推播橫幅（當最愛攤位距離發放剩 5 分鐘時彈出） -->
+  <div id="fiveMinAlertBar" class="fixed top-3 left-1/2 transform -translate-x-1/2 z-50 w-[94vw] max-w-lg hidden">
+    <div class="rounded-2xl p-3.5 bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-2xl border border-white/40 flex items-start justify-between gap-3">
+      <div class="flex items-start space-x-2.5 min-w-0">
+        <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+          <i class="fa-solid fa-bell text-base animate-bounce"></i>
+        </div>
+        <div class="min-w-0">
+          <div class="flex items-center space-x-1.5">
+            <span class="text-[10px] font-black px-1.5 py-0.5 rounded bg-white text-rose-600">擺攤前 5 分鐘提醒</span>
+            <span id="alertVendorName" class="text-xs sm:text-sm font-black truncate">創作者</span>
+          </div>
+          <p id="alertLocationText" class="text-xs text-white/95 mt-1 line-clamp-2 font-medium">位置說明載入中...</p>
+          <div class="mt-2 flex items-center space-x-2">
+            <button id="alertJumpBtn" class="px-2.5 py-1 rounded-lg bg-white text-rose-600 font-bold text-[11px] shadow-xs hover:bg-rose-50 transition">
+              查看位置與照片
+            </button>
+            <button onclick="dismissFiveMinAlert()" class="px-2 py-1 rounded-lg bg-black/20 text-white/90 text-[11px] hover:bg-black/30 transition">
+              知道了
+            </button>
+          </div>
+        </div>
+      </div>
+      <button onclick="dismissFiveMinAlert()" class="text-white/80 hover:text-white text-xs p-1">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- 開唱前半小時畫面彈出通知（針對發放中攤主與畫面中訪客，不發送系統推播） -->
+  <div id="halfHourModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm hidden">
+    <div class="glass-panel w-full max-w-sm rounded-3xl p-5 border-white shadow-2xl text-center">
+      <div class="w-12 h-12 mx-auto rounded-2xl bg-rose-50 border border-rose-200 text-rose-500 flex items-center justify-center text-xl mb-3">
+        <i class="fa-solid fa-clock"></i>
+      </div>
+      <span class="text-[10px] font-black px-2 py-0.5 rounded-full bg-rose-100 text-rose-600 border border-rose-200">
+        開唱前半小時提醒
+      </span>
+      <h3 class="text-base font-black text-slate-800 mt-2 mb-1.5">
+        距離開唱僅剩半小時，請抓緊時間準備入場。
+      </h3>
+      <p id="halfHourModalSubtext" class="text-xs text-slate-600 mb-4 leading-relaxed">
+        目前時間已進入開唱前半小時，系統已停止開放攤主新抵達報位，請現場攤主與訪客留意入場時間！
+      </p>
+      <button onclick="closeHalfHourModal()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 text-white font-bold text-xs shadow-md transition">
+        我知道了，準備入場
+      </button>
+    </div>
+  </div>
+
+  <div class="relative z-10 w-full max-w-full md:max-w-4xl lg:max-w-6xl mx-auto min-h-screen flex flex-col px-2.5 sm:px-6 pt-2">
+
+    <!-- 頂部微型資訊列 -->
+    <div class="flex flex-wrap items-center justify-between gap-1.5 px-2 pt-1 text-[10px] sm:text-[11px] text-slate-500">
+      <div class="flex items-center space-x-2">
+        <span id="connBadge" class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 font-bold whitespace-nowrap">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>連線正常
+        </span>
+        <span class="hidden xs:inline">最後更新：<span id="lastUpdateText" class="font-mono font-bold text-slate-700">--:--:--</span></span>
+        <button onclick="manualRefreshPublicLive()" id="btnManualSync" class="px-1.5 py-0.5 rounded bg-white/80 border border-slate-200 text-skyBlue-600 hover:bg-skyBlue-50 font-bold transition flex items-center space-x-1 whitespace-nowrap" title="手動同步最新時序（冷卻 30 秒）">
+          <i class="fa-solid fa-arrows-rotate text-[10px]"></i>
+          <span>同步</span>
+        </button>
+      </div>
+
+      <div class="flex items-center space-x-1.5">
+        <button onclick="requestNotifPermissionManual()" id="btnNotifPerm" class="px-2 py-0.5 rounded-md bg-white/80 border border-slate-200 text-slate-600 hover:text-rose-500 transition flex items-center space-x-1 whitespace-nowrap">
+          <i class="fa-regular fa-bell text-xs text-rose-500"></i>
+          <span id="notifPermLabel">開啟推播提醒</span>
+        </button>
+        <button onclick="toggleLiteMode()" id="btnLiteMode" class="px-2 py-0.5 rounded-md bg-white/80 border border-slate-200 text-slate-600 hover:text-skyBlue-600 transition flex items-center space-x-1 whitespace-nowrap">
+          <i class="fa-solid fa-leaf text-xs text-emerald-500"></i>
+          <span>簡易模式</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 最上方固定聲明：此畫面僅供參考 + 維護者備註 -->
+    <div class="mt-1.5 rounded-2xl px-3.5 py-2 bg-amber-50/95 border border-amber-300 text-amber-900 text-[11px] sm:text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 shadow-xs">
+      <div class="flex items-start sm:items-center space-x-2">
+        <i class="fa-solid fa-circle-info text-amber-600 text-sm flex-shrink-0 mt-0.5 sm:mt-0"></i>
+        <span class="leading-relaxed">
+          <strong>此畫面僅供參考</strong>：現場無實體固定攤位，由創作者到場後自行找位置發放應援，<br>
+          實際狀況請以現場為準。
+        </span>
+      </div>
+      <span class="text-[10px] sm:text-[11px] font-bold text-amber-800/90 whitespace-nowrap pl-5 sm:pl-0">
+        該網站由 @onedoor_boice_0820 維護，非官方正式應援團隊維護。
+      </span>
+    </div>
+
+    <!-- 開唱前半小時常駐提醒橫幅（當進入開唱前 30 分鐘時顯示於畫面頂部） -->
+    <div id="halfHourTopBanner" class="hidden mt-1.5 rounded-2xl px-3.5 py-2.5 bg-gradient-to-r from-rose-500 to-amber-500 text-white text-xs font-bold flex items-center justify-between gap-2 shadow-md">
+      <div class="flex items-center space-x-2">
+        <i class="fa-solid fa-bullhorn animate-bounce"></i>
+        <span>距離開唱僅剩半小時，請抓緊時間準備入場。（目前已停止開放攤主確認抵達填寫發放）</span>
+      </div>
+      <button onclick="dismissHalfHourBanner()" class="text-white/80 hover:text-white text-xs px-1.5">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <!-- 頂部主要 Header -->
+    <header class="sticky top-1.5 z-30 mb-3 mt-1.5">
+      <div class="glass-panel rounded-2xl px-3 sm:px-5 py-2.5 sm:py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-md">
+        <!-- 標題 -->
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-skyBlue-500 to-skyBlue-400 flex items-center justify-center text-white shadow-md shadow-skyBlue-500/30 flex-shrink-0">
+            <i class="fa-solid fa-door-open text-sm sm:text-base"></i>
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center space-x-1.5">
+              <span class="text-[9px] sm:text-[10px] font-black px-1.5 py-0.2 rounded-full bg-skyBlue-50 text-skyBlue-600 border border-skyBlue-200 whitespace-nowrap">
+                2027/1/8 - 1/10
+              </span>
+              <span class="text-[10px] sm:text-[11px] text-slate-500 truncate">場外自由發放・即時位置回報</span>
+            </div>
+            <h1 class="text-sm sm:text-base md:text-lg font-black text-slate-800 tracking-tight leading-tight truncate">
+              KNOCK！KNOCK！ <span class="text-skyBlue-600 text-xs sm:text-sm font-bold">小門應援市集</span>
+            </h1>
+          </div>
+        </div>
+
+        <!-- 右上角：登入入口（日期選擇器僅在「管理者」身分登入時顯示，訪客與攤主不顯示） -->
+        <div class="flex items-center justify-end space-x-2 text-xs flex-shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-200/60">
+          <!-- 管理者專屬日期切換器 -->
+          <div id="adminDateSelectorWrap" class="hidden items-center bg-rose-50/95 rounded-xl p-1 border border-rose-200 shadow-xs">
+            <span class="text-[10px] font-bold text-rose-600 px-1.5"><i class="fa-solid fa-calendar-check mr-1"></i>管理檢視日</span>
+            <select id="simDateSelect" onchange="changeDate(this.value)" class="bg-white rounded-lg px-1.5 py-0.5 text-slate-800 font-bold focus:outline-none cursor-pointer text-xs border border-rose-100">
+              <option value="1/7">1/7 (非演唱會日)</option>
+              <option value="1/8">1/8 (五) 19:00場</option>
+              <option value="1/9">1/9 (六) 18:00場</option>
+              <option value="1/10">1/10 (日) 17:00場</option>
+              <option value="1/11">1/11 (非演唱會日)</option>
+            </select>
+          </div>
+
+          <!-- 登入狀態 -->
+          <div id="authEntryArea">
+            <button onclick="openAuthModal()" id="btnOpenLogin" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-skyBlue-500 hover:bg-skyBlue-600 text-white font-bold flex items-center space-x-1.5 shadow-sm shadow-skyBlue-500/20 transition whitespace-nowrap text-xs">
+              <i class="fa-solid fa-right-to-bracket text-xs"></i>
+              <span>管理者／攤主登入</span>
+            </button>
+
+            <div id="loggedInUserBox" class="hidden flex items-center space-x-1.5 bg-white/95 rounded-xl p-1 px-2.5 border border-slate-200 shadow-sm max-w-[210px] sm:max-w-none">
+              <div class="flex items-center space-x-1 truncate">
+                <i id="userRoleIcon" class="fa-solid fa-circle-user text-skyBlue-500 text-sm flex-shrink-0"></i>
+                <span id="userRoleLabel" class="font-bold text-slate-800 text-[11px] truncate">已登入</span>
+              </div>
+              <button onclick="handleLogout()" title="登出並退回訪客模式" class="text-slate-400 hover:text-rose-500 text-xs pl-1.5 border-l border-slate-200 flex-shrink-0">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 離線提示橫幅 -->
+    <div id="offlineBanner" class="hidden glass-panel rounded-2xl p-2.5 sm:p-3 mb-3 border-amber-300 bg-amber-50/90 text-amber-800 text-xs flex flex-wrap items-center justify-between gap-2 shadow-sm">
+      <div class="flex items-center space-x-2">
+        <i class="fa-solid fa-triangle-exclamation text-amber-600 text-sm flex-shrink-0"></i>
+        <span><strong>目前處於離線快取狀態</strong>，此畫面僅供參考！</span>
+      </div>
+      <button onclick="retryConnection()" class="px-2 py-1 rounded-lg bg-amber-200 text-amber-900 font-bold text-[10px]">重試連線</button>
+    </div>
+
+    <!-- ===================================================================
+         頁籤一（訪客／全體首頁）：應援發放即時時序（今日發放 + 其餘場次發放）
+         =================================================================== -->
+    <section id="tab-timeline" class="tab-content">
+      <div class="glass-panel rounded-3xl p-3.5 sm:p-6 mb-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3 pb-3 border-b border-slate-200">
+          <div>
+            <h2 class="text-sm sm:text-lg font-black text-slate-800 flex items-center">
+              <i class="fa-solid fa-clock-rotate-left text-skyBlue-500 mr-2"></i>應援發放即時時序
+            </h2>
+            <p class="text-[11px] sm:text-xs text-slate-500 mt-0.5" id="timelineSubtitle">
+              點擊卡片右上角愛心加入最愛，將於擺攤前 5 分鐘推播通知
+            </p>
+          </div>
+          <div class="flex items-center space-x-1.5">
+            <div class="text-xs px-2.5 py-1 rounded-lg bg-skyBlue-50 border border-skyBlue-200 text-skyBlue-600 font-bold" id="timelineDateBadge">
+              今日：判定中
+            </div>
+          </div>
+        </div>
+
+        <!-- 搜尋與最愛篩選列 -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-5">
+          <div class="relative flex-1">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-xs"></i>
+            <input type="text" id="timelineSearch" oninput="handleSearch(this.value)" placeholder="搜尋創作者暱稱、應援物名稱或發放位置..." class="w-full bg-white/95 text-xs text-slate-800 rounded-xl pl-9 pr-3 py-2.5 border border-slate-200 focus:outline-none focus:border-skyBlue-400 focus:ring-1 focus:ring-skyBlue-400 shadow-xs">
+          </div>
+          <div class="flex items-center bg-white/80 p-1 rounded-xl border border-slate-200 text-xs flex-shrink-0">
+            <button onclick="setFavFilter('all')" id="btnFilterAll" class="px-3 py-1.5 rounded-lg bg-skyBlue-500 text-white font-bold transition text-xs">
+              全部攤位
+            </button>
+            <button onclick="setFavFilter('fav')" id="btnFilterFav" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-rose-500 font-medium transition text-xs flex items-center space-x-1">
+              <i class="fa-solid fa-heart text-rose-500"></i>
+              <span>我的最愛 (<span id="favCountBadge">0</span>)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 時序列表容器（分為：今日發放 & 其餘場次發放） -->
+        <div id="timelineContainer" class="space-y-6">
+          <!-- 動態渲染 -->
+        </div>
+
+        <div class="mt-5 pt-3 border-t border-slate-200/80 flex flex-wrap items-center justify-between gap-2 text-[10px] sm:text-[11px] text-slate-500">
+          <span><i class="fa-solid fa-cookie-bite mr-1 text-amber-500"></i>最愛清單留存於本裝置 Cookie｜開唱前半小時停止開放攤主抵達報位</span>
+          <span>當日開唱：<strong id="footerShowTime" class="text-slate-800 font-mono">19:00</strong>（停止報位：<strong id="footerCutoffTime" class="text-rose-600 font-mono">18:30</strong>）</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         頁籤二：攤主現場發放操作台（僅限已登入之攤主或管理者存取）
+         =================================================================== -->
+    <section id="tab-vendor" class="tab-content hidden">
+      <div class="glass-panel rounded-3xl p-3.5 sm:p-6 mb-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 pb-3 mb-4 border-b border-slate-200">
+          <div>
+            <h2 class="text-sm sm:text-lg font-black text-slate-800 flex items-center">
+              <i class="fa-solid fa-store text-skyBlue-500 mr-2"></i>攤主現場發放操作台
+            </h2>
+            <p class="text-[11px] sm:text-xs text-slate-500 mt-0.5">
+              到場找好位置後點選「抵達」，填寫位置與準備時間（5~15分鐘），每日限用 1 次額度（開唱前半小時停止開放報位）
+            </p>
+          </div>
+          <span id="vendorQuotaBadge" class="text-xs px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 font-bold whitespace-nowrap">
+            <i class="fa-solid fa-check mr-1"></i>今日可用額度：1 次
+          </span>
+        </div>
+
+        <!-- 狀態 A：尚未抵達且今日尚有額度 -->
+        <div id="vendorIdlePanel" class="glass-card rounded-2xl p-5 text-center border-skyBlue-200 mb-4">
+          <div class="w-12 h-12 mx-auto rounded-2xl bg-skyBlue-50 text-skyBlue-500 flex items-center justify-center text-xl mb-3 border border-skyBlue-100">
+            <i class="fa-solid fa-location-dot"></i>
+          </div>
+          <h3 class="text-sm sm:text-base font-black text-slate-800 mb-1">已經抵達場館並找好位置了嗎？</h3>
+          <p class="text-xs text-slate-500 max-w-md mx-auto mb-4">
+            點擊下方按鈕填寫您的<strong>所在發放位置說明</strong>、<strong>現場照片（選填）</strong>與<strong>準備時間（5～15 分鐘）</strong>。將您加到最愛的訪客會在擺攤前 5 分鐘收到推播通知！
+          </p>
+          <button id="btnOpenArrivalModal" onclick="openArrivalModal(false)" class="px-5 py-3 rounded-xl bg-gradient-to-r from-skyBlue-500 to-skyBlue-600 hover:from-skyBlue-600 text-white font-bold text-xs sm:text-sm shadow-md shadow-skyBlue-500/25 transition inline-flex items-center space-x-2">
+            <i class="fa-solid fa-map-pin"></i>
+            <span id="btnOpenArrivalText">我已抵達場館・填寫發放位置</span>
+          </button>
+          <p id="vendorCutoffHint" class="text-[11px] text-slate-400 mt-2.5">
+            注意：當日開唱前半小時將關閉抵達報位功能。
+          </p>
+        </div>
+
+        <!-- 狀態 B：準備中 / 發放中 進行中卡片 -->
+        <div id="vendorActiveCard" class="glass-card rounded-2xl p-4 sm:p-5 mb-4 border-skyBlue-200 hidden">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-bold text-slate-600">創作者：</span>
+              <span id="vCardVendorName" class="text-xs sm:text-sm font-black text-skyBlue-600">--</span>
+            </div>
+            <span id="vendorStatusBadge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200">
+              準備中
+            </span>
+          </div>
+
+          <div class="p-3.5 bg-white/95 rounded-2xl mb-3.5 border border-slate-100 shadow-inner space-y-2.5">
+            <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+              <span class="text-slate-500">發放應援物：<strong id="vCardItemName" class="text-slate-800">--</strong></span>
+              <span class="text-slate-500">預計／開始時間：<strong id="vCardStartTime" class="font-mono text-slate-800">--:--</strong></span>
+            </div>
+
+            <!-- 位置說明與圖片預覽 -->
+            <div class="p-2.5 rounded-xl bg-skyBlue-50/60 border border-skyBlue-100 text-xs flex items-start justify-between gap-3">
+              <div class="min-w-0 flex-1">
+                <div class="font-bold text-skyBlue-800 mb-0.5 flex items-center">
+                  <i class="fa-solid fa-location-dot mr-1.5 text-rose-500"></i>所在發放位置說明：
+                </div>
+                <p id="vCardLocationText" class="text-slate-700 break-words leading-relaxed">--</p>
+              </div>
+              <img id="vCardLocationImg" src="" alt="位置照片" onclick="openImageLightbox(this.src, document.getElementById('vCardLocationText').innerText)" class="hidden w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg border border-skyBlue-200 cursor-pointer flex-shrink-0 hover:opacity-90 transition" title="點擊放大檢視">
+            </div>
+
+            <!-- 倒數計時或發放中狀態顯示 -->
+            <div id="vCountdownBox" class="pt-1">
+              <div class="flex items-baseline justify-between">
+                <span class="text-xs font-medium text-slate-600" id="vCountdownLabel">距離開始發放倒數：</span>
+                <span id="vendorCountdown" class="text-xl sm:text-2xl font-mono font-black text-amber-500">10:00</span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2 overflow-hidden">
+                <div id="vendorProgressBar" class="bg-amber-400 h-1.5 rounded-full transition-all duration-300" style="width: 100%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <button onclick="vendorStartNow()" id="btnVendorStartNow" class="py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 text-white font-bold text-xs shadow-sm flex items-center justify-center space-x-1.5 transition">
+              <i class="fa-solid fa-play"></i>
+              <span>準備完成・立即開始發放</span>
+            </button>
+            <button onclick="openArrivalModal(true)" class="py-2.5 px-3 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs border border-slate-200 flex items-center justify-center space-x-1.5 transition">
+              <i class="fa-solid fa-pen-to-square text-skyBlue-500"></i>
+              <span>更新位置說明／照片</span>
+            </button>
+            <button onclick="executeSoldOut()" id="btnVendorSold" class="py-2.5 px-3 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs shadow-sm flex items-center justify-center space-x-1.5 transition">
+              <i class="fa-solid fa-box-open"></i>
+              <span>已發放完畢・結束擺攤</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 狀態 C：今日已發放完畢 -->
+        <div id="vendorEndedPanel" class="glass-card rounded-2xl p-5 text-center border-slate-200 hidden">
+          <div class="w-12 h-12 mx-auto rounded-2xl bg-slate-100 text-slate-500 flex items-center justify-center text-xl mb-3">
+            <i class="fa-solid fa-flag-checkered"></i>
+          </div>
+          <h3 class="text-sm sm:text-base font-black text-slate-800 mb-1">今日應援已發放完畢</h3>
+          <p class="text-xs text-slate-500 max-w-md mx-auto">
+            辛苦了！您今日的 1 次擺攤發放額度已使用完畢，時序卡片已自動移至最下方「已結束發放」區。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         頁籤三：管理者事前審核與權限控台（僅限已登入之管理者存取）
+         =================================================================== -->
+    <section id="tab-admin" class="tab-content hidden">
+      <div id="admin-forbidden-banner" class="hidden glass-panel rounded-3xl p-6 sm:p-8 text-center border-rose-200 mb-4">
+        <div class="w-12 h-12 mx-auto rounded-full bg-rose-100 text-rose-500 flex items-center justify-center text-xl mb-3">
+          <i class="fa-solid fa-ban"></i>
+        </div>
+        <h3 class="text-base font-bold text-slate-800 mb-1">無權限存取此頁面</h3>
+        <p class="text-xs text-slate-500 mb-4">此處為【管理者控台】，僅限授權管理員操作使用。</p>
+        <button onclick="selectTab('timeline')" class="px-4 py-2 rounded-xl bg-skyBlue-500 text-white text-xs font-bold">返回應援時序</button>
+      </div>
+
+      <div id="admin-main-content" class="glass-panel rounded-3xl p-3.5 sm:p-6 mb-4 space-y-4">
+        <!-- 管理者控台最上方提醒 -->
+        <div class="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center space-x-2">
+          <i class="fa-solid fa-circle-exclamation text-amber-600 flex-shrink-0"></i>
+          <span><strong>此畫面僅供參考</strong>：現場由通過事前驗證之攤主自行找位置發放應援，管理者僅進行事前真人資格審核。</span>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-200">
+          <div>
+            <div class="flex items-center space-x-2">
+              <h2 class="text-sm sm:text-lg font-black text-slate-800 flex items-center">
+                <i class="fa-solid fa-shield-halved text-rose-500 mr-2"></i>管理者事前審核控台
+              </h2>
+              <span id="adminTierBadge" class="text-[10px] font-black px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-200">
+                管理員
+              </span>
+            </div>
+            <p class="text-[11px] sm:text-xs text-slate-500 mt-0.5">事前驗證創作者為真人後點擊核准，並由管理者自行私下發送 SNS 訊息通知</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+            <!-- 管理者控台內建日期切換器 -->
+            <div class="flex items-center bg-white rounded-xl p-1 px-2 border border-slate-200 text-xs shadow-2xs">
+              <span class="text-slate-500 mr-1.5"><i class="fa-regular fa-calendar text-skyBlue-500 mr-1"></i>檢視日：</span>
+              <select id="adminInnerDateSelect" onchange="changeDate(this.value)" class="bg-transparent text-slate-800 font-bold focus:outline-none cursor-pointer text-xs">
+                <option value="1/7">1/7 (非演唱會日)</option>
+                <option value="1/8">1/8 (五) 19:00場</option>
+                <option value="1/9">1/9 (六) 18:00場</option>
+                <option value="1/10">1/10 (日) 17:00場</option>
+                <option value="1/11">1/11 (非演唱會日)</option>
+              </select>
+            </div>
+            <button onclick="openSecurityGuideModal()" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs flex items-center space-x-1 shadow-sm whitespace-nowrap">
+              <i class="fa-solid fa-lock text-amber-400"></i>
+              <span>防竄改規則與最高權限教學</span>
+            </button>
+            <button onclick="exportAuditLogCSV()" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs flex items-center space-x-1 shadow-sm whitespace-nowrap">
+              <i class="fa-solid fa-file-csv text-emerald-600"></i>
+              <span>匯出名冊 CSV</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 最高權限管理者 (Super Admin) 專屬：子管理者帳號權限控管區塊 -->
+        <div id="superAdminManagerPanel" class="hidden glass-card rounded-2xl p-3.5 sm:p-4 border-rose-200 bg-rose-50/30 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 class="text-xs font-black text-rose-800 flex items-center">
+                <i class="fa-solid fa-user-shield text-rose-600 mr-1.5"></i>最高權限專屬：管理者名單（唯讀）
+              </h3>
+              <p class="text-[10px] sm:text-[11px] text-slate-500">
+                僅「最高權限管理者 (Super Admin)」可見，此名單為唯讀。
+              </p>
+            </div>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white border border-rose-200 text-rose-600 font-bold">
+              Firestore: admins/{uid}
+            </span>
+          </div>
+
+          <!-- 管理者名單改由最高權限管理者於 Firebase Console 手動維護 -->
+          <div class="bg-white/90 p-3 rounded-xl border border-rose-100 text-[11px] text-slate-600 leading-relaxed">
+            管理者不在網站上新增。請至 <strong>Firebase Console ➔ Authentication</strong> 建立帳號並複製 <strong>User UID</strong>，再到 <strong>Firestore ➔ admins</strong> 以該 UID 作為文件 ID 建立資料（欄位：role、name、email）。詳見「防竄改規則與最高權限教學」。
+          </div>
+
+          <!-- 目前授權之管理者清單 -->
+          <div class="overflow-x-auto bg-white/90 rounded-xl border border-rose-100">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="border-b border-slate-200 text-slate-400 text-[11px]">
+                  <th class="py-2 px-3">職稱／備註</th>
+                  <th class="py-2 px-3">登入 Email (預設隱碼保護)</th>
+                  <th class="py-2 px-3">權限等級</th>
+                  <th class="py-2 px-3 text-right">權限操作</th>
+                </tr>
+              </thead>
+              <tbody id="adminManagersTableBody" class="divide-y divide-slate-100 text-slate-700">
+                <!-- 動態渲染管理者清單 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 事前資格審核名冊 -->
+        <div class="glass-card rounded-2xl p-3.5 sm:p-4 border-slate-200">
+          <div class="flex flex-wrap items-center justify-between gap-1 mb-3">
+            <div>
+              <h3 class="text-xs font-bold text-slate-800 flex items-center">
+                <i class="fa-solid fa-users-viewfinder text-skyBlue-500 mr-1.5"></i>創作者事前真人資格審核名冊
+              </h3>
+              <p class="text-[10px] sm:text-[11px] text-slate-400">核准後即列入對應場次時序供訪客點愛心收藏，攤主當日到場即可直接點選「抵達」發放</p>
+            </div>
+            <div class="text-[10px] sm:text-[11px] font-mono text-slate-500">
+              <span id="adminPendingBadge" class="hidden mr-2 px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-black animate-pulse">待審核 0 位</span>
+              已核准：<strong class="text-emerald-600" id="adminApprovedCount">0</strong> 位
+            </div>
+          </div>
+          <p id="adminSortHint" class="text-[10px] text-slate-400 mb-2"></p>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse min-w-[540px]">
+              <thead>
+                <tr class="border-b border-slate-200 text-slate-400 font-medium">
+                  <th class="py-2 px-2">創作者暱稱</th>
+                  <th class="py-2 px-2">登記信箱 (隱碼防盜)</th>
+                  <th class="py-2 px-2">預計參加日</th>
+                  <th class="py-2 px-2">登記應援物</th>
+                  <th class="py-2 px-2">商品貼文</th>
+                  <th class="py-2 px-2">審核狀態</th>
+                  <th class="py-2 px-2 text-right">管理操作</th>
+                </tr>
+              </thead>
+              <tbody id="adminVendorTableBody" class="divide-y divide-slate-100 text-slate-700">
+                <!-- 名冊列表 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 頁尾維護聲明 -->
+    <footer class="mt-auto pt-4 pb-2 text-center text-[11px] text-slate-400 space-y-1">
+      <p class="font-bold text-slate-500">該網站由 @onedoor_boice_0820 維護，非官方正式應援團隊維護。</p>
+      <p>此畫面僅供參考｜資料留存期限至 2027/01/17 將全數刪除</p>
+      <p><button onclick="openFaqModal()" class="inline-flex items-center px-3 py-1 rounded-full bg-white/80 border border-slate-200 text-skyBlue-600 font-bold hover:bg-white transition"><i class="fa-regular fa-circle-question mr-1.5"></i>常見 Q&amp;A</button></p>
+    </footer>
+
+  </div>
+
+  <!-- 底部固定導覽列（依登入權限動態顯示對應按鈕） -->
+  <nav class="fixed bottom-3 left-0 right-0 z-40 max-w-[300px] xs:max-w-xs sm:max-w-sm mx-auto px-2 sm:px-4">
+    <div class="glass-panel rounded-2xl py-2 px-3 flex items-center justify-around shadow-lg border border-white/80">
+      <button onclick="selectTab('timeline')" id="nav-btn-timeline" class="nav-item flex flex-col items-center text-skyBlue-500 font-bold scale-105 transition">
+        <i class="fa-solid fa-clock-rotate-left text-base sm:text-lg mb-0.5"></i>
+        <span class="text-[10px]">應援時序</span>
+      </button>
+
+      <button onclick="selectTab('vendor')" id="nav-btn-vendor" class="nav-item hidden flex-col items-center text-slate-400 hover:text-slate-600 transition">
+        <i class="fa-solid fa-location-dot text-base sm:text-lg mb-0.5"></i>
+        <span class="text-[10px]">攤主操作</span>
+      </button>
+
+      <button onclick="selectTab('admin')" id="nav-btn-admin" class="nav-item hidden flex-col items-center text-slate-400 hover:text-slate-600 transition">
+        <i class="fa-solid fa-shield-halved text-base sm:text-lg mb-0.5"></i>
+        <span class="text-[10px]">管理者控台</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- 彈窗：攤主「抵達場館・填寫擺攤位置與準備時間」 -->
+  <div id="arrivalModal" class="fixed inset-0 z-50 flex items-center justify-center p-3.5 sm:p-4 bg-slate-900/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
+    <div class="glass-panel w-full max-w-md rounded-3xl p-5 border-white shadow-2xl relative max-h-[92vh] overflow-y-auto">
+      <button onclick="closeArrivalModal()" class="absolute top-4 right-4 w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 text-xs">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <h3 class="text-base font-black text-slate-800 mb-1 flex items-center">
+        <i class="fa-solid fa-location-dot text-rose-500 mr-2"></i><span id="arrivalModalTitle">抵達場館・填寫發放位置</span>
+      </h3>
+      <p class="text-[11px] text-slate-500 mb-3.5">
+        送出後將即時顯示於時序畫面，若有將您加到最愛的訪客，系統將於<strong>擺攤前 5 分鐘</strong>發送推播提醒！
+      </p>
+
+      <div class="space-y-3.5 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">本次發放應援物內容簡述 <span class="text-rose-500">*</span></label>
+          <input type="text" id="arriveItemName" maxlength="30" placeholder="例如：手燈針織套、小卡套組、雷射透扇" class="w-full bg-white rounded-xl p-2.5 border border-slate-200 text-slate-800 focus:outline-none focus:border-skyBlue-400">
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">
+            所在發放位置說明 <span class="text-rose-500">*</span> <span class="text-[10px] font-normal text-slate-400">(請描述地標或穿搭特徵)</span>
+          </label>
+          <textarea id="arriveLocationText" rows="2" maxlength="80" placeholder="例如：Gate 2 階梯下方靠近花圃，穿白色外套、背藍色痛包" class="w-full bg-white rounded-xl p-2.5 border border-slate-200 text-slate-800 focus:outline-none focus:border-skyBlue-400 resize-none"></textarea>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">
+            附上所在位置照片 <span class="text-slate-400 text-[10px] font-normal">(非必填，自動壓縮方便訪客找人)</span>
+          </label>
+          <div class="flex items-center space-x-2">
+            <label class="flex-1 cursor-pointer py-2 px-3 rounded-xl bg-white hover:bg-skyBlue-50 border border-dashed border-skyBlue-300 text-skyBlue-600 font-bold text-center transition flex items-center justify-center space-x-1.5">
+              <i class="fa-solid fa-camera"></i>
+              <span id="photoUploadLabel">選擇或拍攝位置照片</span>
+              <input type="file" id="arriveLocationPhotoInput" accept="image/*" class="hidden" onchange="handleLocationPhotoSelect(this)">
+            </label>
+            <button type="button" id="btnClearPhoto" onclick="clearLocationPhoto()" class="hidden px-2.5 py-2 rounded-xl bg-rose-50 text-rose-500 hover:bg-rose-100 border border-rose-200 font-bold">
+              移除
+            </button>
+          </div>
+          <div id="arrivePhotoPreviewWrap" class="hidden mt-2 relative">
+            <img id="arrivePhotoPreview" src="" alt="預覽圖片" class="w-full max-h-40 object-cover rounded-xl border border-slate-200">
+          </div>
+        </div>
+
+        <div id="prepTimeSection" class="p-3 bg-skyBlue-50/70 rounded-2xl border border-skyBlue-100">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="font-bold text-slate-700">選擇準備時間 (5～15 分鐘)：</span>
+            <span id="prepTimeValText" class="font-black text-skyBlue-600 font-mono text-sm">10 分鐘</span>
+          </div>
+          <input type="range" id="arrivePrepSlider" min="5" max="15" step="1" value="10" class="w-full accent-skyBlue-500 cursor-pointer" oninput="updatePrepSliderText(this.value)">
+          <div class="flex justify-between text-[10px] text-slate-500 mt-1 font-mono">
+            <button type="button" onclick="setPrepQuick(5)" class="px-2 py-0.5 rounded bg-white border border-slate-200 hover:border-skyBlue-400">5 分鐘 (立即推播)</button>
+            <button type="button" onclick="setPrepQuick(10)" class="px-2 py-0.5 rounded bg-white border border-slate-200 hover:border-skyBlue-400">10 分鐘</button>
+            <button type="button" onclick="setPrepQuick(15)" class="px-2 py-0.5 rounded bg-white border border-slate-200 hover:border-skyBlue-400">15 分鐘</button>
+          </div>
+        </div>
+
+        <button onclick="submitVendorArrival()" id="btnSubmitArrival" class="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center space-x-1.5 text-xs sm:text-sm">
+          <i class="fa-solid fa-paper-plane"></i>
+          <span id="btnSubmitArrivalText">確認抵達・開始準備倒數</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 彈窗：點擊放大檢視位置圖片 Lightbox -->
+  <div id="imageLightboxModal" onclick="closeImageLightbox()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-xs hidden">
+    <div class="max-w-lg w-full bg-white rounded-3xl p-3 shadow-2xl relative" onclick="event.stopPropagation()">
+      <button onclick="closeImageLightbox()" class="absolute top-5 right-5 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center text-sm hover:bg-black/80">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <img id="lightboxImg" src="" alt="發放位置大圖" class="w-full max-h-[72vh] object-contain rounded-2xl bg-slate-900">
+      <p id="lightboxCaption" class="text-xs text-slate-700 font-bold mt-2.5 px-1 text-center break-words"></p>
+    </div>
+  </div>
+
+  <!-- 彈窗：右上角「管理者登入／攤主專區」切換視窗 -->
+  <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center p-3.5 sm:p-4 bg-slate-900/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
+    <div class="glass-panel w-full max-w-md rounded-3xl p-5 border-white shadow-2xl relative max-h-[92vh] overflow-y-auto">
+      <button onclick="closeAuthModal()" class="absolute top-4 right-4 w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 text-xs">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="flex items-center space-x-1.5 p-1 bg-slate-100 rounded-2xl mb-4 text-xs font-bold">
+        <button onclick="switchAuthTab('admin')" id="tabAuthAdmin" class="flex-1 py-2 rounded-xl text-slate-600 hover:text-rose-600 transition">
+          <i class="fa-solid fa-shield-halved mr-1"></i>管理者登入
+        </button>
+        <button onclick="switchAuthTab('vendor')" id="tabAuthVendor" class="flex-1 py-2 rounded-xl bg-white text-skyBlue-600 shadow-sm transition">
+          <i class="fa-solid fa-store mr-1"></i>攤主專區
+        </button>
+      </div>
+
+      <!-- 管理者登入（已移除原本資安保護機制說明文字，並加上不常用信箱與防詐騙提醒） -->
+      <div id="authAdminBlock" class="space-y-3.5 text-xs hidden">
+        <div class="p-3 bg-rose-50 rounded-xl border border-rose-100 text-[11px] text-rose-700 space-y-1.5 leading-relaxed">
+          <div class="text-rose-600 font-bold"><i class="fa-solid fa-key mr-1"></i>密碼格式規定：務必包含「英文＋數字」且最少 8 碼。</div>
+          <div class="text-slate-600"><i class="fa-solid fa-triangle-exclamation text-amber-500 mr-1"></i>建議使用不常用信箱作為登入Mail，雖已加強防盜但仍有風險，如有收到不明訊息請留意。相關通知皆以管理者SNS訊息為準。</div>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">管理者 Email 帳號</label>
+          <input type="email" id="adminLoginEmail" autocomplete="username" placeholder="請輸入管理者 Email" class="w-full bg-white rounded-xl p-2.5 border border-slate-200 font-mono text-slate-800 focus:outline-none focus:border-rose-400">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">管理者密碼 <span class="text-[10px] font-normal text-rose-500">(英文+數字，最少 8 碼)</span></label>
+          <input type="password" id="adminLoginPass" autocomplete="current-password" placeholder="請輸入管理者密碼" class="w-full bg-white rounded-xl p-2.5 border border-slate-200 font-mono text-slate-800 focus:outline-none focus:border-rose-400">
+        </div>
+        <button onclick="handleAdminLogin()" class="w-full py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl shadow-sm transition">
+          登入管理者控台
+        </button>
+      </div>
+
+      <!-- 攤主專區 -->
+      <div id="authVendorBlock" class="space-y-3 text-xs">
+        <div class="flex border-b border-slate-200 text-xs pb-2 mb-3">
+          <button onclick="switchVendorSubTab('login')" id="subVendorLogin" class="font-bold text-skyBlue-600 border-b-2 border-skyBlue-500 pb-1 mr-4">
+            攤主 · Mail 登入
+          </button>
+          <button onclick="switchVendorSubTab('apply')" id="subVendorApply" class="font-medium text-slate-400 hover:text-slate-600 pb-1">
+            填寫事前申請 (註冊)
+          </button>
+        </div>
+
+        <!-- 攤主登入 -->
+        <div id="vendorSubLoginPanel" class="space-y-3">
+          <p class="text-[11px] text-slate-500">請輸入事前申請之電子信箱，以及管理者審核通過後<strong>私訊給您的登入密碼</strong>，到場後即可登入回報發放位置：</p>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">登記之電子信箱</label>
+            <input type="email" id="vendorLoginEmail" autocomplete="username" placeholder="請輸入事前申請時填寫之 Email" class="w-full bg-white rounded-xl p-2.5 border border-slate-200 font-mono text-slate-800 focus:outline-none focus:border-skyBlue-400">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">登入密碼 <span class="text-[10px] font-normal text-slate-400">(審核通過後由管理者以 SNS 私訊提供，請勿外流)</span></label>
+            <input type="password" id="vendorLoginPass" autocomplete="current-password" placeholder="請輸入管理者私訊給您的密碼" class="w-full bg-white rounded-xl p-2.5 border border-slate-200 font-mono text-slate-800 focus:outline-none focus:border-skyBlue-400">
+          </div>
+          <!-- 備註：防盜提醒與資料保留期限 -->
+          <div class="p-2.5 rounded-xl bg-amber-50/90 border border-amber-200 text-[11px] text-amber-900 space-y-1.5 leading-relaxed">
+            <div class="flex items-start space-x-1.5">
+              <i class="fa-solid fa-shield-halved text-amber-600 flex-shrink-0 mt-0.5"></i>
+              <span>建議使用不常用信箱作為登入Mail，雖已加強防盜但仍有風險，如有收到不明訊息請留意。相關通知皆以管理者SNS訊息為準。</span>
+            </div>
+            <div class="flex items-center space-x-1.5 pt-1 border-t border-amber-200/70 text-amber-800">
+              <i class="fa-solid fa-clock-rotate-left text-amber-600 flex-shrink-0"></i>
+              <span>備註：<strong>相關資料將保留至2027/01/17將會刪除</strong></span>
+            </div>
+          </div>
+          <button onclick="handleVendorLogin()" class="w-full py-2.5 bg-skyBlue-500 hover:bg-skyBlue-600 text-white font-bold rounded-xl shadow-sm shadow-skyBlue-500/20 transition">
+            登入攤主操作台
+          </button>
+        </div>
+
+        <!-- 攤主事前申請（註冊）表單 -->
+        <div id="vendorSubApplyPanel" class="space-y-3 hidden">
+          <div class="p-2.5 rounded-xl bg-skyBlue-50/80 border border-skyBlue-200 text-[11px] text-slate-700 leading-relaxed flex items-start space-x-1.5">
+            <i class="fa-solid fa-user-check text-skyBlue-500 flex-shrink-0 mt-0.5"></i>
+            <span><strong>事前審核需要一些時間</strong>：因為是單一管理者逐筆作業，會由 <strong>@onedoor_boice_0820</strong> 統一私訊確認、核對為真人本人後才開通權限，還請耐心等候並<strong>留意陌生訊息</strong>。</span>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">創作者／攤販暱稱 <span class="text-rose-500">*</span> (限15字內)</label>
+            <input type="text" id="appNickname" required maxlength="15" placeholder="例如：星空手作" class="w-full bg-white rounded-xl p-2 border border-slate-200 focus:outline-none focus:border-skyBlue-400">
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">
+              主要應援物內容簡述 <span class="text-skyBlue-500 text-[10px] font-normal">(核准後顯示於時序供訪客收藏)</span>
+            </label>
+            <input type="text" id="appItemDesc" maxlength="30" placeholder="例如：手燈套、小卡組、雷射透扇" class="w-full bg-white rounded-xl p-2 border border-slate-200 focus:outline-none focus:border-skyBlue-400">
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">本人 SNS 相關商品貼文超連結 <span class="text-rose-500">*</span></label>
+            <input type="url" id="appProductPostLink" required placeholder="https://threads.net/@id/post/... 或 IG 貼文網址" class="w-full bg-white rounded-xl p-2 border border-slate-200 focus:outline-none focus:border-skyBlue-400">
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">登入用電子信箱 <span class="text-rose-500">*</span></label>
+            <input type="email" id="appEmail" required placeholder="yourname@example.com" class="w-full bg-white rounded-xl p-2 border border-slate-200 focus:outline-none focus:border-skyBlue-400">
+            <p class="text-[10px] text-amber-700 mt-1 leading-relaxed">
+              <i class="fa-solid fa-triangle-exclamation mr-1"></i>建議使用不常用信箱作為登入Mail，雖已加強防盜但仍有風險，如有收到不明訊息請留意。相關通知皆以管理者SNS訊息為準。
+            </p>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">預計參加日 (可複選)</label>
+            <div class="flex items-center space-x-3 bg-white p-2 rounded-xl border border-slate-200">
+              <label class="inline-flex items-center space-x-1 cursor-pointer">
+                <input type="checkbox" id="date-1-8" checked class="accent-skyBlue-500">
+                <span>1/8 (五)</span>
+              </label>
+              <label class="inline-flex items-center space-x-1 cursor-pointer">
+                <input type="checkbox" id="date-1-9" class="accent-skyBlue-500">
+                <span>1/9 (六)</span>
+              </label>
+              <label class="inline-flex items-center space-x-1 cursor-pointer">
+                <input type="checkbox" id="date-1-10" class="accent-skyBlue-500">
+                <span>1/10 (日)</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="p-2.5 bg-skyBlue-50/60 rounded-xl border border-skyBlue-100 text-[10px] text-slate-600 space-y-1">
+            <label class="inline-flex items-center space-x-1.5 cursor-pointer">
+              <input type="checkbox" id="agreePrivacy" required class="accent-skyBlue-500">
+              <span class="text-slate-700">我同意於活動期間為真人身分核驗與應援時序公告目的處理上述資料</span>
+            </label>
+            <div class="text-amber-800 font-bold pl-4">
+              <i class="fa-solid fa-clock-rotate-left mr-1"></i>相關資料將保留至2027/01/17將會刪除
+            </div>
+          </div>
+
+          <button onclick="handleApplySubmitViaModal()" class="w-full py-2.5 bg-gradient-to-r from-skyBlue-500 to-skyBlue-600 hover:from-skyBlue-600 text-white font-bold rounded-xl shadow-sm transition">
+            提交事前申請
+          </button>
+        </div>
+      </div>
+
+      <div class="mt-4 pt-2.5 border-t border-slate-200/80 text-center text-[10px] text-slate-400">
+        該網站由 @onedoor_boice_0820 維護，非官方正式應援團隊維護。
+      </div>
+    </div>
+  </div>
+
+  <!-- 彈窗：Firebase 最高權限設置與防竄改 Security Rules 教學 -->
+  <div id="securityGuideModal" class="fixed inset-0 z-50 flex items-center justify-center p-3.5 sm:p-4 bg-slate-900/50 backdrop-blur-sm hidden">
+    <div class="glass-panel w-full max-w-2xl rounded-3xl p-5 border-white shadow-2xl relative max-h-[90vh] overflow-y-auto text-xs space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <h3 class="text-sm sm:text-base font-black text-slate-800 flex items-center">
+          <i class="fa-solid fa-shield-halved text-rose-500 mr-2"></i>最高權限設置與 Firebase 防竄改安全規則
+        </h3>
+        <button onclick="closeSecurityGuideModal()" class="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="space-y-2 bg-rose-50/70 p-3.5 rounded-2xl border border-rose-200 text-slate-700 leading-relaxed">
+        <h4 class="font-black text-rose-700">① 管理者帳號怎麼設定？（僅能由最高管理者手動建立）</h4>
+        <ol class="list-decimal list-inside space-y-1 text-[11px]">
+          <li><strong>Authentication ➔ Sign-in method</strong>：僅需啟用「電子郵件/密碼」（管理者與攤主共用，免寄驗證信即可直接登入）。</li>
+          <li><strong>Authentication ➔ Users ➔ 新增使用者</strong>，建立管理者 Email 與密碼（英數至少 8 碼），並<strong>複製該使用者的 User UID</strong>。</li>
+          <li><strong>Firestore ➔ 集合 <code class="bg-white px-1 rounded border font-mono text-rose-600">admins</code></strong>：<strong>文件 ID 填 User UID（不是 Email）</strong>，欄位 <code class="bg-white px-1 rounded border font-mono text-rose-600">role</code>（最高管理者填 super_admin，其餘填 admin）、<code class="bg-white px-1 rounded border font-mono text-rose-600">name</code>、<code class="bg-white px-1 rounded border font-mono text-rose-600">email</code>（僅供顯示）。</li>
+          <li>撤銷管理者：刪除對應的 admins 文件即可。網站本身無法新增或修改管理者。</li>
+          <li><strong>攤主帳號（核准時請手動建立）</strong>：到 <strong>Authentication ➔ Users ➔ 新增使用者</strong>，填攤主登記信箱與一組隨機密碼（英數 10 碼以上），再用 SNS 私訊把密碼傳給攤主。網站不會自動替任何信箱建立帳號。</li>
+          <li>在網站按「核准」時，系統會自動建立 <code class="bg-white px-1 rounded border font-mono text-rose-600">vendor_links/{攤主信箱}</code> 綁定，攤主才能登入並只修改自己的攤位。</li>
+        </ol>
+      </div>
+
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <h4 class="font-black text-slate-800">② 防止透過 API Key 竄改資料庫與偷看信箱（Firestore 安全規則）</h4>
+          <button onclick="copyFirestoreRules()" class="px-2.5 py-1 rounded-lg bg-skyBlue-500 hover:bg-skyBlue-600 text-white font-bold text-[11px]">
+            <i class="fa-regular fa-copy mr-1"></i>複製安全規則
+          </button>
+        </div>
+        <p class="text-[11px] text-slate-500">
+          請將下方規則貼至 <strong>Firebase Console ➔ Firestore Database ➔ 規則 (Rules)</strong> 並發布。即使他人從 GitHub 網頁看到 <code class="font-mono">apiKey</code>，未通過密碼驗證者也絕對無法竄改資料或讀取任何人的真實信箱：
+        </p>
+        <textarea id="firestoreRulesText" readonly class="w-full h-48 bg-slate-900 text-emerald-300 font-mono text-[11px] p-3 rounded-xl border border-slate-700 focus:outline-none select-all">rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() { return request.auth != null; }
+    function isVerified() { return request.auth != null && request.auth.token.email != null; }
+    // 判斷上次報位是否為過去的日期（以台灣時間 UTC+8 午夜 00:00 為界，28800000ms = 8小時，86400000ms = 1天）
+    function isNewTaipeiDay(oldStartMs) {
+      return (int(oldStartMs) + 28800000) / 86400000 < (request.time.toMillis() + 28800000) / 86400000;
+    }
+    // 管理者以 Auth UID 判定（無法用他人 Email 冒用）
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    function isSuperAdmin() {
+      return isAdmin() && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'super_admin';
+    }
+    function linkPath() {
+      return /databases/$(database)/documents/vendor_links/$(request.auth.token.email.lower());
+    }
+    function hasVendorLink() {
+      return isVerified() && exists(linkPath());
+    }
+    function myVendorId() {
+      return get(linkPath()).data.vendorId;
+    }
+    function isOwner(vendorId) {
+      return hasVendorLink() && myVendorId() == vendorId;
+    }
+
+    // 1. 管理者名單：本人可讀自己、最高管理者可列表；網站端一律不可寫入（僅能於 Console 手動維護）
+    match /admins/{adminUid} {
+      allow get: if isSignedIn() && (request.auth.uid == adminUid || isSuperAdmin());
+      allow list: if isSuperAdmin();
+      allow write: if false;
+    }
+
+    // 2. 攤主綁定：只有管理者可寫；攤主只能讀取自己信箱的綁定
+    match /vendor_links/{linkEmail} {
+      allow get: if isAdmin() || (isVerified() && request.auth.token.email.lower() == linkEmail);
+      allow list, create, update, delete: if isAdmin();
+    }
+
+    // 3. 攤主機密信箱：僅管理者可讀；公開申請只能與 vendors_private 同批次原子建立
+    match /vendors_secret/{vendorId} {
+      allow read, update, delete: if isAdmin();
+      allow create: if !exists(/databases/$(database)/documents/vendors_private/$(vendorId))
+        && existsAfter(/databases/$(database)/documents/vendors_private/$(vendorId))
+        && request.resource.data.keys().hasOnly(['uid', 'email', 'createdAt'])
+        && request.resource.data.uid == vendorId
+        && request.resource.data.email is string
+        && request.resource.data.email.size() <= 100
+        && request.resource.data.email == request.resource.data.email.lower()
+        && request.resource.data.email.matches('^[^@ ]+@[^@ ]+[.][^@ ]+$')
+        && request.resource.data.createdAt is number;
+    }
+
+    // 4. 攤主申請名冊：供事前申請原子建立、管理者審核與攤主本人讀取（訪客不直接讀取此集合以省下 150 倍讀取量）
+    match /vendors_private/{vendorId} {
+      allow get: if isAdmin() || isOwner(vendorId);
+      allow list: if isAdmin();
+
+      allow create: if vendorId.matches('^v_[0-9a-f-]{36}$')
+        && !exists(/databases/$(database)/documents/vendors_secret/$(vendorId))
+        && existsAfter(/databases/$(database)/documents/vendors_secret/$(vendorId))
+        && request.resource.data.keys().hasOnly(['uid', 'nickname', 'items', 'productPost', 'expectedDays',
+             'isApproved', 'status', 'locationText', 'locationImg', 'startMs', 'prepTotalMs', 'endedMs',
+             'quotaUsedToday', 'quotaUsed'])
+        && request.resource.data.uid == vendorId
+        && request.resource.data.isApproved == false
+        && request.resource.data.status == 'upcoming'
+        && request.resource.data.nickname is string
+        && request.resource.data.nickname.size() >= 1 && request.resource.data.nickname.size() <= 30
+        && request.resource.data.items is string && request.resource.data.items.size() <= 60
+        && request.resource.data.productPost is string
+        && request.resource.data.productPost.size() <= 300
+        && request.resource.data.productPost.matches('^https://.*')
+        && request.resource.data.expectedDays is list
+        && request.resource.data.expectedDays.size() >= 1 && request.resource.data.expectedDays.size() <= 3
+        && request.resource.data.expectedDays.hasOnly(['1/8', '1/9', '1/10'])
+        && request.resource.data.locationText == '' && request.resource.data.locationImg == ''
+        && request.resource.data.startMs == 0 && request.resource.data.prepTotalMs == 0
+        && request.resource.data.endedMs == 0
+        && request.resource.data.quotaUsedToday == false && request.resource.data.quotaUsed == false;
+
+      allow update, delete: if isAdmin();
+    }
+
+    // 5. 聚合公開時序單一文件（全場 150 攤濃縮為 1 次讀取，死守 Spark 每日 5 萬次免費讀取限制）
+    match /market_public/live {
+      allow get: if true;
+      allow create: if isAdmin();
+      allow update: if isAdmin() || (
+        hasVendorLink()
+        && request.resource.data.keys().hasOnly(['vendors'])
+        && myVendorId() in resource.data.vendors
+        && request.resource.data.vendors.diff(resource.data.vendors).affectedKeys().hasOnly([myVendorId()])
+        && (resource.data.vendors[myVendorId()].status != 'ended' || isNewTaipeiDay(resource.data.vendors[myVendorId()].startMs))
+        && request.resource.data.vendors[myVendorId()].diff(resource.data.vendors[myVendorId()]).affectedKeys()
+             .hasOnly(['items', 'locationText', 'hasPhoto', 'status', 'prepTotalMs', 'startMs', 'endedMs', 'quotaUsedToday'])
+        && request.resource.data.vendors[myVendorId()].status in ['preparing', 'in_use', 'ended']
+        && request.resource.data.vendors[myVendorId()].quotaUsedToday == true
+        && request.resource.data.vendors[myVendorId()].items is string
+        && request.resource.data.vendors[myVendorId()].items.size() <= 60
+        && request.resource.data.vendors[myVendorId()].locationText is string
+        && request.resource.data.vendors[myVendorId()].locationText.size() <= 160
+        && request.resource.data.vendors[myVendorId()].hasPhoto is bool
+        && request.resource.data.vendors[myVendorId()].prepTotalMs is number
+        && request.resource.data.vendors[myVendorId()].prepTotalMs >= 0
+        && request.resource.data.vendors[myVendorId()].prepTotalMs <= 900000
+        && request.resource.data.vendors[myVendorId()].startMs is number
+        && request.resource.data.vendors[myVendorId()].startMs <= request.time.toMillis() + 1200000
+        && request.resource.data.vendors[myVendorId()].endedMs is number
+      );
+    }
+
+    // 6. 攤位位置照片獨立集合（訪客點擊時才按需讀取並快取，節省 95% 圖片流量與讀取）
+    match /vendor_photos/{vendorId} {
+      allow get: if true;
+      allow create, update: if isAdmin() || (
+        isOwner(vendorId)
+        && request.resource.data.keys().hasOnly(['uid', 'locationImg', 'updatedAt'])
+        && request.resource.data.uid == vendorId
+        && request.resource.data.locationImg is string
+        && request.resource.data.locationImg.size() <= 90000
+        && request.resource.data.locationImg.matches('data:image/jpeg;base64,.*')
+        && request.resource.data.updatedAt is number
+      );
+      allow delete: if isAdmin() || isOwner(vendorId);
+    }
+  }
+}</textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- 提示 Toast -->
+  <div id="toast" class="fixed top-14 sm:top-16 left-1/2 transform -translate-x-1/2 z-50 glass-card px-4 py-2.5 rounded-2xl text-xs font-bold text-slate-700 shadow-xl border border-skyBlue-200 pointer-events-none transition-all duration-300 opacity-0 -translate-y-2 max-w-[90vw] text-center">
+    訊息
+  </div>
+
+  <!-- 彈窗：常見 Q&A -->
+  <div id="faqModal" class="fixed inset-0 z-50 flex items-center justify-center p-3.5 sm:p-4 bg-slate-900/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
+    <div class="glass-panel w-full max-w-md rounded-3xl p-5 border-white shadow-2xl relative max-h-[88vh] overflow-y-auto">
+      <button onclick="closeFaqModal()" class="absolute top-4 right-4 w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 text-xs"><i class="fa-solid fa-xmark"></i></button>
+      <h3 class="text-base font-black text-slate-800 mb-3 flex items-center"><i class="fa-regular fa-circle-question text-skyBlue-500 mr-2"></i>常見 Q&amp;A</h3>
+      <div class="flex text-xs bg-slate-100 rounded-xl p-1 mb-3">
+        <button data-faq-tab="common" onclick="switchFaqTab('common')" class="flex-1 py-1.5 rounded-lg font-bold bg-white text-skyBlue-600 shadow-sm">通用</button>
+        <button data-faq-tab="guest" onclick="switchFaqTab('guest')" class="flex-1 py-1.5 rounded-lg font-medium text-slate-500">訪客</button>
+        <button data-faq-tab="vendor" onclick="switchFaqTab('vendor')" class="flex-1 py-1.5 rounded-lg font-medium text-slate-500">攤主</button>
+      </div>
+      <div data-faq-panel="common" class="space-y-2 "><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
+          <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q1</span><span>如果活動當日沒有網路或訊號不好怎麼辦？</span></summary>
+          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A1：</span>本網站支援離線快取，若短暫斷網畫面會顯示離線提示，建議可提前截圖或等訊號恢復後點擊畫面左上角的「同步」按鈕更新最新時序。</p>
+        </details><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
+          <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q2</span><span>網頁上的開唱時間與截止報位時間是怎麼規定的？</span></summary>
+          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A2：</span>1/8（五）19:00 開唱（18:30 停止報位）、1/9（六）18:00 開唱（17:30 停止報位）、1/10（日）17:00 開唱（16:30 停止報位）。</p>
+        </details><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
+          <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q3</span><span>網站資料會保留到什麼時候？活動結束後會刪除嗎？</span></summary>
+          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A3：</span>所有應援與攤主資料將嚴格保留至 2027/01/17，之後將全數從資料庫中刪除，保障大家個資安全。</p>
+        </details></div>
+      <div data-faq-panel="guest" class="space-y-2 hidden"><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
+          <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q1</span><span>為什麼我加入最愛的攤位不見了？</span></summary>
+          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A1：</span>最愛攤位僅存在您當初加入時的原始裝置（如使用電腦加入，手機端就不會同步顯示），建議全程使用同一裝置同一個瀏覽器開啟本站，避免切換 App 導致最愛名單重置。</p>
+        </details><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
+          <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q2</span><span>訪客進入網站需要註冊或登入帳號嗎？</span></summary>
+          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A2：</span>完全不需要！訪客端全程免登入、免填個資，直接打開網頁就能瀏覽全場即時時序。</p>
+        </details><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
+          <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q3</span><span>如何開啟擺攤前 5 分鐘的推播提醒通知？</span></summary>
+          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A3：</span>點擊網頁右上角的「開啟推播提醒」按鈕並授權瀏覽器通知；若未授權系統通知，網站也會透過內建的置頂強提醒彈窗與提示音通知您。</p>
+        </details><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
+          <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q4</span><span>如果我點了愛心收藏，但攤主還沒抵達現場會怎麼樣？</span></summary>
+          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A4：</span>攤主尚未抵達時狀態為「尚未到場」，等攤主抵達並按下報位、開始倒數時，系統就會在開攤前 5 分鐘準時提醒您。</p>
+        </details></div>
+      <div data-faq-panel="vendor" class="space-y-2 hidden"><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
+          <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q1</span><span>我忘記攤主申請信箱了？</span></summary>
+          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A1：</span>請透過當初應援物 SNS 貼文連結之帳號私訊 @onedoor_boice_0820、 三位其一，會提供信箱前四碼協助您回想。</p>
+        </details><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
+          <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q2</span><span>我忘記攤主登入密碼了？</span></summary>
+          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A2：</span>請透過當初應援物 SNS 貼文連結之帳號私訊箱，搜尋 @onedoor_boice_0820 的私訊紀錄，內文中有提供您的專屬登入密碼。</p>
+        </details><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
+          <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q3</span><span>為什麼我按「我已抵達場館」卻顯示無法點擊或按鈕反灰？</span></summary>
+          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A3：</span>當日開唱前半小時（1/8 為 18:30、1/9 為 17:30、1/10 為 16:30）系統會自動關閉抵達報位功能，請抓緊時間準備入場。</p>
+        </details><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
+          <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q4</span><span>攤主一天可以報位幾次？跨日會自動重置嗎？</span></summary>
+          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A4：</span>每一位攤主每日限用 1 次擺攤發放額度；若您有申請多日場次，過午夜 00:00 系統會自動幫您重置隔日額度，讓您能正常報位。</p>
+        </details><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
+          <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q5</span><span>手滑不小心按到「已發放完畢／結束擺攤」該怎麼辦？</span></summary>
+          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A5：</span>請盡速私訊 @onedoor_boice_0820、三位其一，由管理者在後台點擊「重置今日額度」，即可將您的攤位恢復為尚未到場狀態並重新報位。</p>
+        </details><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
+          <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q6</span><span>上傳位置照片失敗或顯示檔案過大怎麼辦？</span></summary>
+          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A6：</span>系統已內建自動壓縮功能，若仍上傳失敗，建議改用較小尺寸的圖片，或直接以精準的文字地標與穿搭特徵描述位置即可。</p>
+        </details><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
+          <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q7</span><span>創作者事前申請通過後，要怎麼拿到登入密碼？</span></summary>
+          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A7：</span>審核通過後，管理者會透過您填寫的 SNS 貼文帳號私訊通知您，並一併提供專屬的登入密碼。</p>
+        </details><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
+          <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q8</span><span>攤主登入時顯示帳號或密碼錯誤該怎麼處理？</span></summary>
+          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A8：</span>請確認輸入的是事前申請時填寫的正確 Email，以及管理者私訊給您的專屬登入密碼（注意大小寫與半形字元）。</p>
+        </details><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
+          <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q9</span><span>準備時間倒數結束後，攤位狀態會自動更新嗎？</span></summary>
+          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A9：</span>會的！當您設定的 5～15 分鐘準備倒數歸零時，系統會自動將您的攤位切換為「發放中」，讓全場訪客看到。</p>
+        </details><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
+          <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q10</span><span>在發放過程中如果移動了攤位位置，可以重新修改嗎？</span></summary>
+          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A10：</span>可以的！在攤主操作台中隨時可以點擊「更新位置說明／照片」，修改後即時同步給訪客，且不會扣減您的每日報位額度。</p>
+        </details><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
+          <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q11</span><span>如果活動當日身體不適或因故無法擺攤該怎麼辦？</span></summary>
+          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A11：</span>請直接私訊 @onedoor_boice_0820、 三位其一協助將您的攤位狀態調整或下架，避免現場粉絲撲空。</p>
+        </details><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
+          <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q12</span><span>我申請好幾天了，但都沒收到核准通知？</span></summary>
+          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A12：</span>有可能被陌生訊息擋住了，請確認陌生訊息；仍無的話請私訊 @onedoor_boice_0820 做確認。</p>
+        </details></div>
+    </div>
+  </div>
+
+  <!-- 審核中通知畫面 -->
+  <div id="vendorPendingModal" class="fixed inset-0 z-50 flex items-center justify-center p-3.5 sm:p-4 bg-slate-900/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
+    <div class="glass-panel w-full max-w-sm rounded-3xl p-5 border-white shadow-2xl relative text-center">
+      <div class="w-12 h-12 mx-auto rounded-full bg-amber-50 border border-amber-200 text-amber-500 flex items-center justify-center text-xl mb-3">
+        <i class="fa-solid fa-hourglass-half"></i>
+      </div>
+      <h3 class="text-base font-bold text-slate-800 mb-1">管理者正在審核真人資格</h3>
+      <p class="text-xs text-slate-600 mb-3" id="pendingModalDesc">
+        您的申請（暱稱：<strong id="pendingNick" class="text-skyBlue-600">-</strong>）已收到，正由管理者審核商品貼文與真人資格中。
+      </p>
+      <div class="p-3 bg-amber-50/80 rounded-2xl border border-amber-100 text-left text-[11px] text-amber-900 mb-4 space-y-1">
+        <div class="flex items-start">
+          <i class="fa-solid fa-comment-dots mr-1.5 text-amber-600 mt-0.5 flex-shrink-0"></i>
+          <span>審核通過後，管理者將<strong>私下透過 SNS 訊息通知您</strong>，屆時會一併提供登入密碼，即可於活動當日以「信箱＋密碼」登入使用。</span>
+        </div>
+        <div class="flex items-start">
+          <i class="fa-solid fa-clock-rotate-left mr-1.5 text-amber-600 mt-0.5 flex-shrink-0"></i>
+          <span>相關資料將保留至2027/01/17將會刪除。</span>
+        </div>
+        <div class="flex items-start">
+          <i class="fa-solid fa-envelope-circle-check mr-1.5 text-amber-600 mt-0.5 flex-shrink-0"></i>
+          <span>單一管理者逐筆審核需要時間，將由 <strong>@onedoor_boice_0820</strong> 私訊確認為真人本人後開通，請耐心等候並<strong>留意陌生訊息</strong>；申請多日仍未收到請見「常見 Q&amp;A」。</span>
+        </div>
+      </div>
+      <button onclick="closePendingModal()" class="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">
+        返回時序首頁
+      </button>
+    </div>
+  </div>
+
+  <!-- Firebase 10+ 官方模組化 SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, query, where, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app-check.js";
+
+    window.FirebaseSDK = {
+      initializeApp,
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc,
+      updateDoc,
+      deleteDoc,
+      collection,
+      query,
+      where,
+      onSnapshot,
+      writeBatch,
+      getFunctions,
+      httpsCallable,
+      initializeAppCheck,
+      ReCaptchaV3Provider,
+      getAuth,
+      signInWithEmailAndPassword,
+      onAuthStateChanged,
+      signOut
+    };
+  </script>
+
+  <script>
+    /* ========================================================================
+       防右鍵與防檢視原始碼保護 (阻止一般使用者直接右鍵或快捷鍵偷看網頁結構)
+       ======================================================================== */
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(e.key)) ||
+        (e.metaKey && e.altKey && ['I', 'i', 'J', 'j', 'C', 'c', 'U', 'u'].includes(e.key)) ||
+        ((e.ctrlKey || e.metaKey) && ['U', 'u', 'S', 's'].includes(e.key))
+      ) {
+        e.preventDefault();
+        return false;
+      }
+    });
+
+    /* ========================================================================
+       Firebase 專案設定常數 (部署至 GitHub Pages 時填入您的 Firebase Config)
+       * 注意：Firebase Web API Key 僅用於識別專案，真正的讀寫權限由 Firestore Rules 強制把關！
+       ======================================================================== */
+    const firebaseConfig = {
+      apiKey: "AIzaSyCqW8Q7yZ5nhsX58ZwBeQ994ZU_75TVU6Q",
+      authDomain: "wandoor2027.firebaseapp.com",
+      projectId: "wandoor2027",
+      storageBucket: "wandoor2027.firebasestorage.app",
+      messagingSenderId: "474437583782",
+      appId: "1:474437583782:web:9443c233248199c0a20567"
+    };
+
+    const isFirebaseConfigured = Boolean(
+      firebaseConfig.apiKey &&
+      !firebaseConfig.apiKey.includes('【請替換') &&
+      firebaseConfig.apiKey.startsWith('AIzaSy')
+    );
+
+    const DEMO_MODE = !isFirebaseConfigured;
+    const APP_CHECK_SITE_KEY = ''; // 若啟用 reCAPTCHA v3 App Check 可填入 Site Key
+    const EVENT_YEAR = 2027;
+    const FAV_COOKIE_NAME = 'kk_favorites_v4';
+    const ALLOWED_POST_HOSTS = ['threads.net', 'threads.com', 'instagram.com', 'x.com', 'twitter.com'];
+    const CONCERT_DAYS = ['1/8', '1/9', '1/10'];
+
+    // 管理者密碼強度規則：必須同時包含英文字母與數字，且長度至少 8 碼
+    const ADMIN_PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d\W_]{8,}$/;
+
+    let firebaseApp = null;
+    let firestoreDb = null;
+    let cloudFunctions = null;
+    let firebaseAuth = null;
+    let backendReady = false;
+    let authBusy = false;
+    let todayKey = null;
+    let userPickedDate = false;
+    let lastUpdateLabel = '';
+    const unsubs = { admin: null, bookings: null, managers: null, secrets: null, vendors: null };
+    let vendorsAll = false;
+    const VENDOR_SECRET_EMAILS = {};
+
+    const FB = () => window.FirebaseSDK;
+
+    /* ---------- 共用小工具 ---------- */
+    function esc(v) {
+      return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+    function strLen(v) { return Array.from(String(v || '')).length; }
+    function safePostUrl(raw) {
+      try {
+        const u = new URL(String(raw || '').trim());
+        if (u.protocol !== 'https:' || u.username || u.password) return null;
+        const h = u.hostname.toLowerCase().replace(/^www\./, '');
+        if (!ALLOWED_POST_HOSTS.some(d => h === d || h.endsWith('.' + d))) return null;
+        return u.href;
+      } catch (e) { return null; }
+    }
+    const SAFE_IMG_PREFIX = 'data:image/jpeg;base64,';
+    const MAX_IMG_LEN = 90000;
+    // 位置照片只接受本站壓縮產生的 JPEG data URL，拒絕任何外部圖片網址
+    function safeImgSrc(v) {
+      const s = String(v || '');
+      if (!s.startsWith(SAFE_IMG_PREFIX) || s.length > MAX_IMG_LEN) return '';
+      return /^[A-Za-z0-9+\/=]+$/.test(s.slice(SAFE_IMG_PREFIX.length)) ? s : '';
+    }
+    // CSV 欄位跳脫：雙引號加倍，並阻擋以 = + - @ 開頭的公式注入
+    function csvCell(v) {
+      let s = String(v == null ? '' : v);
+      if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+      return '"' + s.replace(/"/g, '""') + '"';
+    }
+    function newVendorId() {
+      if (window.crypto && crypto.randomUUID) return 'v_' + crypto.randomUUID();
+      const b = new Uint8Array(16); crypto.getRandomValues(b);
+      const h = Array.from(b, x => x.toString(16).padStart(2, '0')).join('');
+      return 'v_' + h.slice(0, 8) + '-' + h.slice(8, 12) + '-' + h.slice(12, 16) + '-' + h.slice(16, 20) + '-' + h.slice(20);
+    }
+    function isValidEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+    function isValidAdminPassword(pw) { return ADMIN_PASSWORD_REGEX.test(String(pw || '')); }
+
+    /* ---------- 信箱隱碼保護（防止前端與公開 API 洩漏真實信箱） ---------- */
+    function maskEmail(email) {
+      const s = String(email || '').trim();
+      if (!s || !s.includes('@')) return '***';
+      const [local, domain] = s.split('@');
+      if (local.length <= 2) return `${local.charAt(0)}***@${domain}`;
+      return `${local.slice(0, 2)}***${local.slice(-1)}@${domain}`;
+    }
+
+    const revealedEmails = {};
+    function toggleRevealEmail(key) {
+      revealedEmails[key] = !revealedEmails[key];
+      if (currentRole === 'admin') {
+        renderAdminVendorTable();
+        renderAdminManagersTable();
+      }
+    }
+
+    function fmtHM(ms) {
+      return new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Taipei', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date(ms));
+    }
+    function fmtHMS(ms) {
+      return new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Taipei', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }).format(new Date(ms));
+    }
+    function getTaipeiHM() {
+      const str = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Taipei', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date());
+      const [hour, minute] = str.split(':').map(Number);
+      return { hour, minute, totalMin: hour * 60 + minute };
+    }
+    function deriveTodayKey() {
+      const p = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+      const [, m, d] = p.split('-').map(Number);
+      return `${m}/${d}`;
+    }
+    function deriveDateKeyFromMs(ms) {
+      if (!ms || ms <= 0) return '';
+      const p = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(ms));
+      const [, m, d] = p.split('-').map(Number);
+      return `${m}/${d}`;
+    }
+    function setLastUpdate(text) {
+      const el = document.getElementById('lastUpdateText');
+      if (el) el.innerText = text;
+    }
+    function syncDateSelect() {
+      const realToday = deriveTodayKey();
+      ['simDateSelect', 'adminInnerDateSelect'].forEach(id => {
+        const sel = document.getElementById(id);
+        if (!sel) return;
+        if (realToday && !Array.from(sel.options).some(o => o.value === realToday)) {
+          const opt = document.createElement('option');
+          opt.value = realToday;
+          opt.textContent = `${realToday} (今日實際日期)`;
+          sel.insertBefore(opt, sel.firstChild);
+        }
+        sel.value = currentSimDate;
+      });
+    }
+    const msOf = v => (v && typeof v.toMillis === 'function') ? v.toMillis() : (typeof v === 'number' ? v : 0);
+
+    /* ---------- 每日演出時間與「開唱前半小時」截止設定 ---------- */
+    const NON_CONCERT_DAY_CONFIG = { showTime: '無演出', cutoffLabel: '無限制', cutoffHour: null, cutoffMin: null, showHour: null, showMin: null };
+    const SCHEDULE_CONFIG = {
+      '1/7':  { showTime: '無演出', cutoffLabel: '無限制', cutoffHour: null, cutoffMin: null, showHour: null, showMin: null },
+      '1/8':  { showTime: '19:00', cutoffLabel: '18:30', cutoffHour: 18, cutoffMin: 30, showHour: 19, showMin: 0 },
+      '1/9':  { showTime: '18:00', cutoffLabel: '17:30', cutoffHour: 17, cutoffMin: 30, showHour: 18, showMin: 0 },
+      '1/10': { showTime: '17:00', cutoffLabel: '16:30', cutoffHour: 16, cutoffMin: 30, showHour: 17, showMin: 0 },
+      '1/11': { showTime: '已結束', cutoffLabel: '已結束', cutoffHour: null, cutoffMin: null, showHour: null, showMin: null }
+    };
+
+    /* 全域狀態（自動抓取當下實際日期） */
+    let currentRole = 'guest';        // 'guest' | 'vendor' | 'admin'
+    let currentAdminTier = 'none';    // 'none' | 'admin' | 'super_admin'
+    let currentAdminEmail = '';
+    let currentSimDate = deriveTodayKey();
+    let searchQuery = '';
+    let isLiteMode = false;
+    let isOfflineSim = false;
+    let tempCompressedPhotoDataUrl = '';
+    let isEditingExistingArrival = false;
+    const halfHourAlertShownForDay = {};
+
+    let VENDORS_LIST = [];
+    let ADMIN_MANAGERS_LIST = [];
+    let currentVendor = {
+      uid: null,
+      nickname: '',
+      email: '',
+      items: '',
+      productPost: '',
+      expectedDays: ['1/8'],
+      isApproved: false,
+      status: 'upcoming',
+      locationText: '',
+      locationImg: '',
+      startMs: 0,
+      prepTotalMs: 0,
+      endedMs: 0,
+      quotaUsed: false
+    };
+
+    // 嚴格對應三種角色之可存取頁籤
+    const ROLE_PERMISSIONS = {
+      guest: ['timeline'],
+      vendor: ['timeline', 'vendor'],
+      admin: ['timeline', 'vendor', 'admin']
+    };
+
+    let activeTab = 'timeline';
+
+    /* ---------- 檢查是否已進入「開唱前半小時」管制時段 ---------- */
+    function isWithinHalfHourBeforeShow() {
+      const sch = SCHEDULE_CONFIG[currentSimDate];
+      if (!sch || sch.cutoffHour === null) return false;
+      const realToday = deriveTodayKey();
+      if (realToday && realToday !== currentSimDate) return false;
+
+      const { totalMin } = getTaipeiHM();
+      const cutoffTotal = sch.cutoffHour * 60 + sch.cutoffMin;
+      const showEndTotal = (sch.showHour * 60 + sch.showMin) + 180;
+      return totalMin >= cutoffTotal && totalMin <= showEndTotal;
+    }
+
+    function checkHalfHourShowtimeAlert() {
+      const inCutoff = isWithinHalfHourBeforeShow();
+      const topBanner = document.getElementById('halfHourTopBanner');
+
+      if (inCutoff) {
+        if (topBanner && !halfHourAlertShownForDay[currentSimDate + '_bannerDismissed']) {
+          topBanner.classList.remove('hidden');
+        }
+        if (!halfHourAlertShownForDay[currentSimDate]) {
+          const isActiveVendor = (currentRole === 'vendor' && currentVendor && (currentVendor.status === 'in_use' || currentVendor.status === 'preparing'));
+          const isVisitorOnPage = (currentRole === 'guest');
+          if (isActiveVendor || isVisitorOnPage) {
+            halfHourAlertShownForDay[currentSimDate] = true;
+            openHalfHourModal(isActiveVendor);
+          }
+        }
+      } else {
+        if (topBanner) topBanner.classList.add('hidden');
+      }
+
+      if (activeTab === 'vendor') {
+        updateVendorArrivalButtonLock();
+      }
+    }
+
+    function openHalfHourModal(isVendor) {
+      const modal = document.getElementById('halfHourModal');
+      const sub = document.getElementById('halfHourModalSubtext');
+      if (sub) {
+        sub.innerText = isVendor
+          ? '您目前正在發放／準備應援中，提醒您距離開唱僅剩半小時，請抓緊時間收拾並準備入場！'
+          : '提醒現場各位訪客，距離開唱僅剩半小時，請抓緊時間領取應援並準備入場！';
+      }
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeHalfHourModal() {
+      const modal = document.getElementById('halfHourModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function dismissHalfHourBanner() {
+      halfHourAlertShownForDay[currentSimDate + '_bannerDismissed'] = true;
+      const topBanner = document.getElementById('halfHourTopBanner');
+      if (topBanner) topBanner.classList.add('hidden');
+    }
+
+    function updateVendorArrivalButtonLock() {
+      const btn = document.getElementById('btnOpenArrivalModal');
+      const txt = document.getElementById('btnOpenArrivalText');
+      const hint = document.getElementById('vendorCutoffHint');
+      if (!btn || !txt) return;
+
+      if (isWithinHalfHourBeforeShow()) {
+        btn.disabled = true;
+        btn.className = 'px-5 py-3 rounded-xl bg-slate-200 text-slate-500 font-bold text-xs sm:text-sm cursor-not-allowed inline-flex items-center space-x-2';
+        txt.innerText = '開唱前半小時不開放確認抵達填寫發放';
+        if (hint) {
+          hint.className = 'text-[11px] text-rose-500 font-bold mt-2.5';
+          hint.innerText = '距離開唱僅剩半小時，已停止開放確認抵達與填寫發放位置，請抓緊時間準備入場。';
+        }
+      } else {
+        btn.disabled = false;
+        btn.className = 'px-5 py-3 rounded-xl bg-gradient-to-r from-skyBlue-500 to-skyBlue-600 hover:from-skyBlue-600 text-white font-bold text-xs sm:text-sm shadow-md shadow-skyBlue-500/25 transition inline-flex items-center space-x-2';
+        txt.innerText = '我已抵達場館・填寫發放位置';
+        if (hint) {
+          hint.className = 'text-[11px] text-slate-400 mt-2.5';
+          hint.innerText = '注意：當日開唱前半小時將關閉抵達報位功能。';
+        }
+      }
+    }
+
+    /* ---------- Cookie 與最愛清單管理 ---------- */
+    let favoriteUids = [];
+    let favFilterMode = 'all';
+    const notifiedSessions = {};
+
+    function loadFavoritesFromCookie() {
+      try {
+        const match = document.cookie.split('; ').find(row => row.startsWith(FAV_COOKIE_NAME + '='));
+        if (match) {
+          const val = decodeURIComponent(match.split('=')[1]);
+          const parsed = JSON.parse(val);
+          if (Array.isArray(parsed)) {
+            favoriteUids = parsed;
+            updateFavCountUI();
+            return;
+          }
+        }
+      } catch (e) {}
+      try {
+        const ls = localStorage.getItem(FAV_COOKIE_NAME);
+        if (ls) {
+          const parsed = JSON.parse(ls);
+          if (Array.isArray(parsed)) favoriteUids = parsed;
+        }
+      } catch (e) {}
+      updateFavCountUI();
+    }
+
+    function saveFavoritesToCookie() {
+      const jsonStr = JSON.stringify(favoriteUids);
+      const maxAge = 60 * 60 * 24 * 30;
+      try {
+        document.cookie = `${FAV_COOKIE_NAME}=${encodeURIComponent(jsonStr)}; path=/; max-age=${maxAge}; SameSite=Lax`;
+      } catch (e) {}
+      try {
+        localStorage.setItem(FAV_COOKIE_NAME, jsonStr);
+      } catch (e) {}
+      updateFavCountUI();
+    }
+
+    function isFav(uid) {
+      return favoriteUids.includes(uid);
+    }
+
+    function toggleFavorite(uid, vendorName, btnEl) {
+      if (!uid) return;
+      const idx = favoriteUids.indexOf(uid);
+      if (idx >= 0) {
+        favoriteUids.splice(idx, 1);
+        showToast(`已將【${vendorName || '攤位'}】從最愛移除`);
+      } else {
+        favoriteUids.push(uid);
+        if (btnEl) {
+          btnEl.classList.remove('heart-pop');
+          void btnEl.offsetWidth;
+          btnEl.classList.add('heart-pop');
+        }
+        showToast(`❤️ 已將【${vendorName || '攤位'}】加入最愛！將於擺攤前 5 分鐘提醒您`);
+        if ('Notification' in window && Notification.permission === 'default') {
+          Notification.requestPermission().then(updateNotifPermButtonUI);
+        }
+      }
+      saveFavoritesToCookie();
+      renderTimeline();
+      checkFiveMinNotifications();
+    }
+
+    function updateFavCountUI() {
+      const el = document.getElementById('favCountBadge');
+      if (el) el.innerText = favoriteUids.length;
+    }
+
+    function setFavFilter(mode) {
+      favFilterMode = mode === 'fav' ? 'fav' : 'all';
+      const btnAll = document.getElementById('btnFilterAll');
+      const btnFav = document.getElementById('btnFilterFav');
+      if (favFilterMode === 'all') {
+        if (btnAll) btnAll.className = 'px-3 py-1.5 rounded-lg bg-skyBlue-500 text-white font-bold transition text-xs';
+        if (btnFav) btnFav.className = 'px-3 py-1.5 rounded-lg text-slate-600 hover:text-rose-500 font-medium transition text-xs flex items-center space-x-1';
+      } else {
+        if (btnFav) btnFav.className = 'px-3 py-1.5 rounded-lg bg-rose-500 text-white font-bold transition text-xs flex items-center space-x-1';
+        if (btnAll) btnAll.className = 'px-3 py-1.5 rounded-lg text-slate-600 hover:text-skyBlue-600 font-medium transition text-xs';
+      }
+      renderTimeline();
+    }
+
+    /* ---------- 擺攤前 5 分鐘推播通知（Web Notification + 置頂強提醒 + 提示音） ---------- */
+    function updateNotifPermButtonUI() {
+      const lbl = document.getElementById('notifPermLabel');
+      const btn = document.getElementById('btnNotifPerm');
+      if (!lbl || !btn) return;
+      if (!('Notification' in window)) {
+        lbl.innerText = '網頁內建提醒已啟用';
+        return;
+      }
+      if (Notification.permission === 'granted') {
+        lbl.innerText = '系統推播已開啟';
+        btn.className = 'px-2 py-0.5 rounded-md bg-rose-50 border border-rose-200 text-rose-600 font-bold transition flex items-center space-x-1 whitespace-nowrap';
+      } else if (Notification.permission === 'denied') {
+        lbl.innerText = '使用網頁內置頂提醒';
+      } else {
+        lbl.innerText = '開啟推播提醒';
+      }
+    }
+
+    function requestNotifPermissionManual() {
+      if (!('Notification' in window)) {
+        showToast('您的瀏覽器將使用「網頁內置頂彈窗與提示音」進行擺攤前 5 分鐘提醒！');
+        return;
+      }
+      if (Notification.permission === 'granted') {
+        showToast('系統推播通知已經開啟！當最愛攤位距離開攤剩 5 分鐘時會立即通知您。');
+        return;
+      }
+      Notification.requestPermission().then(perm => {
+        updateNotifPermButtonUI();
+        if (perm === 'granted') {
+          showToast('已成功開啟系統推播提醒！');
+        } else {
+          showToast('未授權系統通知，將自動使用「網頁置頂強提醒彈窗」通知您！');
+        }
+      });
+    }
+
+    function playNotificationChime() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const notes = [587.33, 880];
+        notes.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.16);
+          gain.gain.setValueAtTime(0.18, ctx.currentTime + idx * 0.16);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.16 + 0.35);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + idx * 0.16);
+          osc.stop(ctx.currentTime + idx * 0.16 + 0.36);
+        });
+      } catch (e) {}
+    }
+
+    function triggerFiveMinAlert(item) {
+      playNotificationChime();
+
+      const bar = document.getElementById('fiveMinAlertBar');
+      const vName = document.getElementById('alertVendorName');
+      const locTxt = document.getElementById('alertLocationText');
+      const jumpBtn = document.getElementById('alertJumpBtn');
+
+      const remainMin = Math.max(1, Math.ceil((item.startMs - Date.now()) / 60000));
+      if (vName) vName.innerText = item.nickname || item.owner;
+      if (locTxt) locTxt.innerText = `將於約 ${remainMin} 分鐘後開始發放「${item.items}」！地點：${item.locationText || '請見卡片說明'}`;
+      if (jumpBtn) {
+        jumpBtn.onclick = () => {
+          dismissFiveMinAlert();
+          selectTab('timeline');
+          setTimeout(() => {
+            const cardEl = document.getElementById(`vendor-card-${item.uid}`);
+            if (cardEl) {
+              cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              cardEl.classList.add('card-flash');
+              setTimeout(() => cardEl.classList.remove('card-flash'), 2500);
+            }
+            if (item.hasPhoto && !safeImgSrc(item.locationImg)) {
+              loadAndShowVendorPhoto(item.uid, item.nickname + ' - ' + (item.locationText || '發放位置'));
+            }
+          }, 120);
+        };
+      }
+      if (bar) bar.classList.remove('hidden');
+
+      if ('Notification' in window && Notification.permission === 'granted') {
+        try {
+          const n = new Notification(`🔔 ${item.nickname || item.owner} 將於 ${remainMin} 分鐘後開始發放！`, {
+            body: `應援物：${item.items}\n發放位置：${item.locationText || '點擊查看詳情'}`,
+            tag: `kk-fav-${item.sessionId || item.uid}`
+          });
+          n.onclick = () => {
+            window.focus();
+            if (jumpBtn) jumpBtn.click();
+            n.close();
+          };
+        } catch (e) {}
+      }
+    }
+
+    function dismissFiveMinAlert() {
+      const bar = document.getElementById('fiveMinAlertBar');
+      if (bar) bar.classList.add('hidden');
+    }
+
+    function checkFiveMinNotifications() {
+      const now = Date.now();
+      VENDORS_LIST.forEach(v => {
+        if (!v.isApproved) return;
+        if (!isFav(v.uid)) return;
+        if (v.status === 'preparing' && v.startMs) {
+          const remainMs = v.startMs - now;
+          const sKey = `${v.uid}_${v.startMs}`;
+          if (remainMs <= 5 * 60 * 1000 && remainMs > -30000 && !notifiedSessions[sKey]) {
+            notifiedSessions[sKey] = true;
+            triggerFiveMinAlert(v);
+          }
+        }
+      });
+    }
+
+    /* ---------- 後端呼叫與雲端同步 ---------- */
+    async function callBackend(name, data) {
+      if (!backendReady || !cloudFunctions) throw new Error('雲端連線尚未就緒，請稍後再試');
+      const res = await FB().httpsCallable(cloudFunctions, name)(data || {});
+      return res.data;
+    }
+    function backendErrMsg(e) {
+      const m = (e && e.message) ? String(e.message) : '';
+      return (m && !/^internal$/i.test(m)) ? m : '操作失敗，請稍後再試';
+    }
+    async function runBackend(name, data, okMsg) {
+      try { await callBackend(name, data); if (okMsg) showToast(okMsg); return true; }
+      catch (e) { showToast(backendErrMsg(e)); return false; }
+    }
+
+    function showBackendDown(msg) {
+      backendReady = false;
+      setOfflineState(true);
+      showToast(msg || '雲端連線異常，此畫面僅供參考');
+    }
+
+    function initFirebaseLive() {
+      if (DEMO_MODE) {
+        setLastUpdate(fmtHMS(Date.now()));
+        return;
+      }
+      if (!window.FirebaseSDK) { showBackendDown('Firebase 元件載入失敗'); return; }
+      try {
+        firebaseApp = FB().initializeApp(firebaseConfig);
+        if (APP_CHECK_SITE_KEY) {
+          FB().initializeAppCheck(firebaseApp, { provider: new (FB().ReCaptchaV3Provider)(APP_CHECK_SITE_KEY), isTokenAutoRefreshEnabled: true });
+        }
+        firestoreDb = FB().getFirestore(firebaseApp);
+        cloudFunctions = FB().getFunctions(firebaseApp, 'asia-east1');
+        firebaseAuth = FB().getAuth(firebaseApp);
+        backendReady = true;
+        listenToPublicVendors();
+        listenToAuthClaims();
+      } catch (e) {
+        showBackendDown('雲端初始化失敗');
+      }
+    }
+
+    /* ---------- Spark 免費版零綁卡核心：單一聚合文件 + 2 分鐘本地快取 + 照片按需讀取 ---------- */
+    const PUBLIC_LIVE_CACHE_KEY = 'kk_market_live_cache_v47';
+    const PHOTO_SESSION_CACHE_KEY = 'kk_vendor_photos_v47';
+    const PUBLIC_CACHE_TTL_MS = 120 * 1000;      // 重新整理冷卻快取：2 分鐘內重整網頁 0 次資料庫讀取
+    const PUBLIC_AUTO_POLL_MS = 150 * 1000;      // 前台自動同步週期：2.5 分鐘僅消耗 1 次文件讀取
+    const MANUAL_SYNC_COOLDOWN_MS = 30 * 1000;   // 手動同步按鈕冷卻：30 秒
+    let lastPublicFetchMs = 0;
+    let lastManualSyncMs = 0;
+    let PUBLIC_LIVE_MAP = {};
+    let PHOTO_CACHE = {};
+
+    try {
+      const savedPhotos = sessionStorage.getItem(PHOTO_SESSION_CACHE_KEY);
+      if (savedPhotos) PHOTO_CACHE = JSON.parse(savedPhotos) || {};
+    } catch (e) {}
+
+    function savePhotoToSessionCache(uid, dataUrl) {
+      if (!uid) return;
+      if (dataUrl) PHOTO_CACHE[uid] = dataUrl;
+      else delete PHOTO_CACHE[uid];
+      try { sessionStorage.setItem(PHOTO_SESSION_CACHE_KEY, JSON.stringify(PHOTO_CACHE)); } catch (e) {}
+    }
+
+    function buildPublicSlotPayload(v) {
+      return {
+        uid: v.uid,
+        nickname: v.nickname || '(未命名)',
+        items: v.items || '應援周邊',
+        productPost: safePostUrl(v.productPost) || '',
+        expectedDays: Array.isArray(v.expectedDays) ? v.expectedDays : ['1/8'],
+        isApproved: true,
+        status: ['upcoming', 'preparing', 'in_use', 'ended'].includes(v.status) ? v.status : 'upcoming',
+        locationText: v.locationText || '',
+        hasPhoto: Boolean(v.hasPhoto || v.locationImg || PHOTO_CACHE[v.uid]),
+        startMs: msOf(v.start_at || v.startMs),
+        prepTotalMs: v.prepTotalMs || 10 * 60000,
+        endedMs: msOf(v.ended_at || v.endedMs),
+        quotaUsedToday: Boolean(v.quotaUsedToday || v.quotaUsed)
+      };
+    }
+
+    function mapVendorDoc(id, rawDoc) {
+      const liveOverride = PUBLIC_LIVE_MAP[id] || {};
+      const v = { ...rawDoc, ...liveOverride };
+      const secretEmail = VENDOR_SECRET_EMAILS[id] || rawDoc.email || v.email || '';
+      const rawStartMs = msOf(v.start_at || v.startMs);
+      const rawEndedMs = msOf(v.ended_at || v.endedMs);
+      const lastActiveDate = deriveDateKeyFromMs(rawStartMs || rawEndedMs);
+
+      // 跨過台灣時間午夜 00:00 後（最後報位日不等於當前檢視日），自動重置為未到場與可用額度 1 次
+      const isFromToday = (lastActiveDate === currentSimDate);
+      let effectiveStatus = isFromToday && ['upcoming', 'preparing', 'in_use', 'ended'].includes(v.status)
+        ? v.status
+        : 'upcoming';
+
+      // 若準備時間已屆滿且尚未結束擺攤，直接視為發放中（省去倒數結束時的額外雲端寫入）
+      if (effectiveStatus === 'preparing' && rawStartMs > 0 && Date.now() >= rawStartMs) {
+        effectiveStatus = 'in_use';
+      }
+
+      const cachedImg = safeImgSrc(PHOTO_CACHE[id] || v.locationImg || '');
+      const hasPhotoFlag = isFromToday ? Boolean(v.hasPhoto || cachedImg) : false;
+
+      return {
+        uid: id,
+        nickname: v.nickname || rawDoc.nickname || '(未命名)',
+        email: secretEmail,
+        emailMasked: secretEmail ? maskEmail(secretEmail) : '***',
+        items: v.items || rawDoc.items || '應援周邊',
+        productPost: safePostUrl(v.productPost || rawDoc.productPost) ? (v.productPost || rawDoc.productPost) : '',
+        expectedDays: Array.isArray(v.expectedDays) ? v.expectedDays : (Array.isArray(rawDoc.expectedDays) ? rawDoc.expectedDays : ['1/8']),
+        isApproved: v.isApproved !== undefined ? !!v.isApproved : !!rawDoc.isApproved,
+        status: effectiveStatus,
+        locationText: isFromToday ? (v.locationText || '') : '',
+        hasPhoto: hasPhotoFlag,
+        locationImg: isFromToday ? cachedImg : '',
+        startMs: isFromToday ? rawStartMs : 0,
+        prepTotalMs: v.prepTotalMs || 10 * 60000,
+        endedMs: isFromToday ? rawEndedMs : 0,
+        quotaUsed: isFromToday ? !!(v.quotaUsedToday || v.quotaUsed) : false,
+        _raw: v
+      };
+    }
+
+    function remapAllVendorsForDate() {
+      VENDORS_LIST = VENDORS_LIST.map(v => v._raw ? mapVendorDoc(v.uid, v._raw) : v);
+      if (currentVendor && currentVendor.uid) {
+        const me = VENDORS_LIST.find(x => x.uid === currentVendor.uid);
+        if (me) currentVendor = me;
+      }
+    }
+
+    function applyPublicLiveMapToUI(vendorsMap, tsMs) {
+      PUBLIC_LIVE_MAP = vendorsMap || {};
+      if (!vendorsAll) {
+        VENDORS_LIST = Object.keys(PUBLIC_LIVE_MAP).map(uid => mapVendorDoc(uid, PUBLIC_LIVE_MAP[uid]));
+      } else {
+        VENDORS_LIST = VENDORS_LIST.map(v => mapVendorDoc(v.uid, v._raw || v));
+      }
+      if (currentVendor && currentVendor.uid) {
+        const me = VENDORS_LIST.find(x => x.uid === currentVendor.uid);
+        if (me) currentVendor = me;
+      }
+      lastUpdateLabel = fmtHMS(tsMs || Date.now());
+      setLastUpdate(lastUpdateLabel);
+      renderTimeline();
+      updateVendorUI();
+      if (currentRole === 'admin') renderAdminVendorTable();
+      checkFiveMinNotifications();
+    }
+
+    function savePublicLiveCache(vendorsMap) {
+      const now = Date.now();
+      lastPublicFetchMs = now;
+      try {
+        localStorage.setItem(PUBLIC_LIVE_CACHE_KEY, JSON.stringify({ ts: now, vendors: vendorsMap || {} }));
+      } catch (e) {}
+    }
+
+    async function fetchPublicMarketLive(force = false) {
+      if (DEMO_MODE || !backendReady) return;
+      const now = Date.now();
+
+      // 優先讀取本地快取（2 分鐘內重整網頁不消耗任何 Firestore 讀取次數）
+      if (!force) {
+        try {
+          const raw = localStorage.getItem(PUBLIC_LIVE_CACHE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && parsed.vendors && typeof parsed.vendors === 'object') {
+              applyPublicLiveMapToUI(parsed.vendors, parsed.ts);
+              if (now - (parsed.ts || 0) < PUBLIC_CACHE_TTL_MS) {
+                lastPublicFetchMs = parsed.ts;
+                return;
+              }
+            }
+          }
+        } catch (e) {}
+      }
+
+      try {
+        // 全場 150 攤位濃縮為單一文件讀取（僅消耗 1 次 Read！）
+        const snap = await FB().getDoc(FB().doc(firestoreDb, 'market_public', 'live'));
+        setOfflineState(false);
+        const vendorsMap = (snap.exists() && snap.data() && snap.data().vendors) ? snap.data().vendors : {};
+        savePublicLiveCache(vendorsMap);
+        applyPublicLiveMapToUI(vendorsMap, Date.now());
+      } catch (e) {
+        if (!navigator.onLine) setOfflineState(true);
+      }
+    }
+
+    async function manualRefreshPublicLive() {
+      if (DEMO_MODE) {
+        setLastUpdate(fmtHMS(Date.now()));
+        showToast('已更新時序畫面');
+        return;
+      }
+      const now = Date.now();
+      const remainSec = Math.ceil((MANUAL_SYNC_COOLDOWN_MS - (now - lastManualSyncMs)) / 1000);
+      if (now - lastManualSyncMs < MANUAL_SYNC_COOLDOWN_MS) {
+        showToast(`目前已是最新狀態，請於 ${remainSec} 秒後再手動同步`);
+        return;
+      }
+      lastManualSyncMs = now;
+      await fetchPublicMarketLive(true);
+      showToast('已同步全場最新應援時序！');
+    }
+
+    async function loadAndShowVendorPhoto(uid, caption) {
+      if (!uid) return;
+      const cached = safeImgSrc(PHOTO_CACHE[uid]);
+      if (cached) {
+        openImageLightbox(cached, caption);
+        return;
+      }
+      if (DEMO_MODE || !backendReady) {
+        showToast('目前無照片資料');
+        return;
+      }
+      showToast('正在載入位置照片…');
+      try {
+        const pSnap = await FB().getDoc(FB().doc(firestoreDb, 'vendor_photos', uid));
+        if (pSnap.exists() && pSnap.data() && safeImgSrc(pSnap.data().locationImg)) {
+          const imgData = safeImgSrc(pSnap.data().locationImg);
+          savePhotoToSessionCache(uid, imgData);
+          const target = VENDORS_LIST.find(x => x.uid === uid);
+          if (target) target.locationImg = imgData;
+          if (currentVendor && currentVendor.uid === uid) currentVendor.locationImg = imgData;
+          renderTimeline();
+          updateVendorUI();
+          openImageLightbox(imgData, caption);
+        } else {
+          showToast('攤主尚未上傳或已移除照片');
+        }
+      } catch (e) {
+        showToast('照片載入失敗，請稍後再試');
+      }
+    }
+
+    function subscribeVendors(all) {
+      stopListener('vendors');
+      vendorsAll = !!all;
+      if (!all) {
+        // 訪客與一般攤主：使用單一聚合文件讀取（不建立 150 筆即時監聽，守住每日 5 萬次免費讀取）
+        fetchPublicMarketLive(false);
+        return;
+      }
+      // 僅管理者登入審核控台時，才監聽 vendors_private 申請名冊並自動同步至聚合文件
+      fetchPublicMarketLive(true);
+      const col = FB().collection(firestoreDb, 'vendors_private');
+      unsubs.vendors = FB().onSnapshot(col, async (qs) => {
+        setOfflineState(qs.metadata.fromCache && !navigator.onLine);
+        VENDORS_LIST = qs.docs.map(d => mapVendorDoc(d.id, d.data()));
+        if (currentVendor && currentVendor.uid) {
+          const me = VENDORS_LIST.find(x => x.uid === currentVendor.uid);
+          if (me) currentVendor = me;
+        }
+        // 自動檢查是否有已核准攤位尚未寫入 market_public/live 聚合文件
+        const missingApproved = {};
+        let hasMissing = false;
+        VENDORS_LIST.forEach(v => {
+          if (v.isApproved && !PUBLIC_LIVE_MAP[v.uid]) {
+            missingApproved[v.uid] = buildPublicSlotPayload(v);
+            PUBLIC_LIVE_MAP[v.uid] = missingApproved[v.uid];
+            hasMissing = true;
+          }
+        });
+        if (hasMissing && currentRole === 'admin') {
+          try {
+            await FB().setDoc(FB().doc(firestoreDb, 'market_public', 'live'), { vendors: missingApproved }, { merge: true });
+            savePublicLiveCache(PUBLIC_LIVE_MAP);
+          } catch (e) {}
+        }
+        lastUpdateLabel = fmtHMS(Date.now());
+        setLastUpdate(lastUpdateLabel);
+        renderTimeline();
+        updateVendorUI();
+        if (currentRole === 'admin') renderAdminVendorTable();
+        checkFiveMinNotifications();
+      }, () => setOfflineState(true));
+    }
+
+    function listenToPublicVendors() { subscribeVendors(false); }
+
+    function startAdminSecretEmailsListener() {
+      stopListener('secrets');
+      if (DEMO_MODE || !backendReady) return;
+      const col = FB().collection(firestoreDb, 'vendors_secret');
+      unsubs.secrets = FB().onSnapshot(col, (qs) => {
+        qs.docs.forEach(d => {
+          const data = d.data();
+          if (data && data.email) VENDOR_SECRET_EMAILS[d.id] = data.email;
+        });
+        VENDORS_LIST.forEach(v => {
+          const sec = VENDOR_SECRET_EMAILS[v.uid];
+          if (sec) {
+            v.email = sec;
+            v.emailMasked = maskEmail(sec);
+          }
+        });
+        if (currentRole === 'admin') renderAdminVendorTable();
+      }, () => {});
+    }
+
+    function listenToAuthClaims() {
+      FB().onAuthStateChanged(firebaseAuth, async (user) => {
+        if (authBusy) return;
+        await applyUserRole(user, null);
+      });
+    }
+
+    function stopListener(k) {
+      if (unsubs[k]) { try { unsubs[k](); } catch (e) {} unsubs[k] = null; }
+    }
+    function teardownRoleListeners() {
+      stopListener('admin');
+      stopListener('bookings');
+      stopListener('managers');
+      stopListener('secrets');
+      Object.keys(VENDOR_SECRET_EMAILS).forEach(k => delete VENDOR_SECRET_EMAILS[k]);
+      if (vendorsAll && backendReady) subscribeVendors(false);
+    }
+
+    async function applyUserRole(user, intent) {
+      if (!user) {
+        teardownRoleListeners();
+        currentAdminTier = 'none';
+        currentAdminEmail = '';
+        setAppRole('guest');
+        return;
+      }
+
+      let networkErr = false;
+
+      // 1. 管理者：以 Firebase Auth UID 比對 Firestore `admins/{uid}`（由最高管理者於 Console 手動建立）
+      try {
+        const adminSnap = await FB().getDoc(FB().doc(firestoreDb, 'admins', user.uid));
+        if (adminSnap.exists()) {
+          const admData = adminSnap.data();
+          currentAdminTier = admData.role === 'super_admin' ? 'super_admin' : 'admin';
+          currentAdminEmail = (user.email || '').toLowerCase();
+          setAppRole('admin', admData.name || (user.email ? maskEmail(user.email) : '管理者'));
+          subscribeVendors(true);
+          startAdminManagersListener();
+          startAdminSecretEmailsListener();
+          return;
+        }
+      } catch (e) {
+        networkErr = true;
+      }
+
+      // 2. 攤主：透過免寄信派生金鑰登入，且管理者核准時已建立 vendor_links/{email} 綁定
+      if (user.email) {
+        try {
+          const linkSnap = await FB().getDoc(FB().doc(firestoreDb, 'vendor_links', user.email.toLowerCase()));
+          if (linkSnap.exists()) {
+            const vid = linkSnap.data().vendorId;
+            if (!PUBLIC_LIVE_MAP[vid]) {
+              await fetchPublicMarketLive(true);
+            }
+            let baseData = PUBLIC_LIVE_MAP[vid] || null;
+            if (!baseData) {
+              const vSnap = await FB().getDoc(FB().doc(firestoreDb, 'vendors_private', vid));
+              if (vSnap.exists() && vSnap.data().isApproved === true) {
+                baseData = vSnap.data();
+              }
+            }
+            if (baseData && baseData.isApproved !== false) {
+              currentVendor = mapVendorDoc(vid, baseData);
+              if (currentVendor.hasPhoto && !safeImgSrc(currentVendor.locationImg)) {
+                try {
+                  const pSnap = await FB().getDoc(FB().doc(firestoreDb, 'vendor_photos', vid));
+                  if (pSnap.exists() && pSnap.data() && safeImgSrc(pSnap.data().locationImg)) {
+                    const imgData = safeImgSrc(pSnap.data().locationImg);
+                    savePhotoToSessionCache(vid, imgData);
+                    currentVendor.locationImg = imgData;
+                  }
+                } catch (pe) {}
+              }
+              setAppRole('vendor', currentVendor.nickname);
+              return;
+            }
+          }
+        } catch (e) {
+          networkErr = true;
+        }
+      }
+
+      // 若因場館瞬間斷網導致無法查詢權限，保留當前 Auth 狀態不強制 signOut
+      if (networkErr && !intent) {
+        setOfflineState(true);
+        return;
+      }
+
+      teardownRoleListeners();
+      currentAdminTier = 'none';
+      currentAdminEmail = '';
+      setAppRole('guest');
+      if (intent === 'admin') showToast('此帳號不具備管理者權限');
+      if (intent === 'vendor') openPendingModal({ nickname: '' });
+      try { await FB().signOut(firebaseAuth); } catch (e) {}
+    }
+
+    function startAdminManagersListener() {
+      stopListener('managers');
+      if (currentAdminTier !== 'super_admin' || DEMO_MODE || !backendReady) return;
+      const col = FB().collection(firestoreDb, 'admins');
+      unsubs.managers = FB().onSnapshot(col, (qs) => {
+        ADMIN_MANAGERS_LIST = qs.docs.map(d => ({
+          email: d.data().email || d.id,
+          name: d.data().name || '管理者',
+          role: d.data().role || 'admin'
+        }));
+        renderAdminManagersTable();
+      }, () => {});
+    }
+
+    /* ---------- 角色權限與頁籤切換限制 ---------- */
+    function setAppRole(role, displayName = '') {
+      currentRole = role;
+
+      const navVendor = document.getElementById('nav-btn-vendor');
+      const navAdmin = document.getElementById('nav-btn-admin');
+      const btnLogin = document.getElementById('btnOpenLogin');
+      const userBox = document.getElementById('loggedInUserBox');
+      const roleLabel = document.getElementById('userRoleLabel');
+      const roleIcon = document.getElementById('userRoleIcon');
+      const adminDateWrap = document.getElementById('adminDateSelectorWrap');
+      const superPanel = document.getElementById('superAdminManagerPanel');
+      const tierBadge = document.getElementById('adminTierBadge');
+
+      if (!navVendor || !navAdmin || !btnLogin || !userBox) return;
+
+      if (role === 'guest') {
+        navVendor.classList.add('hidden');
+        navVendor.classList.remove('flex');
+        navAdmin.classList.add('hidden');
+        navAdmin.classList.remove('flex');
+        btnLogin.classList.remove('hidden');
+        userBox.classList.add('hidden');
+        if (adminDateWrap) {
+          adminDateWrap.classList.add('hidden');
+          adminDateWrap.classList.remove('flex');
+        }
+        if (superPanel) superPanel.classList.add('hidden');
+      } else if (role === 'vendor') {
+        navVendor.classList.remove('hidden');
+        navVendor.classList.add('flex');
+        navAdmin.classList.add('hidden');
+        navAdmin.classList.remove('flex');
+        btnLogin.classList.add('hidden');
+        userBox.classList.remove('hidden');
+        if (roleIcon) roleIcon.className = 'fa-solid fa-store text-skyBlue-500 text-sm';
+        if (roleLabel) roleLabel.innerText = `攤主：${displayName || currentVendor.nickname}`;
+        if (adminDateWrap) {
+          adminDateWrap.classList.add('hidden');
+          adminDateWrap.classList.remove('flex');
+        }
+        if (superPanel) superPanel.classList.add('hidden');
+      } else if (role === 'admin') {
+        navVendor.classList.remove('hidden');
+        navVendor.classList.add('flex');
+        navAdmin.classList.remove('hidden');
+        navAdmin.classList.add('flex');
+        btnLogin.classList.add('hidden');
+        userBox.classList.remove('hidden');
+        if (roleIcon) roleIcon.className = 'fa-solid fa-shield-halved text-rose-500 text-sm';
+        const isSuper = (currentAdminTier === 'super_admin');
+        if (roleLabel) roleLabel.innerText = isSuper ? `最高權限：${displayName || '管理員'}` : `子管理者：${displayName || '管理員'}`;
+        if (tierBadge) {
+          tierBadge.innerText = isSuper ? '最高權限 (Super Admin)' : '一般子管理者';
+          tierBadge.className = isSuper
+            ? 'text-[10px] font-black px-2 py-0.5 rounded-full bg-rose-600 text-white'
+            : 'text-[10px] font-black px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200';
+        }
+        if (adminDateWrap) {
+          adminDateWrap.classList.remove('hidden');
+          adminDateWrap.classList.add('flex');
+        }
+        if (superPanel) {
+          if (isSuper) superPanel.classList.remove('hidden');
+          else superPanel.classList.add('hidden');
+        }
+      }
+
+      const allowedTabs = ROLE_PERMISSIONS[role] || ['timeline'];
+      if (!allowedTabs.includes(activeTab)) {
+        selectTab('timeline');
+      } else {
+        selectTab(activeTab);
+      }
+    }
+
+    function selectTab(tab) {
+      const allowedTabs = ROLE_PERMISSIONS[currentRole] || ['timeline'];
+      if (!allowedTabs.includes(tab)) {
+        showToast('權限不足，無法造訪該頁面');
+        tab = 'timeline';
+      }
+      activeTab = tab;
+
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.nav-item').forEach(el => {
+        el.className = el.className.replace('text-skyBlue-500 font-bold scale-105', 'text-slate-400 hover:text-slate-600');
+        if (!el.className.includes('text-slate-400')) el.classList.add('text-slate-400');
+      });
+
+      const target = document.getElementById(`tab-${tab}`);
+      const btn = document.getElementById(`nav-btn-${tab}`);
+
+      if (target) {
+        target.classList.remove('hidden');
+        if (tab === 'admin') {
+          const forbidden = document.getElementById('admin-forbidden-banner');
+          const content = document.getElementById('admin-main-content');
+          if (currentRole !== 'admin') {
+            if (forbidden) forbidden.classList.remove('hidden');
+            if (content) content.classList.add('hidden');
+          } else {
+            if (forbidden) forbidden.classList.add('hidden');
+            if (content) content.classList.remove('hidden');
+            renderAdminVendorTable();
+            renderAdminManagersTable();
+          }
+        } else if (tab === 'vendor') {
+          updateVendorUI();
+        } else if (tab === 'timeline') {
+          renderTimeline();
+        }
+      }
+
+      if (btn) {
+        btn.classList.remove('text-slate-400', 'hover:text-slate-600');
+        btn.classList.add('text-skyBlue-500', 'font-bold', 'scale-105');
+      }
+    }
+
+    /* ---------- 登入與事前申請彈窗 ---------- */
+    function openAuthModal() {
+      const modal = document.getElementById('authModal');
+      if (!modal) return;
+      modal.classList.remove('hidden');
+      setTimeout(() => modal.classList.remove('opacity-0'), 10);
+      switchAuthTab('vendor');
+    }
+
+    function closeAuthModal() {
+      const modal = document.getElementById('authModal');
+      if (!modal) return;
+      modal.classList.add('opacity-0');
+      setTimeout(() => modal.classList.add('hidden'), 200);
+    }
+
+    function switchAuthTab(type) {
+      const btnAdmin = document.getElementById('tabAuthAdmin');
+      const btnVendor = document.getElementById('tabAuthVendor');
+      const blockAdmin = document.getElementById('authAdminBlock');
+      const blockVendor = document.getElementById('authVendorBlock');
+      if (!btnAdmin || !btnVendor || !blockAdmin || !blockVendor) return;
+
+      if (type === 'admin') {
+        btnAdmin.className = 'flex-1 py-2 rounded-xl bg-white text-rose-600 shadow-sm transition font-bold';
+        btnVendor.className = 'flex-1 py-2 rounded-xl text-slate-600 hover:text-skyBlue-600 transition font-bold';
+        blockAdmin.classList.remove('hidden');
+        blockVendor.classList.add('hidden');
+      } else {
+        btnVendor.className = 'flex-1 py-2 rounded-xl bg-white text-skyBlue-600 shadow-sm transition font-bold';
+        btnAdmin.className = 'flex-1 py-2 rounded-xl text-slate-600 hover:text-rose-600 transition font-bold';
+        blockVendor.classList.remove('hidden');
+        blockAdmin.classList.add('hidden');
+        switchVendorSubTab('login');
+      }
+    }
+
+    function switchVendorSubTab(sub) {
+      const btnLogin = document.getElementById('subVendorLogin');
+      const btnApply = document.getElementById('subVendorApply');
+      const pLogin = document.getElementById('vendorSubLoginPanel');
+      const pApply = document.getElementById('vendorSubApplyPanel');
+      if (!btnLogin || !btnApply || !pLogin || !pApply) return;
+
+      if (sub === 'login') {
+        btnLogin.className = 'font-bold text-skyBlue-600 border-b-2 border-skyBlue-500 pb-1 mr-4 text-xs';
+        btnApply.className = 'font-medium text-slate-400 hover:text-slate-600 pb-1 text-xs';
+        pLogin.classList.remove('hidden');
+        pApply.classList.add('hidden');
+      } else {
+        btnApply.className = 'font-bold text-skyBlue-600 border-b-2 border-skyBlue-500 pb-1 text-xs';
+        btnLogin.className = 'font-medium text-slate-400 hover:text-slate-600 pb-1 mr-4 text-xs';
+        pApply.classList.remove('hidden');
+        pLogin.classList.add('hidden');
+      }
+    }
+
+    /* ---------- 管理者登入（強制驗證英文+數字最少 8 碼 & Firebase Auth 雲端驗證） ---------- */
+    async function handleAdminLogin() {
+      const emailInput = document.getElementById('adminLoginEmail');
+      const passInput = document.getElementById('adminLoginPass');
+      const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
+      const pass = passInput ? passInput.value : '';
+
+      if (!isValidEmail(email)) {
+        showToast('請輸入正確的管理者 Email 帳號');
+        return;
+      }
+      if (!isValidAdminPassword(pass)) {
+        showToast('管理者密碼格式不符：務必包含「英文＋數字」且最少 8 碼！');
+        return;
+      }
+
+      if (!DEMO_MODE) {
+        if (!backendReady) { showToast('雲端連線尚未就緒，暫時無法登入'); return; }
+        authBusy = true;
+        try {
+          const cred = await FB().signInWithEmailAndPassword(firebaseAuth, email, pass);
+          const adminSnap = await FB().getDoc(FB().doc(firestoreDb, 'admins', cred.user.uid));
+          if (!adminSnap.exists()) {
+            await FB().signOut(firebaseAuth);
+            showToast('此帳號尚未被最高權限管理者列入 admins 授權名單');
+            return;
+          }
+          const admData = adminSnap.data();
+          currentAdminTier = admData.role === 'super_admin' ? 'super_admin' : 'admin';
+          currentAdminEmail = email;
+          if (passInput) passInput.value = '';
+          closeAuthModal();
+          setAppRole('admin', admData.name || maskEmail(email));
+          subscribeVendors(true);
+          startAdminManagersListener();
+          startAdminSecretEmailsListener();
+          selectTab('admin');
+          showToast(`歡迎登入！您的權限為：${currentAdminTier === 'super_admin' ? '最高權限管理者' : '一般子管理者'}`);
+        } catch (e) {
+          showToast('帳號或密碼錯誤，或尚未於 Firebase Auth 建立此管理者帳號');
+        } finally {
+          authBusy = false;
+        }
+        return;
+      }
+
+      // 僅限 DEMO_MODE（尚未填入 Firebase 金鑰）時的本機預覽流程；金鑰填好後不會走到這裡
+      const existingMgr = ADMIN_MANAGERS_LIST.find(m => m.email.toLowerCase() === email);
+      if (ADMIN_MANAGERS_LIST.length === 0) {
+        ADMIN_MANAGERS_LIST.push({
+          email: email,
+          name: '最高權限管理員',
+          role: 'super_admin',
+          passHash: btoa(encodeURIComponent(pass))
+        });
+        currentAdminTier = 'super_admin';
+        currentAdminEmail = email;
+      } else if (existingMgr) {
+        if (existingMgr.passHash && existingMgr.passHash !== btoa(encodeURIComponent(pass))) {
+          showToast('管理者密碼錯誤！');
+          return;
+        }
+        currentAdminTier = existingMgr.role;
+        currentAdminEmail = email;
+      } else {
+        showToast('此 Email 不在授權管理者名單中，請由最高權限管理者新增授權');
+        return;
+      }
+
+      if (passInput) passInput.value = '';
+      closeAuthModal();
+      setAppRole('admin', currentAdminTier === 'super_admin' ? '最高管理員' : '子管理員');
+      selectTab('admin');
+      showToast(`已登入管理者控台（權限：${currentAdminTier === 'super_admin' ? '最高權限 Super Admin' : '一般子管理者'}）`);
+    }
+
+    /* ---------- 最高權限管理者：唯讀檢視管理者名單 ---------- */
+    function renderAdminManagersTable() {
+      const tbody = document.getElementById('adminManagersTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      if (ADMIN_MANAGERS_LIST.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-slate-400">尚無管理者資料</td></tr>';
+        return;
+      }
+
+      ADMIN_MANAGERS_LIST.forEach(m => {
+        const isSuper = m.role === 'super_admin';
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-rose-50/40 transition';
+
+        const roleBadge = isSuper
+          ? '<span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-300 text-[10px] font-black"><i class="fa-solid fa-crown mr-1 text-amber-500"></i>最高權限 (Super Admin)</span>'
+          : '<span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-bold">一般子管理者</span>';
+
+        const actionBtn = isSuper
+          ? '<span class="text-[10px] text-slate-400 font-bold">系統最高權限不可移除</span>'
+          : `<span class="text-[10px] text-slate-400 font-bold">請至 Firebase Console 管理</span>`;
+
+        const keyId = 'mgr_' + m.email;
+        const shownEmail = revealedEmails[keyId] ? m.email : maskEmail(m.email);
+
+        tr.innerHTML = `
+          <td class="py-2 px-3 font-bold text-slate-800">${esc(m.name)}</td>
+          <td class="py-2 px-3 font-mono text-[11px] text-slate-600">
+            <span>${esc(shownEmail)}</span>
+            <button data-key="${esc(keyId)}" onclick="toggleRevealEmail(this.dataset.key)" class="ml-1.5 text-slate-400 hover:text-skyBlue-600" title="顯示/隱藏完整信箱">
+              <i class="fa-regular ${revealedEmails[keyId] ? 'fa-eye-slash' : 'fa-eye'}"></i>
+            </button>
+          </td>
+          <td class="py-2 px-3">${roleBadge}</td>
+          <td class="py-2 px-3 text-right">${actionBtn}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function openSecurityGuideModal() {
+      const m = document.getElementById('securityGuideModal');
+      if (m) m.classList.remove('hidden');
+    }
+
+    function closeSecurityGuideModal() {
+      const m = document.getElementById('securityGuideModal');
+      if (m) m.classList.add('hidden');
+    }
+
+    function copyTextToClipboard(text) {
+      if (!text) return false;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(text).catch(() => {});
+        }
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        ta.style.top = '0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function copyVendorEmailByUid(uid) {
+      const v = VENDORS_LIST.find(x => x.uid === uid);
+      const ownerEmail = String(VENDOR_SECRET_EMAILS[uid] || (v && v.email) || '').trim().toLowerCase();
+      if (!isValidEmail(ownerEmail)) {
+        showToast('尚無法讀取此攤主的完整信箱');
+        return false;
+      }
+      copyTextToClipboard(ownerEmail);
+      showToast(`已複製攤主信箱：${ownerEmail}`);
+      return true;
+    }
+
+    function copyFirestoreRules() {
+      const el = document.getElementById('firestoreRulesText');
+      if (el) {
+        copyTextToClipboard(el.value);
+        el.select();
+        showToast('已複製 Firestore 防竄改安全規則！請貼至 Firebase Console 規則分頁發布。');
+      }
+    }
+
+    /* ---------- 攤主登入與申請（免寄登入信直登・公開文件完全不儲存信箱或雜湊） ---------- */
+    async function handleVendorLogin() {
+      const emailInput = document.getElementById('vendorLoginEmail');
+      const passInput = document.getElementById('vendorLoginPass');
+      const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
+      const pass = passInput ? passInput.value : '';
+      if (!isValidEmail(email)) {
+        showToast('請輸入登記信箱');
+        return;
+      }
+      if (!DEMO_MODE) {
+        if (!backendReady) { showToast('雲端連線尚未就緒，暫時無法登入'); return; }
+        if (!pass) { showToast('請輸入管理者私訊給您的登入密碼'); return; }
+        authBusy = true;
+        try {
+          // 只允許登入「管理者已在 Console 建立」的帳號，網站不會自動註冊
+          const cred = await FB().signInWithEmailAndPassword(firebaseAuth, email, pass);
+          if (passInput) passInput.value = '';
+          await applyUserRole(cred.user, 'vendor');
+          if (currentRole === 'vendor') {
+            closeAuthModal();
+            selectTab('vendor');
+            updateVendorUI();
+            showToast(`歡迎創作者【${currentVendor.nickname}】，已進入攤主操作台！`);
+          }
+        } catch (e) {
+          showToast('登入失敗：請確認信箱與密碼是否正確（密碼由管理者私訊提供）');
+        } finally {
+          authBusy = false;
+        }
+        return;
+      }
+
+      const matched = VENDORS_LIST.find(v => v.email && v.email.toLowerCase() === email);
+      if (!matched) {
+        showToast('查無此登記信箱，請先切換至【填寫事前申請 (註冊)】送出資料！');
+        return;
+      }
+      if (!matched.isApproved) {
+        closeAuthModal();
+        openPendingModal(matched);
+        return;
+      }
+
+      currentVendor = matched;
+      closeAuthModal();
+      setAppRole('vendor', currentVendor.nickname);
+      selectTab('vendor');
+      updateVendorUI();
+      showToast(`歡迎創作者【${currentVendor.nickname}】，已進入攤主操作台！`);
+    }
+
+    function openPendingModal(vendor) {
+      const nick = document.getElementById('pendingNick');
+      if (nick) nick.innerText = vendor.nickname || '創作者';
+      const modal = document.getElementById('vendorPendingModal');
+      if (!modal) return;
+      modal.classList.remove('hidden');
+      setTimeout(() => modal.classList.remove('opacity-0'), 10);
+    }
+
+    function openFaqModal() {
+      const modal = document.getElementById('faqModal');
+      if (!modal) return;
+      modal.classList.remove('hidden');
+      setTimeout(() => modal.classList.remove('opacity-0'), 10);
+    }
+    function closeFaqModal() {
+      const modal = document.getElementById('faqModal');
+      if (!modal) return;
+      modal.classList.add('opacity-0');
+      setTimeout(() => modal.classList.add('hidden'), 200);
+    }
+    function switchFaqTab(key) {
+      document.querySelectorAll('[data-faq-panel]').forEach(el => el.classList.toggle('hidden', el.dataset.faqPanel !== key));
+      document.querySelectorAll('[data-faq-tab]').forEach(b => {
+        const on = b.dataset.faqTab === key;
+        b.className = 'flex-1 py-1.5 rounded-lg ' + (on ? 'font-bold bg-white text-skyBlue-600 shadow-sm' : 'font-medium text-slate-500');
+      });
+    }
+
+    function closePendingModal() {
+      const modal = document.getElementById('vendorPendingModal');
+      if (!modal) return;
+      modal.classList.add('opacity-0');
+      setTimeout(() => modal.classList.add('hidden'), 200);
+    }
+
+    async function handleLogout() {
+      teardownRoleListeners();
+      if (firebaseAuth && window.FirebaseSDK && !DEMO_MODE) {
+        try { await FB().signOut(firebaseAuth); } catch (e) {}
+      }
+      currentAdminTier = 'none';
+      currentAdminEmail = '';
+      setAppRole('guest');
+      selectTab('timeline');
+      showToast('已登出，回到訪客瀏覽模式。');
+    }
+
+    async function handleApplySubmitViaModal() {
+      const nickEl = document.getElementById('appNickname');
+      const itemsEl = document.getElementById('appItemDesc');
+      const linkEl = document.getElementById('appProductPostLink');
+      const emailEl = document.getElementById('appEmail');
+      const agreeEl = document.getElementById('agreePrivacy');
+
+      const nick = nickEl ? nickEl.value.trim() : '';
+      const items = itemsEl ? itemsEl.value.trim() : '';
+      const link = linkEl ? linkEl.value.trim() : '';
+      const email = emailEl ? emailEl.value.trim().toLowerCase() : '';
+      const days = [['date-1-8', '1/8'], ['date-1-9', '1/9'], ['date-1-10', '1/10']]
+        .filter(([id]) => { const c = document.getElementById(id); return c && c.checked; }).map(([, d]) => d);
+
+      if (!nick) { showToast('請填寫創作者／攤販暱稱'); return; }
+      if (strLen(nick) > 15) { showToast('暱稱限 15 字以內'); return; }
+      if (strLen(items) > 30) { showToast('應援物簡述限 30 字以內'); return; }
+      if (!link) { showToast('請提供本人 SNS 相關商品貼文連結！'); return; }
+      const safeLink = safePostUrl(link);
+      if (!safeLink) { showToast('貼文連結須為 https，且網域限 Threads、Instagram、X(Twitter)'); return; }
+      if (!isValidEmail(email)) { showToast('請填寫正確的聯絡電子信箱'); return; }
+      if (days.length === 0) { showToast('請至少勾選一天預計參加日'); return; }
+      if (!(agreeEl && agreeEl.checked)) { showToast('請先勾選資料處理同意'); return; }
+
+      try {
+        const last = parseInt(localStorage.getItem('kk_last_apply') || '0', 10);
+        if (Date.now() - last < 60000) { showToast('送出過於頻繁，請稍候一分鐘再試'); return; }
+      } catch (e) {}
+      const vendorUid = newVendorId();
+
+      // 公開文件完全不儲存信箱與雜湊值，徹底防止透過 API 爬蟲竊取信箱
+      const publicVendorDoc = {
+        uid: vendorUid,
+        nickname: nick,
+        items: items || '應援周邊商品',
+        productPost: safeLink,
+        expectedDays: days,
+        isApproved: false,
+        status: 'upcoming',
+        locationText: '',
+        locationImg: '',
+        startMs: 0,
+        prepTotalMs: 0,
+        endedMs: 0,
+        quotaUsedToday: false,
+        quotaUsed: false
+      };
+
+      if (!DEMO_MODE && backendReady) {
+        try {
+          const batch = FB().writeBatch(firestoreDb);
+          batch.set(FB().doc(firestoreDb, 'vendors_private', vendorUid), publicVendorDoc);
+          batch.set(FB().doc(firestoreDb, 'vendors_secret', vendorUid), {
+            uid: vendorUid,
+            email: email,
+            createdAt: Date.now()
+          });
+          await batch.commit();
+          try { localStorage.setItem('kk_last_apply', String(Date.now())); } catch (e) {}
+          closeAuthModal();
+          openPendingModal(publicVendorDoc);
+          showToast('事前申請已送出！待管理者審核後將私下透過 SNS 通知您。');
+        } catch (e) {
+          showToast('送出失敗：' + backendErrMsg(e));
+        }
+        return;
+      }
+
+      VENDOR_SECRET_EMAILS[vendorUid] = email;
+      VENDORS_LIST.unshift({ ...publicVendorDoc, email: email, emailMasked: maskEmail(email) });
+      closeAuthModal();
+      openPendingModal(publicVendorDoc);
+      showToast('事前申請已送出！');
+      renderAdminVendorTable();
+    }
+
+    /* ---------- 管理者控台：事前真人審核名冊 ---------- */
+    function renderAdminVendorTable() {
+      const tbody = document.getElementById('adminVendorTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      let approvedCount = 0;
+
+      if (VENDORS_LIST.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400 text-xs">目前尚無創作者申請資料</td></tr>`;
+        const countEl = document.getElementById('adminApprovedCount');
+        if (countEl) countEl.innerText = '0';
+        return;
+      }
+
+      // 排序：未核准置頂（醒目）；演唱會日 ➔ 當日未報到 / 當日已報到 / 當日已結束 / 非本日場次；非演唱會日 ➔ 已核准依申請順序
+      const isConcertView = CONCERT_DAYS.includes(currentSimDate);
+      const groupOf = (v) => {
+        if (!v.isApproved) return 0;
+        if (!isConcertView) return 1;
+        if (Array.isArray(v.expectedDays) && !v.expectedDays.includes(currentSimDate)) return 5;
+        if (v.status === 'upcoming') return 2;
+        if (v.status === 'ended') return 4;
+        return 3; // preparing / in_use
+      };
+      const GROUP_LABELS = isConcertView
+        ? { 0: '⚠ 尚未核准（需審核）', 2: '當日未報到', 3: '當日已報到', 4: '當日已結束', 5: '非本日場次（已核准）' }
+        : { 0: '⚠ 尚未核准（需審核）', 1: '已核准・已通知' };
+      const sortedVendors = VENDORS_LIST.map((v, i) => ({ v, i }))
+        .sort((a, b) => (groupOf(a.v) - groupOf(b.v)) || (a.i - b.i))
+        .map(x => x.v);
+      const pendingCount = VENDORS_LIST.filter(v => !v.isApproved).length;
+      const pendingBadge = document.getElementById('adminPendingBadge');
+      if (pendingBadge) {
+        pendingBadge.innerText = `待審核 ${pendingCount} 位`;
+        pendingBadge.classList.toggle('hidden', pendingCount === 0);
+      }
+      const sortHint = document.getElementById('adminSortHint');
+      if (sortHint) {
+        sortHint.innerText = isConcertView
+          ? `排序（${currentSimDate} 演唱會日）：尚未核准 ➔ 當日未報到 ➔ 當日已報到 ➔ 當日已結束 ➔ 非本日場次`
+          : '排序：尚未核准 ➔ 已核准通知';
+      }
+
+      let lastGroup = null;
+      sortedVendors.forEach(v => {
+        if (v.isApproved) approvedCount++;
+        const grp = groupOf(v);
+        if (grp !== lastGroup) {
+          lastGroup = grp;
+          const gtr = document.createElement('tr');
+          gtr.innerHTML = `<td colspan="7" class="py-1.5 px-2 text-[10px] font-black tracking-wide ${grp === 0 ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-500'}">${esc(GROUP_LABELS[grp] || '')}</td>`;
+          tbody.appendChild(gtr);
+        }
+        const tr = document.createElement('tr');
+        tr.className = v.isApproved
+          ? 'hover:bg-slate-50/80 transition'
+          : 'bg-rose-50/70 hover:bg-rose-50 transition border-l-4 border-rose-400';
+
+        const approveBadge = v.isApproved
+          ? '<span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 text-[10px] font-bold whitespace-nowrap">已核准真人</span>'
+          : '<span class="px-2 py-0.5 rounded-full bg-rose-500 text-white border border-rose-600 text-[10px] font-black whitespace-nowrap shadow-sm">● 尚未核准</span>';
+        const dayStatusMap = { upcoming: ['未報到', 'bg-slate-100 text-slate-500 border-slate-200'], preparing: ['準備中', 'bg-amber-50 text-amber-600 border-amber-200'], in_use: ['發放中', 'bg-skyBlue-50 text-skyBlue-600 border-skyBlue-200'], ended: ['已結束', 'bg-slate-100 text-slate-400 border-slate-200'] };
+        const dayStatusBadge = (v.isApproved && isConcertView && dayStatusMap[v.status])
+          ? `<span class="ml-1 px-1.5 py-0.5 rounded-full border text-[10px] font-bold whitespace-nowrap ${dayStatusMap[v.status][1]}">${dayStatusMap[v.status][0]}</span>` : '';
+
+        let actionBtns = '';
+        if (!v.isApproved) {
+          actionBtns = `
+            <button data-uid="${esc(v.uid)}" onclick="adminApproveVendor(this.dataset.uid)" class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 text-white shadow-2xs transition whitespace-nowrap">
+              <i class="fa-solid fa-user-check mr-1"></i>確認真人 (核准資格)
+            </button>
+          `;
+        } else {
+          actionBtns = `
+            <div class="inline-flex items-center space-x-1">
+              ${v.quotaUsed ? `<button data-uid="${esc(v.uid)}" onclick="adminResetVendorQuota(this.dataset.uid)" class="px-2 py-1 rounded-lg text-[10px] font-bold bg-skyBlue-50 text-skyBlue-600 border border-skyBlue-200 hover:bg-skyBlue-100 whitespace-nowrap">重置今日額度</button>` : ''}
+              <span class="text-[10px] text-slate-400">請私訊通知</span>
+            </div>
+          `;
+        }
+
+        const postHref = safePostUrl(v.productPost);
+        const postCell = postHref
+          ? `<a href="${esc(postHref)}" target="_blank" rel="noopener noreferrer" class="hover:underline flex items-center"><span>查看貼文</span><i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-1"></i></a>`
+          : '<span class="text-rose-400">連結無效</span>';
+
+        const daysText = Array.isArray(v.expectedDays) ? v.expectedDays.join(', ') : '1/8';
+        const keyId = 'v_' + v.uid;
+        const fullEmail = VENDOR_SECRET_EMAILS[v.uid] || v.email || '';
+        const displayEmail = revealedEmails[keyId] ? (fullEmail || '***') : maskEmail(fullEmail);
+
+        tr.innerHTML = `
+          <td class="py-2.5 px-2 font-bold text-slate-800 whitespace-nowrap">${esc(v.nickname)}</td>
+          <td class="py-2.5 px-2 font-mono text-[11px] text-slate-500 whitespace-nowrap">
+            <span>${esc(displayEmail)}</span>
+            <button data-key="${esc(keyId)}" onclick="toggleRevealEmail(this.dataset.key)" class="ml-1 text-slate-400 hover:text-skyBlue-600" title="顯示/隱藏完整信箱">
+              <i class="fa-regular ${revealedEmails[keyId] ? 'fa-eye-slash' : 'fa-eye'}"></i>
+            </button>
+            <button data-uid="${esc(v.uid)}" onclick="copyVendorEmailByUid(this.dataset.uid)" class="ml-1 text-slate-400 hover:text-emerald-600" title="複製完整信箱">
+              <i class="fa-regular fa-copy"></i>
+            </button>
+          </td>
+          <td class="py-2.5 px-2 font-mono text-[11px] text-skyBlue-600 whitespace-nowrap">${esc(daysText)}</td>
+          <td class="py-2.5 px-2 text-[11px] text-slate-700 truncate max-w-[130px]">${esc(v.items || '未登記')}</td>
+          <td class="py-2.5 px-2 font-mono text-[11px] text-skyBlue-600 truncate max-w-[90px]">${postCell}</td>
+          <td class="py-2.5 px-2 whitespace-nowrap">${approveBadge}${dayStatusBadge}</td>
+          <td class="py-2.5 px-2 text-right">${actionBtns}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      const countEl = document.getElementById('adminApprovedCount');
+      if (countEl) countEl.innerText = approvedCount;
+    }
+
+    async function adminApproveVendor(uid) {
+      const v = VENDORS_LIST.find(x => x.uid === uid);
+      if (!v) return;
+      const ownerEmail = String(VENDOR_SECRET_EMAILS[uid] || v.email || '').trim().toLowerCase();
+      if (!DEMO_MODE && backendReady) {
+        try {
+          if (!isValidEmail(ownerEmail)) { showToast('讀不到此攤主的登記信箱，無法核准'); return; }
+          // 於點擊事件當下立即自動複製攤主 Email 至剪貼簿，方便直接貼至 Firebase Auth 建立使用者
+          copyTextToClipboard(ownerEmail);
+          const publicSlot = buildPublicSlotPayload({ ...v, isApproved: true });
+          await FB().setDoc(FB().doc(firestoreDb, 'vendor_links', ownerEmail), { vendorId: uid, createdAt: Date.now() });
+          await FB().updateDoc(FB().doc(firestoreDb, 'vendors_private', uid), { isApproved: true });
+          await FB().setDoc(FB().doc(firestoreDb, 'market_public', 'live'), { vendors: { [uid]: publicSlot } }, { merge: true });
+          PUBLIC_LIVE_MAP[uid] = publicSlot;
+          savePublicLiveCache(PUBLIC_LIVE_MAP);
+          copyTextToClipboard(ownerEmail);
+          showToast(`已核准【${v.nickname}】並自動複製信箱（${ownerEmail}），請至 Firebase Auth 新增使用者並私訊密碼！`);
+        } catch (e) {
+          showToast('核准失敗：請確認管理員權限與安全規則');
+        }
+        return;
+      }
+      if (isValidEmail(ownerEmail)) copyTextToClipboard(ownerEmail);
+      v.isApproved = true;
+      showToast(`已核准【${v.nickname}】${isValidEmail(ownerEmail) ? `並複製信箱（${ownerEmail}）` : ''}！請至 Firebase Auth 新增使用者並私訊通知。`);
+      renderAdminVendorTable();
+      renderTimeline();
+    }
+
+    async function adminResetVendorQuota(uid) {
+      const v = VENDORS_LIST.find(x => x.uid === uid);
+      if (!v) return;
+      if (!DEMO_MODE && backendReady) {
+        try {
+          const resetFields = {
+            quotaUsedToday: false,
+            status: 'upcoming',
+            locationText: '',
+            hasPhoto: false,
+            startMs: 0,
+            endedMs: 0
+          };
+          await FB().updateDoc(FB().doc(firestoreDb, 'vendors_private', uid), {
+            quotaUsedToday: false,
+            status: 'upcoming',
+            locationText: '',
+            locationImg: '',
+            startMs: 0,
+            endedMs: 0
+          });
+          await FB().setDoc(FB().doc(firestoreDb, 'market_public', 'live'), { vendors: { [uid]: resetFields } }, { merge: true });
+          if (PUBLIC_LIVE_MAP[uid]) Object.assign(PUBLIC_LIVE_MAP[uid], resetFields);
+          savePhotoToSessionCache(uid, '');
+          savePublicLiveCache(PUBLIC_LIVE_MAP);
+          remapAllVendorsForDate();
+          renderAdminVendorTable();
+          renderTimeline();
+          updateVendorUI();
+          showToast(`已重置【${v.nickname}】今日發放額度`);
+        } catch (e) {
+          showToast('重置失敗');
+        }
+        return;
+      }
+      v.quotaUsed = false;
+      v.status = 'upcoming';
+      v.locationText = '';
+      v.hasPhoto = false;
+      v.locationImg = '';
+      v.startMs = 0;
+      v.endedMs = 0;
+      showToast(`已重置【${v.nickname}】今日發放額度，恢復為尚未到場狀態`);
+      renderAdminVendorTable();
+      renderTimeline();
+      updateVendorUI();
+    }
+
+    async function exportAuditLogCSV() {
+      let csv = '創作者暱稱,登記信箱,預計參加日,應援物內容,核准狀態,當前發放狀態,所在發放位置說明\n';
+      VENDORS_LIST.forEach(v => {
+        const days = Array.isArray(v.expectedDays) ? v.expectedDays.join('/') : '';
+        const emailOut = VENDOR_SECRET_EMAILS[v.uid] || v.email || v.emailMasked || '';
+        csv += [v.nickname, emailOut, days, v.items, v.isApproved ? '已核准' : '待審核', v.status, v.locationText].map(csvCell).join(',') + '\n';
+      });
+
+      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `小門市集_${currentSimDate.replace('/', '-')}_創作者名冊.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showToast('已匯出創作者名冊 CSV 檔案！');
+    }
+
+    /* ---------- 計算「其餘場次發放」的日期排序 ----------
+       規則：
+       - 若今日是 1/9：其餘場次先顯示未來場 1/10，最下方顯示已過去的 1/8
+       - 若今日是 1/7 或 1/11（非演唱會日）：今日發放顯示「今日非演唱會日」，其餘場次依序顯示 1/8、1/9、1/10
+       - 若今日是 1/8：其餘場次顯示 1/9、1/10
+       - 若今日是 1/10：其餘場次顯示 1/8、1/9
+    ------------------------------------------------------- */
+    function getOtherConcertDaysOrder(todayStr) {
+      if (!CONCERT_DAYS.includes(todayStr)) {
+        return ['1/8', '1/9', '1/10'];
+      }
+      const idx = CONCERT_DAYS.indexOf(todayStr);
+      const futureDays = CONCERT_DAYS.slice(idx + 1);
+      const pastDays = CONCERT_DAYS.slice(0, idx);
+      return [...futureDays, ...pastDays];
+    }
+
+    /* ---------- 訪客時序畫面渲染（今日發放 + 其餘場次發放） ---------- */
+    function renderTimeline() {
+      const container = document.getElementById('timelineContainer');
+      const dateBadge = document.getElementById('timelineDateBadge');
+      const fShow = document.getElementById('footerShowTime');
+      const fCutoff = document.getElementById('footerCutoffTime');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const isConcertToday = CONCERT_DAYS.includes(currentSimDate);
+      const sch = SCHEDULE_CONFIG[currentSimDate] || NON_CONCERT_DAY_CONFIG;
+
+      if (dateBadge) {
+        dateBadge.innerText = isConcertToday
+          ? `今日場次：${currentSimDate} (${sch.showTime}開唱)`
+          : `今日：${currentSimDate} (非演唱會日)`;
+      }
+      if (fShow) fShow.innerText = sch.showTime;
+      if (fCutoff) fCutoff.innerText = sch.cutoffLabel;
+
+      const matchFilter = (v) => {
+        if (favFilterMode === 'fav' && !isFav(v.uid)) return false;
+        if (!searchQuery) return true;
+        return (
+          (v.nickname && v.nickname.toLowerCase().includes(searchQuery)) ||
+          (v.items && v.items.toLowerCase().includes(searchQuery)) ||
+          (v.locationText && v.locationText.toLowerCase().includes(searchQuery))
+        );
+      };
+
+      const sortFavFirst = (a, b) => {
+        const fa = isFav(a.uid) ? 1 : 0;
+        const fb = isFav(b.uid) ? 1 : 0;
+        if (fa !== fb) return fb - fa;
+        return (a.startMs || 0) - (b.startMs || 0);
+      };
+
+      const makeCard = (v, isOtherDayCard = false, targetDayLabel = '') => {
+        const fav = isFav(v.uid);
+        let statusTag = '';
+        let timeInfoHtml = '';
+        let cardBorder = fav ? 'border-rose-300 ring-1 ring-rose-200/70' : 'border-slate-200/90';
+
+        if (isOtherDayCard) {
+          const isPastDay = CONCERT_DAYS.includes(currentSimDate) && CONCERT_DAYS.indexOf(targetDayLabel) < CONCERT_DAYS.indexOf(currentSimDate);
+          if (isPastDay) {
+            statusTag = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200 font-medium whitespace-nowrap">${esc(targetDayLabel)} 場次已結束</span>`;
+            timeInfoHtml = `<span class="font-mono text-slate-400 text-[11px]">預計參與場次：${esc((v.expectedDays || []).join('、'))}</span>`;
+            cardBorder = 'border-slate-200 opacity-75';
+          } else {
+            statusTag = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-skyBlue-50 text-skyBlue-600 border border-skyBlue-200 font-bold whitespace-nowrap">${esc(targetDayLabel)} 預計發放</span>`;
+            timeInfoHtml = `<span class="font-mono text-slate-500 text-[11px]">預計參與場次：${esc((v.expectedDays || []).join('、'))}</span>`;
+          }
+        } else if (v.status === 'in_use') {
+          statusTag = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 font-bold flex items-center whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1 active-dot"></span>發放中</span>`;
+          timeInfoHtml = `<span class="font-mono text-emerald-600 font-bold text-xs"><i class="fa-regular fa-clock mr-1"></i>${v.startMs ? fmtHM(v.startMs) + ' 起發放中（發完為止）' : '現場發放中'}</span>`;
+        } else if (v.status === 'preparing') {
+          const remainSec = Math.max(0, Math.floor((v.startMs - Date.now()) / 1000));
+          const mm = String(Math.floor(remainSec / 60)).padStart(2, '0');
+          const ss = String(remainSec % 60).padStart(2, '0');
+          statusTag = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200 font-bold whitespace-nowrap"><i class="fa-solid fa-hourglass-half mr-1"></i>準備中 ${mm}:${ss}</span>`;
+          timeInfoHtml = `<span class="font-mono text-amber-600 font-bold text-xs">預計 ${v.startMs ? fmtHM(v.startMs) : '即將'} 開始發放</span>`;
+        } else if (v.status === 'upcoming') {
+          statusTag = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-skyBlue-50 text-skyBlue-600 border border-skyBlue-200 font-medium whitespace-nowrap">尚未到場</span>`;
+          timeInfoHtml = `<span class="text-slate-400 text-[11px]">待創作者抵達後公布位置與時間</span>`;
+        } else {
+          statusTag = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200 font-medium whitespace-nowrap">已結束發放</span>`;
+          timeInfoHtml = `<span class="font-mono text-slate-400 text-xs">${v.endedMs ? fmtHM(v.endedMs) + ' 已發放完畢' : '今日已發放完畢'}</span>`;
+          cardBorder = 'border-slate-200 opacity-75';
+        }
+
+        const href = safePostUrl(v.productPost);
+        const postLinkHtml = href ? `
+          <a href="${esc(href)}" target="_blank" rel="noopener noreferrer" class="text-skyBlue-500 hover:text-skyBlue-600 text-[11px] font-bold flex items-center space-x-1 flex-shrink-0">
+            <span>商品貼文</span>
+            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+          </a>` : '';
+
+        let locationBlock = '';
+        if (!isOtherDayCard && (v.locationText || v.locationImg || v.hasPhoto)) {
+          const captionStr = v.nickname + ' - ' + (v.locationText || '發放位置');
+          let imgHtml = '';
+          if (safeImgSrc(v.locationImg)) {
+            imgHtml = `
+              <img src="${esc(safeImgSrc(v.locationImg))}" alt="發放位置照片" data-caption="${esc(captionStr)}" onclick="openImageLightbox(this.src, this.dataset.caption)" class="w-14 h-14 sm:w-16 sm:h-16 object-cover rounded-xl border border-skyBlue-200 cursor-pointer flex-shrink-0 hover:opacity-90 transition" title="點擊放大檢視照片">
+            `;
+          } else if (v.hasPhoto) {
+            imgHtml = `
+              <button type="button" data-uid="${esc(v.uid)}" data-caption="${esc(captionStr)}" onclick="loadAndShowVendorPhoto(this.dataset.uid, this.dataset.caption)" class="px-2.5 py-2 rounded-xl bg-white hover:bg-skyBlue-50 text-skyBlue-600 border border-skyBlue-200 text-[11px] font-bold flex flex-col items-center justify-center flex-shrink-0 shadow-2xs transition" title="點擊載入位置照片">
+                <i class="fa-solid fa-camera text-sm mb-0.5"></i>
+                <span>看位置圖</span>
+              </button>
+            `;
+          }
+          locationBlock = `
+            <div class="mt-2.5 p-2.5 rounded-xl bg-skyBlue-50/60 border border-skyBlue-100/90 flex items-start justify-between gap-2.5 text-xs">
+              <div class="min-w-0 flex-1">
+                <div class="text-[11px] font-bold text-skyBlue-800 flex items-center mb-0.5">
+                  <i class="fa-solid fa-location-dot text-rose-500 mr-1"></i>所在發放位置：
+                </div>
+                <p class="text-slate-700 text-xs leading-relaxed break-words">${esc(v.locationText || '請點擊右側查看位置照片')}</p>
+              </div>
+              ${imgHtml}
+            </div>
+          `;
+        }
+
+        return `
+          <div id="vendor-card-${esc(v.uid)}" class="glass-card rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between ${cardBorder}">
+            <div>
+              <div class="flex items-start justify-between gap-2 mb-1.5">
+                <div class="min-w-0">
+                  <div class="flex items-center space-x-1.5 mb-0.5">
+                    <span class="text-xs sm:text-sm font-black text-slate-800 truncate">${esc(v.nickname)}</span>
+                  </div>
+                  <h4 class="text-xs font-semibold text-skyBlue-700 line-clamp-2">${esc(v.items || '應援周邊')}</h4>
+                </div>
+                <div class="flex items-center space-x-1.5 flex-shrink-0">
+                  ${statusTag}
+                  <button data-uid="${esc(v.uid)}" data-name="${esc(v.nickname)}" onclick="toggleFavorite(this.dataset.uid, this.dataset.name, this)" title="${fav ? '取消最愛' : '加入最愛（擺攤前5分鐘提醒）'}" class="w-8 h-8 rounded-full flex items-center justify-center border transition ${fav ? 'bg-rose-50 border-rose-200 text-rose-500' : 'bg-white border-slate-200 text-slate-300 hover:text-rose-400'}">
+                    <i class="${fav ? 'fa-solid' : 'fa-regular'} fa-heart text-sm"></i>
+                  </button>
+                </div>
+              </div>
+              ${locationBlock}
+            </div>
+            <div class="mt-3 pt-2 border-t border-slate-100 text-xs flex items-center justify-between gap-2">
+              ${timeInfoHtml}
+              ${postLinkHtml}
+            </div>
+          </div>
+        `;
+      };
+
+      const makeSubSection = (title, subtitle, icon, list, colorClass, isOtherDay = false, dayLabel = '') => {
+        if (!list || list.length === 0) return '';
+        return `
+          <div class="space-y-2.5">
+            <div class="flex flex-wrap items-baseline justify-between gap-1 border-l-4 border-skyBlue-400 pl-2.5">
+              <div class="flex items-center space-x-1.5">
+                <h4 class="text-xs sm:text-sm font-black text-slate-800 flex items-center">
+                  <i class="${icon} mr-1.5 ${colorClass}"></i>${esc(title)}
+                </h4>
+                <span class="text-[11px] text-slate-400 font-mono">(${list.length})</span>
+              </div>
+              ${subtitle ? `<span class="text-[10px] text-slate-400">${esc(subtitle)}</span>` : ''}
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              ${list.map(v => makeCard(v, isOtherDay, dayLabel)).join('')}
+            </div>
+          </div>
+        `;
+      };
+
+      // ==================== 第一大區塊：【今日發放】 ====================
+      let todaySectionHtml = '';
+      if (!isConcertToday) {
+        todaySectionHtml = `
+          <div class="rounded-2xl p-5 bg-white/80 border border-slate-200 text-center">
+            <div class="w-10 h-10 mx-auto rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center text-lg mb-2">
+              <i class="fa-regular fa-calendar-xmark"></i>
+            </div>
+            <h4 class="text-sm font-black text-slate-700">今日非演唱會日</h4>
+            <p class="text-xs text-slate-500 mt-1">今日（${esc(currentSimDate)}）無演唱會場次，請瀏覽下方「其餘場次發放」提前將感興趣的攤位點愛心加到最愛！</p>
+          </div>
+        `;
+      } else {
+        const approvedForToday = VENDORS_LIST.filter(v =>
+          v.isApproved && (!Array.isArray(v.expectedDays) || v.expectedDays.includes(currentSimDate))
+        );
+
+        const inUseList = approvedForToday.filter(v => v.status === 'in_use' && matchFilter(v)).sort(sortFavFirst);
+        const preparingList = approvedForToday.filter(v => v.status === 'preparing' && matchFilter(v)).sort(sortFavFirst);
+        const upcomingList = approvedForToday.filter(v => v.status === 'upcoming' && matchFilter(v)).sort(sortFavFirst);
+        const endedList = approvedForToday.filter(v => v.status === 'ended' && matchFilter(v)).sort((a, b) => (b.endedMs || 0) - (a.endedMs || 0));
+
+        let innerToday = '';
+        innerToday += makeSubSection('現場發放中', '最愛攤位自動置頂・發完為止', 'fa-solid fa-fire', inUseList, 'text-emerald-500');
+        innerToday += makeSubSection('已抵達・準備中（即將發放）', '距離開攤 5 分鐘前將自動推播提醒最愛訪客', 'fa-solid fa-bell', preparingList, 'text-amber-500');
+        innerToday += makeSubSection('預計今日參加（尚未到場）', '可提前點愛心收藏接收開攤提醒', 'fa-solid fa-heart-circle-plus', upcomingList, 'text-skyBlue-500');
+        innerToday += makeSubSection('已結束發放', '', 'fa-solid fa-flag-checkered', endedList, 'text-slate-400');
+
+        if (!innerToday) {
+          const emptyMsg = favFilterMode === 'fav'
+            ? '今日場次尚無您收藏的最愛攤位，可切換至「全部攤位」或查看下方其餘場次。'
+            : '今日場次目前尚無已核准之應援攤位資料。';
+          innerToday = `<div class="rounded-2xl p-6 bg-white/70 border border-slate-200/80 text-center text-slate-400 text-xs">${emptyMsg}</div>`;
+        }
+        todaySectionHtml = `<div class="space-y-4">${innerToday}</div>`;
+      }
+
+      // ==================== 第二大區塊：【其餘場次發放】 ====================
+      const otherDaysOrder = getOtherConcertDaysOrder(currentSimDate);
+      let otherDaysHtml = '';
+
+      otherDaysOrder.forEach(dayKey => {
+        const daySch = SCHEDULE_CONFIG[dayKey] || { showTime: '' };
+        const isPast = isConcertToday && CONCERT_DAYS.indexOf(dayKey) < CONCERT_DAYS.indexOf(currentSimDate);
+        const listForDay = VENDORS_LIST.filter(v =>
+          v.isApproved && Array.isArray(v.expectedDays) && v.expectedDays.includes(dayKey) && matchFilter(v)
+        ).sort(sortFavFirst);
+
+        if (listForDay.length > 0) {
+          const titleStr = isPast
+            ? `${dayKey} 場次發放名冊（已結束場次）`
+            : `${dayKey} 場次預計發放（${daySch.showTime} 開唱）`;
+          const subStr = isPast ? '歷史場次存檔' : '可提前點愛心加入最愛';
+          const iconStr = isPast ? 'fa-solid fa-box-archive' : 'fa-regular fa-calendar-days';
+          const colorStr = isPast ? 'text-slate-400' : 'text-skyBlue-500';
+          otherDaysHtml += makeSubSection(titleStr, subStr, iconStr, listForDay, colorStr, true, dayKey);
+        } else {
+          otherDaysHtml += `
+            <div class="rounded-2xl p-3.5 bg-white/60 border border-slate-200/70 flex items-center justify-between text-xs text-slate-400">
+              <span class="font-bold text-slate-600"><i class="fa-regular fa-calendar mr-1.5 text-skyBlue-500"></i>${esc(dayKey)} 場次（${esc(daySch.showTime)} 開唱）</span>
+              <span>${favFilterMode === 'fav' ? '無符合最愛篩選之攤位' : '尚無登記此場次之攤位'}</span>
+            </div>
+          `;
+        }
+      });
+
+      container.innerHTML = `
+        <!-- 今日發放區塊 -->
+        <div class="p-3.5 sm:p-4 rounded-2xl bg-skyBlue-50/40 border border-skyBlue-100 space-y-3">
+          <div class="flex items-center justify-between border-b border-skyBlue-200/60 pb-2">
+            <h3 class="text-xs sm:text-base font-black text-skyBlue-900 flex items-center">
+              <span class="w-2 h-2 rounded-full bg-skyBlue-500 mr-2"></span>
+              今日發放 ${isConcertToday ? `（${esc(currentSimDate)} 場次）` : `（${esc(currentSimDate)}）`}
+            </h3>
+            <span class="text-[10px] font-bold text-skyBlue-600">${isConcertToday ? `${sch.showTime} 開唱` : '非演唱會日'}</span>
+          </div>
+          ${todaySectionHtml}
+        </div>
+
+        <!-- 其餘場次發放區塊 -->
+        <div class="p-3.5 sm:p-4 rounded-2xl bg-slate-50/70 border border-slate-200/80 space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+            <h3 class="text-xs sm:text-base font-black text-slate-700 flex items-center">
+              <i class="fa-solid fa-layer-group text-slate-400 mr-2 text-xs"></i>
+              其餘場次發放（依序：${otherDaysOrder.join(' ➔ ')}）
+            </h3>
+            <span class="text-[10px] text-slate-400">未來場次優先・過往場次置底</span>
+          </div>
+          <div class="space-y-4">
+            ${otherDaysHtml}
+          </div>
+        </div>
+      `;
+    }
+
+    function handleSearch(val) {
+      searchQuery = val.trim().toLowerCase();
+      renderTimeline();
+    }
+
+    function changeDate(d) {
+      if (currentRole !== 'admin') return;
+      currentSimDate = d;
+      userPickedDate = true;
+      syncDateSelect();
+      remapAllVendorsForDate();
+      renderTimeline();
+      updateVendorUI();
+      if (currentRole === 'admin') renderAdminVendorTable();
+      checkHalfHourShowtimeAlert();
+      showToast(`管理檢視日已切換至：${d}`);
+    }
+
+    /* ---------- 攤主操作台：抵達報位、圖片壓縮、5~15 分鐘準備倒數、手動結束 ---------- */
+    function openArrivalModal(isEdit = false) {
+      if (!currentVendor) return;
+      if (!isEdit && isWithinHalfHourBeforeShow()) {
+        showToast('距離開唱僅剩半小時，已停止開放攤主確認抵達填寫發放！');
+        return;
+      }
+      if (!isEdit && currentVendor.quotaUsed && currentVendor.status === 'ended') {
+        showToast('您今日的 1 次擺攤發放額度已使用完畢！');
+        return;
+      }
+      isEditingExistingArrival = !!isEdit;
+
+      const titleEl = document.getElementById('arrivalModalTitle');
+      const itemEl = document.getElementById('arriveItemName');
+      const locEl = document.getElementById('arriveLocationText');
+      const prepSection = document.getElementById('prepTimeSection');
+      const submitTxt = document.getElementById('btnSubmitArrivalText');
+
+      if (titleEl) titleEl.innerText = isEdit ? '更新所在發放位置與照片' : '抵達場館・填寫發放位置';
+      if (itemEl) itemEl.value = currentVendor.items || '';
+      if (locEl) locEl.value = currentVendor.locationText || '';
+
+      tempCompressedPhotoDataUrl = safeImgSrc(currentVendor.locationImg);
+      refreshPhotoPreviewUI();
+
+      if (isEdit) {
+        if (prepSection) prepSection.classList.add('hidden');
+        if (submitTxt) submitTxt.innerText = '儲存更新位置資訊';
+      } else {
+        if (prepSection) prepSection.classList.remove('hidden');
+        setPrepQuick(10);
+        if (submitTxt) submitTxt.innerText = '確認抵達・開始準備倒數';
+      }
+
+      const modal = document.getElementById('arrivalModal');
+      if (!modal) return;
+      modal.classList.remove('hidden');
+      setTimeout(() => modal.classList.remove('opacity-0'), 10);
+    }
+
+    function closeArrivalModal() {
+      const modal = document.getElementById('arrivalModal');
+      if (!modal) return;
+      modal.classList.add('opacity-0');
+      setTimeout(() => modal.classList.add('hidden'), 200);
+    }
+
+    function updatePrepSliderText(val) {
+      const el = document.getElementById('prepTimeValText');
+      if (el) el.innerText = `${val} 分鐘`;
+    }
+
+    function setPrepQuick(minVal) {
+      const slider = document.getElementById('arrivePrepSlider');
+      if (slider) slider.value = minVal;
+      updatePrepSliderText(minVal);
+    }
+
+    function handleLocationPhotoSelect(input) {
+      const file = input && input.files && input.files[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        showToast('請選擇圖片檔案');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const maxDim = 360;
+          let w = img.width;
+          let h = img.height;
+          if (w > maxDim || h > maxDim) {
+            if (w > h) {
+              h = Math.round((h * maxDim) / w);
+              w = maxDim;
+            } else {
+              w = Math.round((w * maxDim) / h);
+              h = maxDim;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          let q = 0.52, d = canvas.toDataURL('image/jpeg', q);
+          while (d.length > MAX_IMG_LEN && q > 0.3) { q -= 0.1; d = canvas.toDataURL('image/jpeg', q); }
+          if (d.length > MAX_IMG_LEN) { showToast('照片檔案過大，請換一張照片'); return; }
+          tempCompressedPhotoDataUrl = d;
+          refreshPhotoPreviewUI();
+          showToast('已自動壓縮並載入位置照片');
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearLocationPhoto() {
+      tempCompressedPhotoDataUrl = '';
+      const fileInput = document.getElementById('arriveLocationPhotoInput');
+      if (fileInput) fileInput.value = '';
+      refreshPhotoPreviewUI();
+    }
+
+    function refreshPhotoPreviewUI() {
+      const wrap = document.getElementById('arrivePhotoPreviewWrap');
+      const img = document.getElementById('arrivePhotoPreview');
+      const btnClear = document.getElementById('btnClearPhoto');
+      const lbl = document.getElementById('photoUploadLabel');
+      if (tempCompressedPhotoDataUrl) {
+        if (img) img.src = tempCompressedPhotoDataUrl;
+        if (wrap) wrap.classList.remove('hidden');
+        if (btnClear) btnClear.classList.remove('hidden');
+        if (lbl) lbl.innerText = '更換位置照片';
+      } else {
+        if (img) img.src = '';
+        if (wrap) wrap.classList.add('hidden');
+        if (btnClear) btnClear.classList.add('hidden');
+        if (lbl) lbl.innerText = '選擇或拍攝位置照片';
+      }
+    }
+
+    async function submitVendorArrival() {
+      if (!isEditingExistingArrival && isWithinHalfHourBeforeShow()) {
+        showToast('距離開唱僅剩半小時，已停止開放攤主確認抵達填寫發放！');
+        closeArrivalModal();
+        return;
+      }
+
+      const itemEl = document.getElementById('arriveItemName');
+      const locEl = document.getElementById('arriveLocationText');
+      const prepEl = document.getElementById('arrivePrepSlider');
+
+      const items = itemEl ? itemEl.value.trim() : '';
+      const locationText = locEl ? locEl.value.trim() : '';
+      const prepMin = Math.min(15, Math.max(5, parseInt(prepEl ? prepEl.value : '10', 10) || 10));
+
+      if (!items) { showToast('請填寫本次發放應援物內容簡述'); return; }
+      if (strLen(items) > 30) { showToast('應援物簡述限 30 字以內'); return; }
+      if (!locationText) { showToast('請填寫所在發放位置說明（必填）'); return; }
+      if (strLen(locationText) > 80) { showToast('位置說明限 80 字以內'); return; }
+
+      const now = Date.now();
+      const hasPhotoNow = Boolean(tempCompressedPhotoDataUrl);
+      const updatedFields = {
+        items,
+        locationText,
+        hasPhoto: hasPhotoNow
+      };
+
+      if (!isEditingExistingArrival) {
+        updatedFields.status = 'preparing';
+        updatedFields.prepTotalMs = prepMin * 60000;
+        updatedFields.startMs = now + prepMin * 60000;
+        updatedFields.endedMs = 0;
+        updatedFields.quotaUsedToday = true;
+      }
+
+      if (!DEMO_MODE && backendReady && currentVendor.uid) {
+        try {
+          if (hasPhotoNow && tempCompressedPhotoDataUrl !== currentVendor.locationImg) {
+            await FB().setDoc(FB().doc(firestoreDb, 'vendor_photos', currentVendor.uid), {
+              uid: currentVendor.uid,
+              locationImg: tempCompressedPhotoDataUrl,
+              updatedAt: now
+            });
+          } else if (!hasPhotoNow && (currentVendor.hasPhoto || (currentVendor._raw && currentVendor._raw.hasPhoto))) {
+            try { await FB().deleteDoc(FB().doc(firestoreDb, 'vendor_photos', currentVendor.uid)); } catch (de) {}
+          }
+          await FB().setDoc(FB().doc(firestoreDb, 'market_public', 'live'), {
+            vendors: { [currentVendor.uid]: updatedFields }
+          }, { merge: true });
+        } catch (e) {
+          showToast('更新失敗：' + backendErrMsg(e));
+          return;
+        }
+      }
+
+      savePhotoToSessionCache(currentVendor.uid, tempCompressedPhotoDataUrl || '');
+      currentVendor.items = items;
+      currentVendor.locationText = locationText;
+      currentVendor.hasPhoto = hasPhotoNow;
+      currentVendor.locationImg = tempCompressedPhotoDataUrl || '';
+      if (currentVendor._raw) currentVendor._raw.hasPhoto = hasPhotoNow;
+
+      if (!isEditingExistingArrival) {
+        currentVendor.status = 'preparing';
+        currentVendor.prepTotalMs = prepMin * 60000;
+        currentVendor.startMs = now + prepMin * 60000;
+        currentVendor.endedMs = 0;
+        currentVendor.quotaUsed = true;
+        showToast(`已公布位置並開始 ${prepMin} 分鐘準備倒數！${prepMin === 5 ? '已立即提醒收藏您的最愛訪客！' : '將於開攤前 5 分鐘提醒最愛訪客！'}`);
+      } else {
+        showToast('已更新所在發放位置與照片！');
+      }
+
+      if (currentVendor.uid) {
+        PUBLIC_LIVE_MAP[currentVendor.uid] = { ...(PUBLIC_LIVE_MAP[currentVendor.uid] || buildPublicSlotPayload(currentVendor)), ...updatedFields };
+        savePublicLiveCache(PUBLIC_LIVE_MAP);
+      }
+
+      closeArrivalModal();
+      updateVendorUI();
+      renderTimeline();
+      checkFiveMinNotifications();
+    }
+
+    function openImageLightbox(src, caption) {
+      if (!src) return;
+      const modal = document.getElementById('imageLightboxModal');
+      const img = document.getElementById('lightboxImg');
+      const cap = document.getElementById('lightboxCaption');
+      if (img) img.src = src;
+      if (cap) cap.innerText = caption || '';
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeImageLightbox() {
+      const modal = document.getElementById('imageLightboxModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function mmss(ms) {
+      const t = Math.max(0, Math.floor(ms / 1000));
+      return `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
+    }
+
+    function tickSystem() {
+      const now = Date.now();
+      let needReRender = false;
+
+      // 跨午夜 00:00 自動換日並重置隔日繼續擺攤之創作者額度
+      const realToday = deriveTodayKey();
+      if (!userPickedDate && realToday !== currentSimDate) {
+        currentSimDate = realToday;
+        syncDateSelect();
+        remapAllVendorsForDate();
+        needReRender = true;
+      }
+
+      // Spark 省流自動同步：網頁在前景顯示時，每 2.5 分鐘自動拉取一次單一聚合文件（僅消耗 1 次讀取）
+      if (!DEMO_MODE && backendReady && !document.hidden && !vendorsAll && (now - lastPublicFetchMs >= PUBLIC_AUTO_POLL_MS)) {
+        lastPublicFetchMs = now;
+        fetchPublicMarketLive(true);
+      }
+
+      VENDORS_LIST.forEach(v => {
+        if (v.status === 'preparing' && v.startMs && now >= v.startMs) {
+          v.status = 'in_use';
+          needReRender = true;
+          if (currentVendor && currentVendor.uid === v.uid) {
+            currentVendor.status = 'in_use';
+            showToast('準備時間到！已自動切換為【發放中】狀態。');
+          }
+        }
+      });
+
+      checkFiveMinNotifications();
+      checkHalfHourShowtimeAlert();
+
+      if (needReRender) {
+        updateVendorUI();
+        renderTimeline();
+        return;
+      }
+
+      if (currentVendor && currentVendor.status === 'preparing' && currentVendor.startMs) {
+        const remain = Math.max(0, currentVendor.startMs - now);
+        const cCount = document.getElementById('vendorCountdown');
+        const pBar = document.getElementById('vendorProgressBar');
+        const total = currentVendor.prepTotalMs || 10 * 60000;
+        if (cCount) cCount.innerText = mmss(remain);
+        if (pBar) pBar.style.width = `${Math.max(0, Math.min(100, (remain / total) * 100))}%`;
+      }
+
+      if (activeTab === 'timeline' && VENDORS_LIST.some(v => v.status === 'preparing')) {
+        renderTimeline();
+      }
+    }
+
+    function updateVendorUI() {
+      const v = currentVendor;
+      const idlePanel = document.getElementById('vendorIdlePanel');
+      const activeCard = document.getElementById('vendorActiveCard');
+      const endedPanel = document.getElementById('vendorEndedPanel');
+      const quotaBadge = document.getElementById('vendorQuotaBadge');
+      if (!idlePanel || !activeCard || !endedPanel || !v) return;
+
+      updateVendorArrivalButtonLock();
+
+      if (v.status === 'upcoming' && !v.quotaUsed) {
+        idlePanel.classList.remove('hidden');
+        activeCard.classList.add('hidden');
+        endedPanel.classList.add('hidden');
+        if (quotaBadge) {
+          quotaBadge.className = 'text-xs px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 font-bold whitespace-nowrap';
+          quotaBadge.innerHTML = '<i class="fa-solid fa-check mr-1"></i>今日可用額度：1 次';
+        }
+        return;
+      }
+
+      if (v.status === 'ended') {
+        idlePanel.classList.add('hidden');
+        activeCard.classList.add('hidden');
+        endedPanel.classList.remove('hidden');
+        if (quotaBadge) {
+          quotaBadge.className = 'text-xs px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 border border-slate-200 font-bold whitespace-nowrap';
+          quotaBadge.innerHTML = '<i class="fa-solid fa-flag-checkered mr-1"></i>今日額度已使用完畢';
+        }
+        return;
+      }
+
+      idlePanel.classList.add('hidden');
+      activeCard.classList.remove('hidden');
+      endedPanel.classList.add('hidden');
+
+      if (quotaBadge) {
+        quotaBadge.className = 'text-xs px-2.5 py-1 rounded-full bg-skyBlue-50 text-skyBlue-600 border border-skyBlue-200 font-bold whitespace-nowrap';
+        quotaBadge.innerHTML = '<i class="fa-solid fa-bolt mr-1"></i>今日額度使用中';
+      }
+
+      const vName = document.getElementById('vCardVendorName');
+      const vItem = document.getElementById('vCardItemName');
+      const vTime = document.getElementById('vCardStartTime');
+      const vLoc = document.getElementById('vCardLocationText');
+      const vImg = document.getElementById('vCardLocationImg');
+      const badge = document.getElementById('vendorStatusBadge');
+      const cBox = document.getElementById('vCountdownBox');
+      const btnStartNow = document.getElementById('btnVendorStartNow');
+
+      if (vName) vName.innerText = v.nickname || '創作者';
+      if (vItem) vItem.innerText = v.items || '應援周邊';
+      if (vTime) vTime.innerText = v.startMs ? fmtHM(v.startMs) : '現在';
+      if (vLoc) vLoc.innerText = v.locationText || '未填寫位置說明';
+
+      if (vImg) {
+        if (safeImgSrc(v.locationImg)) {
+          vImg.src = safeImgSrc(v.locationImg);
+          vImg.classList.remove('hidden');
+        } else {
+          vImg.src = '';
+          vImg.classList.add('hidden');
+        }
+      }
+
+      if (v.status === 'preparing') {
+        if (badge) {
+          badge.className = 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200';
+          badge.innerText = '抵達準備中 (倒數計時)';
+        }
+        if (cBox) cBox.classList.remove('hidden');
+        if (btnStartNow) btnStartNow.classList.remove('hidden');
+      } else if (v.status === 'in_use') {
+        if (badge) {
+          badge.className = 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200';
+          badge.innerText = '現場發放應援中 (不限時)';
+        }
+        if (cBox) cBox.classList.add('hidden');
+        if (btnStartNow) btnStartNow.classList.add('hidden');
+      }
+    }
+
+    async function vendorStartNow() {
+      if (!currentVendor || currentVendor.status !== 'preparing') return;
+      const now = Date.now();
+      const patch = { status: 'in_use', startMs: now };
+      if (!DEMO_MODE && backendReady && currentVendor.uid) {
+        try {
+          await FB().setDoc(FB().doc(firestoreDb, 'market_public', 'live'), {
+            vendors: { [currentVendor.uid]: patch }
+          }, { merge: true });
+        } catch (e) {
+          showToast('操作失敗');
+          return;
+        }
+      }
+      currentVendor.status = 'in_use';
+      currentVendor.startMs = now;
+      if (currentVendor.uid && PUBLIC_LIVE_MAP[currentVendor.uid]) {
+        Object.assign(PUBLIC_LIVE_MAP[currentVendor.uid], patch);
+        savePublicLiveCache(PUBLIC_LIVE_MAP);
+      }
+      showToast('已切換為【現場發放中】！');
+      updateVendorUI();
+      renderTimeline();
+    }
+
+    async function executeSoldOut() {
+      if (!currentVendor || (currentVendor.status !== 'in_use' && currentVendor.status !== 'preparing')) return;
+      const now = Date.now();
+      const patch = { status: 'ended', endedMs: now, quotaUsedToday: true };
+      if (!DEMO_MODE && backendReady && currentVendor.uid) {
+        try {
+          await FB().setDoc(FB().doc(firestoreDb, 'market_public', 'live'), {
+            vendors: { [currentVendor.uid]: patch }
+          }, { merge: true });
+        } catch (e) {
+          showToast('操作失敗');
+          return;
+        }
+      }
+      currentVendor.status = 'ended';
+      currentVendor.endedMs = now;
+      currentVendor.quotaUsed = true;
+      if (currentVendor.uid && PUBLIC_LIVE_MAP[currentVendor.uid]) {
+        Object.assign(PUBLIC_LIVE_MAP[currentVendor.uid], patch);
+        savePublicLiveCache(PUBLIC_LIVE_MAP);
+      }
+      showToast('已標記為【已發放完畢】！您的攤位已移至時序最下方。');
+      updateVendorUI();
+      renderTimeline();
+    }
+
+    function toggleLiteMode() {
+      isLiteMode = !isLiteMode;
+      const btn = document.getElementById('btnLiteMode');
+      if (isLiteMode) {
+        document.body.classList.add('lite-mode');
+        if (btn) btn.className = 'px-2 py-0.5 rounded-md bg-emerald-500 text-white font-bold transition flex items-center space-x-1';
+        showToast('已開啟【簡易模式】：停用飄雪與毛玻璃濾鏡');
+      } else {
+        document.body.classList.remove('lite-mode');
+        if (btn) btn.className = 'px-2 py-0.5 rounded-md bg-white/80 border border-slate-200 text-slate-600 hover:text-skyBlue-600 transition flex items-center space-x-1';
+        showToast('已還原完整視覺效果');
+      }
+    }
+
+    function setOfflineState(off) {
+      isOfflineSim = !!off;
+      const banner = document.getElementById('offlineBanner');
+      const badge = document.getElementById('connBadge');
+      if (isOfflineSim) {
+        if (banner) banner.classList.remove('hidden');
+        if (badge) {
+          badge.className = 'inline-flex items-center px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200 font-bold';
+          badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>已離線 (快取顯示)';
+        }
+      } else {
+        if (banner) banner.classList.add('hidden');
+        if (badge) {
+          badge.className = 'inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 font-bold';
+          badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>連線正常';
+        }
+      }
+    }
+
+    function retryConnection() {
+      if (DEMO_MODE) { setOfflineState(false); return; }
+      if (!navigator.onLine) { showToast('裝置目前沒有網路，此畫面僅供參考'); return; }
+      if (!backendReady) { location.reload(); return; }
+      setOfflineState(false);
+      showToast('正在重新連線…');
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      if (!t) return;
+      t.innerText = msg;
+      t.classList.remove('opacity-0', '-translate-y-2');
+      setTimeout(() => t.classList.add('opacity-0', '-translate-y-2'), 2600);
+    }
+
+    /* 六角雪花動畫 */
+    function initSnow() {
+      const c = document.getElementById('snowCanvas');
+      if (!c) return;
+      const ctx = c.getContext('2d');
+      if (!ctx) return;
+
+      let w = (c.width = window.innerWidth);
+      let h = (c.height = window.innerHeight);
+      const flakes = [];
+
+      function resetFlakes() {
+        w = c.width = window.innerWidth;
+        h = c.height = window.innerHeight;
+        flakes.length = 0;
+        const count = w > 600 ? 75 : 40;
+        for (let i = 0; i < count; i++) {
+          flakes.push({
+            x: Math.random() * w,
+            y: Math.random() * h,
+            size: Math.random() * 4.5 + 2.5,
+            speed: Math.random() * 0.8 + 0.35,
+            wind: Math.random() * 0.4 - 0.2,
+            angle: Math.random() * Math.PI * 2,
+            rotSpeed: (Math.random() - 0.5) * 0.02,
+            swing: Math.random() * Math.PI * 2,
+            swingSpeed: Math.random() * 0.015 + 0.008,
+            alpha: Math.random() * 0.45 + 0.55,
+            type: Math.random() > 0.35 ? 'crystal' : 'simple'
+          });
+        }
+      }
+
+      window.addEventListener('resize', resetFlakes);
+      window.addEventListener('orientationchange', () => setTimeout(resetFlakes, 200));
+      resetFlakes();
+
+      function drawSnowflake(x, y, size, angle, alpha, type) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+        ctx.fillStyle = `rgba(224, 242, 254, ${alpha * 0.6})`;
+        ctx.lineWidth = Math.max(1, size * 0.18);
+        ctx.lineCap = 'round';
+        ctx.shadowBlur = 5;
+        ctx.shadowColor = 'rgba(0, 160, 233, 0.45)';
+
+        if (type === 'crystal') {
+          for (let i = 0; i < 6; i++) {
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(0, -size);
+            ctx.stroke();
+
+            const branchOffset = size * 0.55;
+            const branchLen = size * 0.35;
+            ctx.beginPath();
+            ctx.moveTo(0, -branchOffset);
+            ctx.lineTo(-branchLen, -branchOffset - branchLen * 0.6);
+            ctx.moveTo(0, -branchOffset);
+            ctx.lineTo(branchLen, -branchOffset - branchLen * 0.6);
+            ctx.stroke();
+            ctx.rotate(Math.PI / 3);
+          }
+          ctx.beginPath();
+          ctx.arc(0, 0, size * 0.22, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          for (let i = 0; i < 6; i++) {
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(0, -size * 0.85);
+            ctx.stroke();
+            ctx.rotate(Math.PI / 3);
+          }
+        }
+        ctx.restore();
+      }
+
+      function loop() {
+        if (!isLiteMode) {
+          ctx.clearRect(0, 0, w, h);
+          for (let i = 0; i < flakes.length; i++) {
+            const f = flakes[i];
+            f.swing += f.swingSpeed;
+            f.angle += f.rotSpeed;
+            const currentX = f.x + Math.sin(f.swing) * 2.2;
+            drawSnowflake(currentX, f.y, f.size, f.angle, f.alpha, f.type);
+            f.y += f.speed;
+            f.x += f.wind;
+            if (f.y > h + 15) { f.y = -15; f.x = Math.random() * w; }
+            if (f.x > w + 15) f.x = -15;
+            if (f.x < -15) f.x = w + 15;
+          }
+        }
+        requestAnimationFrame(loop);
+      }
+      loop();
+    }
+
+    /* ---------- 初始化掛載 ---------- */
+    document.addEventListener('DOMContentLoaded', function() {
+      initSnow();
+      loadFavoritesFromCookie();
+      updateNotifPermButtonUI();
+      syncDateSelect();
+      initFirebaseLive();
+      setAppRole('guest');
+      renderTimeline();
+      updateVendorUI();
+      checkHalfHourShowtimeAlert();
+
+      window.addEventListener('offline', () => { if (!DEMO_MODE) setOfflineState(true); });
+      window.addEventListener('online', () => { if (!DEMO_MODE) setOfflineState(false); });
+
+      // 前景喚醒同步：訪客從其他 App 切回本網頁時，若距離上次同步已超過 2 分鐘則自動拉取最新聚合文件
+      document.addEventListener('visibilitychange', () => {
+        if (DEMO_MODE || !backendReady || vendorsAll) return;
+        if (!document.hidden && (Date.now() - lastPublicFetchMs >= PUBLIC_CACHE_TTL_MS)) {
+          fetchPublicMarketLive(false);
+        }
+      });
+
+      setInterval(() => {
+        if (DEMO_MODE && !isOfflineSim) setLastUpdate(fmtHMS(Date.now()));
+        tickSystem();
+      }, 1000);
+    });
+  </script>
+</body>
+</html>
