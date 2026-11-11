@@ -1251,36 +1251,52 @@
       if (modal) modal.classList.add('hidden');
     }
 
-    function dismissHalfHourBanner() {
-      halfHourAlertShownForDay[currentSimDate + '_bannerDismissed'] = true;
-      const topBanner = document.getElementById('halfHourTopBanner');
-      if (topBanner) topBanner.classList.add('hidden');
-    }
-
     function updateVendorArrivalButtonLock() {
-      const btn = document.getElementById('btnOpenArrivalModal');
-      const txt = document.getElementById('btnOpenArrivalText');
-      const hint = document.getElementById('vendorCutoffHint');
-      if (!btn || !txt) return;
+  const btn = document.getElementById('btnOpenArrivalModal');
+  const txt = document.getElementById('btnOpenArrivalText');
+  const hint = document.getElementById('vendorCutoffHint');
+  if (!btn || !txt) return;
 
-      if (isWithinHalfHourBeforeShow()) {
-        btn.disabled = true;
-        btn.className = 'px-5 py-3 rounded-xl bg-slate-200 text-slate-500 font-bold text-xs sm:text-sm cursor-not-allowed inline-flex items-center space-x-2';
-        txt.innerText = '開唱前半小時不開放確認抵達填寫發放';
-        if (hint) {
-          hint.className = 'text-[11px] text-rose-500 font-bold mt-2.5';
-          hint.innerText = '距離開唱僅剩半小時，已停止開放確認抵達與填寫發放位置，請抓緊時間準備入場。';
-        }
-      } else {
-        btn.disabled = false;
-        btn.className = 'px-5 py-3 rounded-xl bg-gradient-to-r from-skyBlue-500 to-skyBlue-600 hover:from-skyBlue-600 text-white font-bold text-xs sm:text-sm shadow-md shadow-skyBlue-500/25 transition inline-flex items-center space-x-2';
-        txt.innerText = '我已抵達場館・填寫發放位置';
-        if (hint) {
-          hint.className = 'text-[11px] text-slate-400 mt-2.5';
-          hint.innerText = '注意：當日開唱前半小時將關閉抵達報位功能。';
-        }
-      }
+  // 1. 判定管理者：管理者擁有測試與操作權限，不受日期限制
+  const isAdminUser = (currentRole === 'admin');
+
+  // 2. 判定今天是否在攤主事前申請的日期清單內
+  const vendorDays = (currentVendor && Array.isArray(currentVendor.expectedDays)) ? currentVendor.expectedDays : [];
+  const isRegisteredForToday = isAdminUser || vendorDays.includes(currentSimDate);
+
+  // 3. 判定是否已進入開唱前半小時截止時間
+  const inCutoff = isWithinHalfHourBeforeShow();
+
+  if (!isRegisteredForToday) {
+    // 【非申請日期】：按鈕反灰禁用
+    btn.disabled = true;
+    btn.className = 'px-5 py-3 rounded-xl bg-slate-200 text-slate-400 font-bold text-xs sm:text-sm cursor-not-allowed inline-flex items-center space-x-2';
+    txt.innerText = '今日非您事前登記的發放日期';
+    if (hint) {
+      hint.className = 'text-[11px] text-amber-600 font-bold mt-2.5';
+      const daysStr = vendorDays.length > 0 ? vendorDays.join('、') : '無';
+      hint.innerHTML = `<i class="fa-solid fa-calendar-xmark mr-1"></i>今日（${esc(currentSimDate)}）非您登記之出攤日（您登記的日期：<strong>${esc(daysStr)}</strong>），暫無法報位。`;
     }
+  } else if (inCutoff) {
+    // 【開唱前半小時】：按鈕反灰禁用
+    btn.disabled = true;
+    btn.className = 'px-5 py-3 rounded-xl bg-slate-200 text-slate-500 font-bold text-xs sm:text-sm cursor-not-allowed inline-flex items-center space-x-2';
+    txt.innerText = '開唱前半小時不開放確認抵達填寫發放';
+    if (hint) {
+      hint.className = 'text-[11px] text-rose-500 font-bold mt-2.5';
+      hint.innerText = '距離開唱僅剩半小時，已停止開放確認抵達與填寫發放位置，請抓緊時間準備入場。';
+    }
+  } else {
+    // 【符合條件】：正常開放點擊
+    btn.disabled = false;
+    btn.className = 'px-5 py-3 rounded-xl bg-gradient-to-r from-skyBlue-500 to-skyBlue-600 hover:from-skyBlue-600 text-white font-bold text-xs sm:text-sm shadow-md shadow-skyBlue-500/25 transition inline-flex items-center space-x-2';
+    txt.innerText = '我已抵達場館・填寫發放位置';
+    if (hint) {
+      hint.className = 'text-[11px] text-slate-400 mt-2.5';
+      hint.innerText = '注意：當日開唱前半小時將關閉抵達報位功能。';
+    }
+  }
+}
 
     /* ---------- Cookie 與最愛清單管理 ---------- */
     let favoriteUids = [];
@@ -2937,16 +2953,25 @@
     }
 
     /* ---------- 攤主操作台：抵達報位、圖片壓縮、5~15 分鐘準備倒數、手動結束 ---------- */
-    function openArrivalModal(isEdit = false) {
-      if (!currentVendor) return;
-      if (!isEdit && isWithinHalfHourBeforeShow()) {
-        showToast('距離開唱僅剩半小時，已停止開放攤主確認抵達填寫發放！');
-        return;
-      }
-      if (!isEdit && currentVendor.quotaUsed && currentVendor.status === 'ended') {
-        showToast('您今日的 1 次擺攤發放額度已使用完畢！');
-        return;
-      }
+     function openArrivalModal(isEdit = false) {
+  if (!currentVendor) return;
+
+  // 檢查今天是否為申請之參加日
+  const vendorDays = (currentVendor && Array.isArray(currentVendor.expectedDays)) ? currentVendor.expectedDays : [];
+  const isRegisteredForToday = (currentRole === 'admin') || vendorDays.includes(currentSimDate);
+  if (!isEdit && !isRegisteredForToday) {
+    showToast(`今日（${currentSimDate}）非您登記之參加日，無法填寫抵達！`);
+    return;
+  }
+
+  if (!isEdit && isWithinHalfHourBeforeShow()) {
+    showToast('距離開唱僅剩半小時，已停止開放攤主確認抵達填寫發放！');
+    return;
+  }
+  if (!isEdit && currentVendor.quotaUsed && currentVendor.status === 'ended') {
+    showToast('您今日的 1 次擺攤發放額度已使用完畢！');
+    return;
+  }
       isEditingExistingArrival = !!isEdit;
 
       const titleEl = document.getElementById('arrivalModalTitle');
@@ -3060,12 +3085,20 @@
       }
     }
 
-    async function submitVendorArrival() {
-      if (!isEditingExistingArrival && isWithinHalfHourBeforeShow()) {
-        showToast('距離開唱僅剩半小時，已停止開放攤主確認抵達填寫發放！');
-        closeArrivalModal();
-        return;
-      }
+async function submitVendorArrival() {
+  const vendorDays = (currentVendor && Array.isArray(currentVendor.expectedDays)) ? currentVendor.expectedDays : [];
+  const isRegisteredForToday = (currentRole === 'admin') || vendorDays.includes(currentSimDate);
+  if (!isEditingExistingArrival && !isRegisteredForToday) {
+    showToast(`今日（${currentSimDate}）非您登記之參加日，無法報位！`);
+    closeArrivalModal();
+    return;
+  }
+
+  if (!isEditingExistingArrival && isWithinHalfHourBeforeShow()) {
+    showToast('距離開唱僅剩半小時，已停止開放攤主確認抵達填寫發放！');
+    closeArrivalModal();
+    return;
+  }
 
       const itemEl = document.getElementById('arriveItemName');
       const locEl = document.getElementById('arriveLocationText');
