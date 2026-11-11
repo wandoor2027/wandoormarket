@@ -581,7 +581,7 @@
                   <th class="py-2 px-2">登記信箱 (隱碼防盜)</th>
                   <th class="py-2 px-2">預計參加日</th>
                   <th class="py-2 px-2">登記應援物</th>
-                  <th class="py-2 px-2">商品貼文</th>
+                  <th class="py-2 px-2">應援物貼文</th>
                   <th class="py-2 px-2">審核狀態</th>
                   <th class="py-2 px-2 text-right">管理操作</th>
                 </tr>
@@ -794,7 +794,7 @@
           </div>
 
           <div>
-            <label class="block font-bold text-slate-700 mb-1">本人 SNS 相關商品貼文超連結 <span class="text-rose-500">*</span></label>
+            <label class="block font-bold text-slate-700 mb-1">本人 SNS 相關應援物貼文超連結 <span class="text-rose-500">*</span></label>
             <input type="url" id="appProductPostLink" required placeholder="https://threads.net/@id/post/... 或 IG 貼文網址" class="w-full bg-white rounded-xl p-2 border border-slate-200 focus:outline-none focus:border-skyBlue-400">
           </div>
 
@@ -933,7 +933,7 @@
       </div>
       <h3 class="text-base font-bold text-slate-800 mb-1">管理者正在審核真人資格</h3>
       <p class="text-xs text-slate-600 mb-3" id="pendingModalDesc">
-        您的申請（暱稱：<strong id="pendingNick" class="text-skyBlue-600">-</strong>）已收到，正由管理者審核商品貼文與真人資格中。
+        您的申請（暱稱：<strong id="pendingNick" class="text-skyBlue-600">-</strong>）已收到，正由管理者審核應援物貼文與真人資格中。
       </p>
       <div class="p-3 bg-amber-50/80 rounded-2xl border border-amber-100 text-left text-[11px] text-amber-900 mb-4 space-y-1">
         <div class="flex items-start">
@@ -2396,7 +2396,7 @@
       if (!nick) { showToast('請填寫創作者／攤販暱稱'); return; }
       if (strLen(nick) > 15) { showToast('暱稱限 15 字以內'); return; }
       if (strLen(items) > 30) { showToast('應援物簡述限 30 字以內'); return; }
-      if (!link) { showToast('請提供本人 SNS 相關商品貼文連結！'); return; }
+      if (!link) { showToast('請提供本人 SNS 相關應援物貼文連結！'); return; }
       const safeLink = safePostUrl(link);
       if (!safeLink) { showToast('貼文連結須為 https，且網域限 Threads、Instagram、X(Twitter)'); return; }
       if (!isValidEmail(email)) { showToast('請填寫正確的聯絡電子信箱'); return; }
@@ -2759,7 +2759,7 @@
         const href = safePostUrl(v.productPost);
         const postLinkHtml = href ? `
           <a href="${esc(href)}" target="_blank" rel="noopener noreferrer" class="text-skyBlue-500 hover:text-skyBlue-600 text-[11px] font-bold flex items-center space-x-1 flex-shrink-0">
-            <span>商品貼文</span>
+            <span>應援物貼文</span>
             <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
           </a>` : '';
 
