@@ -1215,7 +1215,7 @@
     }
 
     function checkHalfHourShowtimeAlert() {
-      const inCutoff = !isAdminUser && isWithinHalfHourBeforeShow();
+      const inCutoff = (currentRole !== 'admin') && isWithinHalfHourBeforeShow();
       const topBanner = document.getElementById('halfHourTopBanner');
 
       if (inCutoff) {
@@ -1261,13 +1261,42 @@
       if (topBanner) topBanner.classList.add('hidden');
     }
 
+    function isVendorRegisteredForToday(v = currentVendor) {
+      if (!v || !v.uid) return false;
+      const vendorDays = Array.isArray(v.expectedDays) ? v.expectedDays : [];
+      return vendorDays.includes(currentSimDate);
+    }
+
     function updateVendorArrivalButtonLock() {
       const btn = document.getElementById('btnOpenArrivalModal');
       const txt = document.getElementById('btnOpenArrivalText');
       const hint = document.getElementById('vendorCutoffHint');
       if (!btn || !txt) return;
 
-      if (isWithinHalfHourBeforeShow()) {
+      const isAdmin = (currentRole === 'admin');
+      const hasSelectedVendor = Boolean(currentVendor && currentVendor.uid);
+      const vendorDays = (currentVendor && Array.isArray(currentVendor.expectedDays)) ? currentVendor.expectedDays : [];
+      const isRegisteredForToday = isVendorRegisteredForToday(currentVendor);
+      const inCutoff = !isAdmin && isWithinHalfHourBeforeShow();
+
+      if (isAdmin && !hasSelectedVendor) {
+        btn.disabled = true;
+        btn.className = 'px-5 py-3 rounded-xl bg-slate-200 text-slate-400 font-bold text-xs sm:text-sm cursor-not-allowed inline-flex items-center space-x-2';
+        txt.innerText = '請先於上方選擇要代操作的攤主';
+        if (hint) {
+          hint.className = 'text-[11px] text-slate-400 mt-2.5';
+          hint.innerText = '選擇攤主後即可檢視該攤主登記場次並進行代操作。';
+        }
+      } else if (!isRegisteredForToday) {
+        btn.disabled = true;
+        btn.className = 'px-5 py-3 rounded-xl bg-slate-200 text-slate-400 font-bold text-xs sm:text-sm cursor-not-allowed inline-flex items-center space-x-2';
+        txt.innerText = '今日非事前登記的發放日期';
+        if (hint) {
+          hint.className = 'text-[11px] text-amber-600 font-bold mt-2.5';
+          const daysStr = vendorDays.length > 0 ? vendorDays.join('、') : '無';
+          hint.innerHTML = `<i class="fa-solid fa-calendar-xmark mr-1"></i>今日（${esc(currentSimDate)}）非登記之出攤日（登記日期：<strong>${esc(daysStr)}</strong>），無法使用報到。`;
+        }
+      } else if (inCutoff) {
         btn.disabled = true;
         btn.className = 'px-5 py-3 rounded-xl bg-slate-200 text-slate-500 font-bold text-xs sm:text-sm cursor-not-allowed inline-flex items-center space-x-2';
         txt.innerText = '開唱前半小時不開放確認抵達填寫發放';
@@ -2985,8 +3014,13 @@ function checkSoldOutPrompt() {
     /* ---------- 攤主操作台：抵達報位、圖片壓縮、5~15 分鐘準備倒數、手動結束 ---------- */
     function openArrivalModal(isEdit = false) {
       if (!currentVendor) return;
-  if (currentRole === 'admin' && !currentVendor.uid) { showToast('請先選擇要代操作的攤主'); return; }
-  if (!isEdit && currentRole !== 'admin' && isWithinHalfHourBeforeShow()) {
+      if (currentRole === 'admin' && !currentVendor.uid) { showToast('請先選擇要代操作的攤主'); return; }
+      if (!isEdit && !isVendorRegisteredForToday(currentVendor)) {
+        const vendorDays = Array.isArray(currentVendor.expectedDays) ? currentVendor.expectedDays : [];
+        showToast(`今日（${currentSimDate}）非登記之出攤日（登記日期：${vendorDays.join('、') || '無'}），無法使用報到！`);
+        return;
+      }
+      if (!isEdit && currentRole !== 'admin' && isWithinHalfHourBeforeShow()) {
         showToast('距離開唱僅剩半小時，已停止開放攤主確認抵達填寫發放！');
         return;
       }
@@ -3108,6 +3142,11 @@ function checkSoldOutPrompt() {
     }
 
     async function submitVendorArrival() {
+      if (!isEditingExistingArrival && !isVendorRegisteredForToday(currentVendor)) {
+        showToast(`今日（${currentSimDate}）非登記之出攤日，無法送出報位！`);
+        closeArrivalModal();
+        return;
+      }
       if (!isEditingExistingArrival && currentRole !== 'admin' && isWithinHalfHourBeforeShow()) {
         showToast('距離開唱僅剩半小時，已停止開放攤主確認抵達填寫發放！');
         closeArrivalModal();
@@ -3287,8 +3326,13 @@ function checkSoldOutPrompt() {
         activeCard.classList.add('hidden');
         endedPanel.classList.add('hidden');
         if (quotaBadge) {
-          quotaBadge.className = 'text-xs px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 font-bold whitespace-nowrap';
-          quotaBadge.innerHTML = '<i class="fa-solid fa-check mr-1"></i>今日可用額度：1 次';
+          if (v.uid && !isVendorRegisteredForToday(v)) {
+            quotaBadge.className = 'text-xs px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 border border-slate-200 font-bold whitespace-nowrap';
+            quotaBadge.innerHTML = '<i class="fa-solid fa-calendar-xmark mr-1"></i>今日非登記出攤日';
+          } else {
+            quotaBadge.className = 'text-xs px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 font-bold whitespace-nowrap';
+            quotaBadge.innerHTML = '<i class="fa-solid fa-check mr-1"></i>今日可用額度：1 次';
+          }
         }
         return;
       }
