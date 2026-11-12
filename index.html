@@ -152,7 +152,7 @@
         </div>
         <div class="min-w-0">
           <div class="flex items-center space-x-1.5">
-            <span class="text-[10px] font-black px-1.5 py-0.5 rounded bg-white text-rose-600">擺攤前 5 分鐘提醒</span>
+            <span class="text-[10px] font-black px-1.5 py-0.5 rounded bg-white text-rose-600">擺攤前提醒</span>
             <span id="alertVendorName" class="text-xs sm:text-sm font-black truncate">創作者</span>
           </div>
           <p id="alertLocationText" class="text-xs text-white/95 mt-1 line-clamp-2 font-medium">位置說明載入中...</p>
@@ -321,7 +321,7 @@
               <i class="fa-solid fa-clock-rotate-left text-skyBlue-500 mr-2"></i>應援發放即時時序
             </h2>
             <p class="text-[11px] sm:text-xs text-slate-500 mt-0.5" id="timelineSubtitle">
-              點擊卡片右上角愛心加入最愛，將於擺攤前 5 分鐘推播通知
+              點擊卡片右上角愛心加入最愛，將於擺攤前推播通知
             </p>
           </div>
           <div class="flex items-center space-x-1.5">
@@ -379,6 +379,10 @@
           </span>
         </div>
 
+        <div id="adminVendorPickerWrap" class="hidden mb-4 p-3 rounded-2xl bg-rose-50 border border-rose-200 text-xs flex flex-wrap items-center gap-2">
+          <span class="font-bold text-rose-700"><i class="fa-solid fa-user-gear mr-1"></i>管理者代操作：</span>
+          <select id="adminVendorPicker" onchange="adminPickVendor(this.value)" class="flex-1 min-w-[160px] bg-white rounded-lg px-2 py-1.5 border border-rose-200 font-bold text-slate-800"></select>
+        </div>
         <!-- 狀態 A：尚未抵達且今日尚有額度 -->
         <div id="vendorIdlePanel" class="glass-card rounded-2xl p-5 text-center border-skyBlue-200 mb-4">
           <div class="w-12 h-12 mx-auto rounded-2xl bg-skyBlue-50 text-skyBlue-500 flex items-center justify-center text-xl mb-3 border border-skyBlue-100">
@@ -386,7 +390,7 @@
           </div>
           <h3 class="text-sm sm:text-base font-black text-slate-800 mb-1">已經抵達場館並找好位置了嗎？</h3>
           <p class="text-xs text-slate-500 max-w-md mx-auto mb-4">
-            點擊下方按鈕填寫您的<strong>所在發放位置說明</strong>、<strong>現場照片（選填）</strong>與<strong>準備時間（5～15 分鐘）</strong>。將您加到最愛的訪客會在擺攤前 5 分鐘收到推播通知！
+            點擊下方按鈕填寫您的<strong>所在發放位置說明</strong>、<strong>現場照片（選填）</strong>與<strong>準備時間（5～15 分鐘）</strong>。將您加到最愛的訪客會在擺攤前收到推播通知！
           </p>
           <button id="btnOpenArrivalModal" onclick="openArrivalModal(false)" class="px-5 py-3 rounded-xl bg-gradient-to-r from-skyBlue-500 to-skyBlue-600 hover:from-skyBlue-600 text-white font-bold text-xs sm:text-sm shadow-md shadow-skyBlue-500/25 transition inline-flex items-center space-x-2">
             <i class="fa-solid fa-map-pin"></i>
@@ -581,7 +585,7 @@
                   <th class="py-2 px-2">登記信箱 (隱碼防盜)</th>
                   <th class="py-2 px-2">預計參加日</th>
                   <th class="py-2 px-2">登記應援物</th>
-                  <th class="py-2 px-2">應援物貼文</th>
+                  <th class="py-2 px-2">商品貼文</th>
                   <th class="py-2 px-2">審核狀態</th>
                   <th class="py-2 px-2 text-right">管理操作</th>
                 </tr>
@@ -635,7 +639,7 @@
         <i class="fa-solid fa-location-dot text-rose-500 mr-2"></i><span id="arrivalModalTitle">抵達場館・填寫發放位置</span>
       </h3>
       <p class="text-[11px] text-slate-500 mb-3.5">
-        送出後將即時顯示於時序畫面，若有將您加到最愛的訪客，系統將於<strong>擺攤前 5 分鐘</strong>發送推播提醒！
+        送出後將即時顯示於時序畫面，若有將您加到最愛的訪客，系統將於<strong>擺攤前</strong>發送推播提醒！
       </p>
 
       <div class="space-y-3.5 text-xs">
@@ -794,7 +798,7 @@
           </div>
 
           <div>
-            <label class="block font-bold text-slate-700 mb-1">本人 SNS 相關應援物貼文超連結 <span class="text-rose-500">*</span></label>
+            <label class="block font-bold text-slate-700 mb-1">本人 SNS 相關商品貼文超連結 <span class="text-rose-500">*</span></label>
             <input type="url" id="appProductPostLink" required placeholder="https://threads.net/@id/post/... 或 IG 貼文網址" class="w-full bg-white rounded-xl p-2 border border-slate-200 focus:outline-none focus:border-skyBlue-400">
           </div>
 
@@ -846,7 +850,6 @@
     </div>
   </div>
 
-
   <!-- 提示 Toast -->
   <div id="toast" class="fixed top-14 sm:top-16 left-1/2 transform -translate-x-1/2 z-50 glass-card px-4 py-2.5 rounded-2xl text-xs font-bold text-slate-700 shadow-xl border border-skyBlue-200 pointer-events-none transition-all duration-300 opacity-0 -translate-y-2 max-w-[90vw] text-center">
     訊息
@@ -879,11 +882,11 @@
           <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q2</span><span>訪客進入網站需要註冊或登入帳號嗎？</span></summary>
           <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A2：</span>完全不需要！訪客端全程免登入、免填個資，直接打開網頁就能瀏覽全場即時時序。</p>
         </details><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
-          <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q3</span><span>如何開啟擺攤前 5 分鐘的推播提醒通知？</span></summary>
+          <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q3</span><span>如何開啟擺攤前的推播提醒通知？</span></summary>
           <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A3：</span>點擊網頁右上角的「開啟推播提醒」按鈕並授權瀏覽器通知；若未授權系統通知，網站也會透過內建的置頂強提醒彈窗與提示音通知您。</p>
         </details><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
           <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q4</span><span>如果我點了愛心收藏，但攤主還沒抵達現場會怎麼樣？</span></summary>
-          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A4：</span>攤主尚未抵達時狀態為「尚未到場」，等攤主抵達並按下報位、開始倒數時，系統就會在開攤前 5 分鐘準時提醒您。</p>
+          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A4：</span>攤主尚未抵達時狀態為「尚未到場」，等攤主抵達並按下報位、開始倒數時，系統就會在開攤前準時提醒您。</p>
         </details></div>
       <div data-faq-panel="vendor" class="space-y-2 hidden"><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
           <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q1</span><span>我忘記攤主申請信箱了？</span></summary>
@@ -899,7 +902,7 @@
           <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A4：</span>每一位攤主每日限用 1 次擺攤發放額度；若您有申請多日場次，過午夜 00:00 系統會自動幫您重置隔日額度，讓您能正常報位。</p>
         </details><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
           <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q5</span><span>手滑不小心按到「已發放完畢／結束擺攤」該怎麼辦？</span></summary>
-          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A5：</span>請盡速私訊 @onedoor_boice_0820、三位其一，由管理者在後台點擊「重置今日額度」，即可將您的攤位恢復為尚未到場狀態並重新報位。</p>
+          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A5：</span>請盡速私訊 @onedoor_boice_0820、 三位其一，由管理者在後台點擊「重置今日額度」，即可將您的攤位恢復為尚未到場狀態並重新報位。</p>
         </details><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
           <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q6</span><span>上傳位置照片失敗或顯示檔案過大怎麼辦？</span></summary>
           <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A6：</span>系統已內建自動壓縮功能，若仍上傳失敗，建議改用較小尺寸的圖片，或直接以精準的文字地標與穿搭特徵描述位置即可。</p>
@@ -933,7 +936,7 @@
       </div>
       <h3 class="text-base font-bold text-slate-800 mb-1">管理者正在審核真人資格</h3>
       <p class="text-xs text-slate-600 mb-3" id="pendingModalDesc">
-        您的申請（暱稱：<strong id="pendingNick" class="text-skyBlue-600">-</strong>）已收到，正由管理者審核應援物貼文與真人資格中。
+        您的申請（暱稱：<strong id="pendingNick" class="text-skyBlue-600">-</strong>）已收到，正由管理者審核商品貼文與真人資格中。
       </p>
       <div class="p-3 bg-amber-50/80 rounded-2xl border border-amber-100 text-left text-[11px] text-amber-900 mb-4 space-y-1">
         <div class="flex items-start">
@@ -1011,7 +1014,7 @@
        * 注意：Firebase Web API Key 僅用於識別專案，真正的讀寫權限由 Firestore Rules 強制把關！
        ======================================================================== */
     const firebaseConfig = {
-      apiKey: "AIzaSyCqW8Q7yZ5nhsX58ZwBeQ994ZU_75TVU6Q",
+       apiKey: "AIzaSyCqW8Q7yZ5nhsX58ZwBeQ994ZU_75TVU6Q",
       authDomain: "wandoor2027.firebaseapp.com",
       projectId: "wandoor2027",
       storageBucket: "wandoor2027.firebasestorage.app",
@@ -1042,6 +1045,7 @@
     let backendReady = false;
     let authBusy = false;
     let todayKey = null;
+    let lastTimelineMinKey = 0;
     let userPickedDate = false;
     let lastUpdateLabel = '';
     const unsubs = { admin: null, bookings: null, managers: null, secrets: null, vendors: null };
@@ -1211,7 +1215,7 @@
     }
 
     function checkHalfHourShowtimeAlert() {
-      const inCutoff = isWithinHalfHourBeforeShow();
+      const inCutoff = !isAdminUser && isWithinHalfHourBeforeShow();
       const topBanner = document.getElementById('halfHourTopBanner');
 
       if (inCutoff) {
@@ -1251,52 +1255,36 @@
       if (modal) modal.classList.add('hidden');
     }
 
+    function dismissHalfHourBanner() {
+      halfHourAlertShownForDay[currentSimDate + '_bannerDismissed'] = true;
+      const topBanner = document.getElementById('halfHourTopBanner');
+      if (topBanner) topBanner.classList.add('hidden');
+    }
+
     function updateVendorArrivalButtonLock() {
-  const btn = document.getElementById('btnOpenArrivalModal');
-  const txt = document.getElementById('btnOpenArrivalText');
-  const hint = document.getElementById('vendorCutoffHint');
-  if (!btn || !txt) return;
+      const btn = document.getElementById('btnOpenArrivalModal');
+      const txt = document.getElementById('btnOpenArrivalText');
+      const hint = document.getElementById('vendorCutoffHint');
+      if (!btn || !txt) return;
 
-  // 1. 判定管理者：管理者擁有測試與操作權限，不受日期限制
-  const isAdminUser = (currentRole === 'admin');
-
-  // 2. 判定今天是否在攤主事前申請的日期清單內
-  const vendorDays = (currentVendor && Array.isArray(currentVendor.expectedDays)) ? currentVendor.expectedDays : [];
-  const isRegisteredForToday = isAdminUser || vendorDays.includes(currentSimDate);
-
-  // 3. 判定是否已進入開唱前半小時截止時間
-  const inCutoff = isWithinHalfHourBeforeShow();
-
-  if (!isRegisteredForToday) {
-    // 【非申請日期】：按鈕反灰禁用
-    btn.disabled = true;
-    btn.className = 'px-5 py-3 rounded-xl bg-slate-200 text-slate-400 font-bold text-xs sm:text-sm cursor-not-allowed inline-flex items-center space-x-2';
-    txt.innerText = '今日非您事前登記的發放日期';
-    if (hint) {
-      hint.className = 'text-[11px] text-amber-600 font-bold mt-2.5';
-      const daysStr = vendorDays.length > 0 ? vendorDays.join('、') : '無';
-      hint.innerHTML = `<i class="fa-solid fa-calendar-xmark mr-1"></i>今日（${esc(currentSimDate)}）非您登記之出攤日（您登記的日期：<strong>${esc(daysStr)}</strong>），暫無法報位。`;
+      if (isWithinHalfHourBeforeShow()) {
+        btn.disabled = true;
+        btn.className = 'px-5 py-3 rounded-xl bg-slate-200 text-slate-500 font-bold text-xs sm:text-sm cursor-not-allowed inline-flex items-center space-x-2';
+        txt.innerText = '開唱前半小時不開放確認抵達填寫發放';
+        if (hint) {
+          hint.className = 'text-[11px] text-rose-500 font-bold mt-2.5';
+          hint.innerText = '距離開唱僅剩半小時，已停止開放確認抵達與填寫發放位置，請抓緊時間準備入場。';
+        }
+      } else {
+        btn.disabled = false;
+        btn.className = 'px-5 py-3 rounded-xl bg-gradient-to-r from-skyBlue-500 to-skyBlue-600 hover:from-skyBlue-600 text-white font-bold text-xs sm:text-sm shadow-md shadow-skyBlue-500/25 transition inline-flex items-center space-x-2';
+        txt.innerText = '我已抵達場館・填寫發放位置';
+        if (hint) {
+          hint.className = 'text-[11px] text-slate-400 mt-2.5';
+          hint.innerText = '注意：當日開唱前半小時將關閉抵達報位功能。';
+        }
+      }
     }
-  } else if (inCutoff) {
-    // 【開唱前半小時】：按鈕反灰禁用
-    btn.disabled = true;
-    btn.className = 'px-5 py-3 rounded-xl bg-slate-200 text-slate-500 font-bold text-xs sm:text-sm cursor-not-allowed inline-flex items-center space-x-2';
-    txt.innerText = '開唱前半小時不開放確認抵達填寫發放';
-    if (hint) {
-      hint.className = 'text-[11px] text-rose-500 font-bold mt-2.5';
-      hint.innerText = '距離開唱僅剩半小時，已停止開放確認抵達與填寫發放位置，請抓緊時間準備入場。';
-    }
-  } else {
-    // 【符合條件】：正常開放點擊
-    btn.disabled = false;
-    btn.className = 'px-5 py-3 rounded-xl bg-gradient-to-r from-skyBlue-500 to-skyBlue-600 hover:from-skyBlue-600 text-white font-bold text-xs sm:text-sm shadow-md shadow-skyBlue-500/25 transition inline-flex items-center space-x-2';
-    txt.innerText = '我已抵達場館・填寫發放位置';
-    if (hint) {
-      hint.className = 'text-[11px] text-slate-400 mt-2.5';
-      hint.innerText = '注意：當日開唱前半小時將關閉抵達報位功能。';
-    }
-  }
-}
 
     /* ---------- Cookie 與最愛清單管理 ---------- */
     let favoriteUids = [];
@@ -1355,7 +1343,7 @@
           void btnEl.offsetWidth;
           btnEl.classList.add('heart-pop');
         }
-        showToast(`❤️ 已將【${vendorName || '攤位'}】加入最愛！將於擺攤前 5 分鐘提醒您`);
+        showToast(`❤️ 已將【${vendorName || '攤位'}】加入最愛！將於擺攤前提醒您`);
         if ('Notification' in window && Notification.permission === 'default') {
           Notification.requestPermission().then(updateNotifPermButtonUI);
         }
@@ -1384,7 +1372,7 @@
       renderTimeline();
     }
 
-    /* ---------- 擺攤前 5 分鐘推播通知（Web Notification + 置頂強提醒 + 提示音） ---------- */
+    /* ---------- 擺攤前推播通知（Web Notification + 置頂強提醒 + 提示音） ---------- */
     function updateNotifPermButtonUI() {
       const lbl = document.getElementById('notifPermLabel');
       const btn = document.getElementById('btnNotifPerm');
@@ -1405,11 +1393,11 @@
 
     function requestNotifPermissionManual() {
       if (!('Notification' in window)) {
-        showToast('您的瀏覽器將使用「網頁內置頂彈窗與提示音」進行擺攤前 5 分鐘提醒！');
+        showToast('您的瀏覽器將使用「網頁內置頂彈窗與提示音」進行擺攤前提醒！');
         return;
       }
       if (Notification.permission === 'granted') {
-        showToast('系統推播通知已經開啟！當最愛攤位距離開攤剩 5 分鐘時會立即通知您。');
+        showToast('系統推播通知已經開啟！當最愛攤位即將開攤時會立即通知您。');
         return;
       }
       Notification.requestPermission().then(perm => {
@@ -2258,6 +2246,41 @@
       }
     }
 
+function promptOpenProductPost(msg) {
+  showToast(msg);
+  setTimeout(() => {
+    const href = safePostUrl(currentVendor && currentVendor.productPost);
+    if (!href) return;
+    if (confirm(msg + '\n\n是否要開啟註冊時的應援物貼文？')) {
+      const w = window.open(href, '_blank', 'noopener');
+      if (!w) location.href = href;
+    }
+  }, 300);
+}
+
+const soldOutPrompted = {};
+function updateVendorElapsedUI() {
+  const v = currentVendor;
+  if (!v || v.status !== 'in_use' || !v.startMs) return;
+  const min = Math.max(0, Math.floor((Date.now() - v.startMs) / 60000));
+  const c = document.getElementById('vendorCountdown'), l = document.getElementById('vCountdownLabel'), b = document.getElementById('vendorProgressBar');
+  if (l) l.innerText = '已擺攤：';
+  if (c) { c.innerText = `${min} 分`; c.className = 'text-xl sm:text-2xl font-mono font-black ' + (min >= 45 ? 'text-rose-500' : 'text-emerald-500'); }
+  if (b) { b.className = 'bg-emerald-400 h-1.5 rounded-full transition-all duration-300'; b.style.width = Math.min(100, min / 45 * 100) + '%'; }
+}
+function checkSoldOutPrompt() {
+  const v = currentVendor;
+  if (currentRole === 'guest' || !v || !v.uid || v.status !== 'in_use' || !v.startMs) return;
+  if (Math.floor((Date.now() - v.startMs) / 60000) < 45) return;
+  const key = v.uid + '_' + v.startMs;
+  if (soldOutPrompted[key]) return;
+  soldOutPrompted[key] = true;                       // 每個擺攤場次只跳一次；選「否」會維持擺攤
+  setTimeout(() => {
+    if (confirm('您已發放 45 分鐘，請確認是否已發放完畢？\n\n【確定】已發放完畢（自動結束擺攤）\n【取消】尚未發完，繼續擺攤')) executeSoldOut();
+  }, 100);
+}
+
+
     function copyVendorEmailByUid(uid) {
       const v = VENDORS_LIST.find(x => x.uid === uid);
       const ownerEmail = String(VENDOR_SECRET_EMAILS[uid] || (v && v.email) || '').trim().toLowerCase();
@@ -2396,7 +2419,7 @@
       if (!nick) { showToast('請填寫創作者／攤販暱稱'); return; }
       if (strLen(nick) > 15) { showToast('暱稱限 15 字以內'); return; }
       if (strLen(items) > 30) { showToast('應援物簡述限 30 字以內'); return; }
-      if (!link) { showToast('請提供本人 SNS 相關應援物貼文連結！'); return; }
+      if (!link) { showToast('請提供本人 SNS 相關商品貼文連結！'); return; }
       const safeLink = safePostUrl(link);
       if (!safeLink) { showToast('貼文連結須為 https，且網域限 Threads、Instagram、X(Twitter)'); return; }
       if (!isValidEmail(email)) { showToast('請填寫正確的聯絡電子信箱'); return; }
@@ -2715,10 +2738,12 @@
         );
       };
 
+      const STATUS_RANK = { in_use: 0, preparing: 1, upcoming: 2, ended: 3 };
       const sortFavFirst = (a, b) => {
-        const fa = isFav(a.uid) ? 1 : 0;
-        const fb = isFav(b.uid) ? 1 : 0;
+        const fa = isFav(a.uid) ? 1 : 0, fb = isFav(b.uid) ? 1 : 0;
         if (fa !== fb) return fb - fa;
+        const ra = STATUS_RANK[a.status] ?? 2, rb = STATUS_RANK[b.status] ?? 2;
+        if (ra !== rb) return ra - rb;
         return (a.startMs || 0) - (b.startMs || 0);
       };
 
@@ -2740,7 +2765,9 @@
           }
         } else if (v.status === 'in_use') {
           statusTag = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 font-bold flex items-center whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1 active-dot"></span>發放中</span>`;
-          timeInfoHtml = `<span class="font-mono text-emerald-600 font-bold text-xs"><i class="fa-regular fa-clock mr-1"></i>${v.startMs ? fmtHM(v.startMs) + ' 起發放中（發完為止）' : '現場發放中'}</span>`;
+          const elapsedMin = v.startMs ? Math.max(0, Math.floor((Date.now() - v.startMs) / 60000)) : 0;
+          const staleNote = elapsedMin > 40 ? `<span class="px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 text-[10px] font-medium whitespace-nowrap">（僅供參考）</span>` : '';
+          timeInfoHtml = `<span class="flex flex-wrap items-center gap-1"><span class="font-mono text-emerald-600 font-bold text-xs"><i class="fa-regular fa-clock mr-1"></i>${v.startMs ? `${esc(currentSimDate)} ${fmtHM(v.startMs)} 已開始發放 ${elapsedMin} 分` : '現場發放中'}</span>${staleNote}</span>`;
         } else if (v.status === 'preparing') {
           const remainSec = Math.max(0, Math.floor((v.startMs - Date.now()) / 1000));
           const mm = String(Math.floor(remainSec / 60)).padStart(2, '0');
@@ -2759,7 +2786,7 @@
         const href = safePostUrl(v.productPost);
         const postLinkHtml = href ? `
           <a href="${esc(href)}" target="_blank" rel="noopener noreferrer" class="text-skyBlue-500 hover:text-skyBlue-600 text-[11px] font-bold flex items-center space-x-1 flex-shrink-0">
-            <span>應援物貼文</span>
+            <span>商品貼文</span>
             <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
           </a>` : '';
 
@@ -2804,7 +2831,7 @@
                 </div>
                 <div class="flex items-center space-x-1.5 flex-shrink-0">
                   ${statusTag}
-                  <button data-uid="${esc(v.uid)}" data-name="${esc(v.nickname)}" onclick="toggleFavorite(this.dataset.uid, this.dataset.name, this)" title="${fav ? '取消最愛' : '加入最愛（擺攤前5分鐘提醒）'}" class="w-8 h-8 rounded-full flex items-center justify-center border transition ${fav ? 'bg-rose-50 border-rose-200 text-rose-500' : 'bg-white border-slate-200 text-slate-300 hover:text-rose-400'}">
+                  <button data-uid="${esc(v.uid)}" data-name="${esc(v.nickname)}" onclick="toggleFavorite(this.dataset.uid, this.dataset.name, this)" title="${fav ? '取消最愛' : '加入最愛（擺攤前提醒）'}" class="w-8 h-8 rounded-full flex items-center justify-center border transition ${fav ? 'bg-rose-50 border-rose-200 text-rose-500' : 'bg-white border-slate-200 text-slate-300 hover:text-rose-400'}">
                     <i class="${fav ? 'fa-solid' : 'fa-regular'} fa-heart text-sm"></i>
                   </button>
                 </div>
@@ -2856,14 +2883,17 @@
           v.isApproved && (!Array.isArray(v.expectedDays) || v.expectedDays.includes(currentSimDate))
         );
 
-        const inUseList = approvedForToday.filter(v => v.status === 'in_use' && matchFilter(v)).sort(sortFavFirst);
-        const preparingList = approvedForToday.filter(v => v.status === 'preparing' && matchFilter(v)).sort(sortFavFirst);
-        const upcomingList = approvedForToday.filter(v => v.status === 'upcoming' && matchFilter(v)).sort(sortFavFirst);
-        const endedList = approvedForToday.filter(v => v.status === 'ended' && matchFilter(v)).sort((a, b) => (b.endedMs || 0) - (a.endedMs || 0));
+        const favList = approvedForToday.filter(v => isFav(v.uid) && matchFilter(v)).sort(sortFavFirst);
+        const rest = approvedForToday.filter(v => !isFav(v.uid));
+        const inUseList = rest.filter(v => v.status === 'in_use' && matchFilter(v)).sort(sortFavFirst);
+        const preparingList = rest.filter(v => v.status === 'preparing' && matchFilter(v)).sort(sortFavFirst);
+        const upcomingList = rest.filter(v => v.status === 'upcoming' && matchFilter(v)).sort(sortFavFirst);
+        const endedList = rest.filter(v => v.status === 'ended' && matchFilter(v)).sort((a, b) => (b.endedMs || 0) - (a.endedMs || 0));
 
         let innerToday = '';
-        innerToday += makeSubSection('現場發放中', '最愛攤位自動置頂・發完為止', 'fa-solid fa-fire', inUseList, 'text-emerald-500');
-        innerToday += makeSubSection('已抵達・準備中（即將發放）', '距離開攤 5 分鐘前將自動推播提醒最愛訪客', 'fa-solid fa-bell', preparingList, 'text-amber-500');
+        innerToday += makeSubSection('我的最愛', '依發放時序排列', 'fa-solid fa-heart', favList, 'text-rose-500');
+        innerToday += makeSubSection('現場發放中', '依開始時間排序・發完為止', 'fa-solid fa-fire', inUseList, 'text-emerald-500');
+        innerToday += makeSubSection('已抵達・準備中（即將發放）', '依預計發放時間排序', 'fa-solid fa-bell', preparingList, 'text-amber-500');
         innerToday += makeSubSection('預計今日參加（尚未到場）', '可提前點愛心收藏接收開攤提醒', 'fa-solid fa-heart-circle-plus', upcomingList, 'text-skyBlue-500');
         innerToday += makeSubSection('已結束發放', '', 'fa-solid fa-flag-checkered', endedList, 'text-slate-400');
 
@@ -2953,25 +2983,17 @@
     }
 
     /* ---------- 攤主操作台：抵達報位、圖片壓縮、5~15 分鐘準備倒數、手動結束 ---------- */
-     function openArrivalModal(isEdit = false) {
-  if (!currentVendor) return;
-
-  // 檢查今天是否為申請之參加日
-  const vendorDays = (currentVendor && Array.isArray(currentVendor.expectedDays)) ? currentVendor.expectedDays : [];
-  const isRegisteredForToday = (currentRole === 'admin') || vendorDays.includes(currentSimDate);
-  if (!isEdit && !isRegisteredForToday) {
-    showToast(`今日（${currentSimDate}）非您登記之參加日，無法填寫抵達！`);
-    return;
-  }
-
-  if (!isEdit && isWithinHalfHourBeforeShow()) {
-    showToast('距離開唱僅剩半小時，已停止開放攤主確認抵達填寫發放！');
-    return;
-  }
-  if (!isEdit && currentVendor.quotaUsed && currentVendor.status === 'ended') {
-    showToast('您今日的 1 次擺攤發放額度已使用完畢！');
-    return;
-  }
+    function openArrivalModal(isEdit = false) {
+      if (!currentVendor) return;
+  if (currentRole === 'admin' && !currentVendor.uid) { showToast('請先選擇要代操作的攤主'); return; }
+  if (!isEdit && currentRole !== 'admin' && isWithinHalfHourBeforeShow()) {
+        showToast('距離開唱僅剩半小時，已停止開放攤主確認抵達填寫發放！');
+        return;
+      }
+       if (!isEdit && currentRole !== 'admin' && currentVendor.quotaUsed && currentVendor.status === 'ended') {
+        showToast('您今日的 1 次擺攤發放額度已使用完畢！');
+        return;
+      }
       isEditingExistingArrival = !!isEdit;
 
       const titleEl = document.getElementById('arrivalModalTitle');
@@ -3085,20 +3107,12 @@
       }
     }
 
-async function submitVendorArrival() {
-  const vendorDays = (currentVendor && Array.isArray(currentVendor.expectedDays)) ? currentVendor.expectedDays : [];
-  const isRegisteredForToday = (currentRole === 'admin') || vendorDays.includes(currentSimDate);
-  if (!isEditingExistingArrival && !isRegisteredForToday) {
-    showToast(`今日（${currentSimDate}）非您登記之參加日，無法報位！`);
-    closeArrivalModal();
-    return;
-  }
-
-  if (!isEditingExistingArrival && isWithinHalfHourBeforeShow()) {
-    showToast('距離開唱僅剩半小時，已停止開放攤主確認抵達填寫發放！');
-    closeArrivalModal();
-    return;
-  }
+    async function submitVendorArrival() {
+      if (!isEditingExistingArrival && currentRole !== 'admin' && isWithinHalfHourBeforeShow()) {
+        showToast('距離開唱僅剩半小時，已停止開放攤主確認抵達填寫發放！');
+        closeArrivalModal();
+        return;
+      }
 
       const itemEl = document.getElementById('arriveItemName');
       const locEl = document.getElementById('arriveLocationText');
@@ -3112,6 +3126,7 @@ async function submitVendorArrival() {
       if (strLen(items) > 30) { showToast('應援物簡述限 30 字以內'); return; }
       if (!locationText) { showToast('請填寫所在發放位置說明（必填）'); return; }
       if (strLen(locationText) > 80) { showToast('位置說明限 80 字以內'); return; }
+      copyTextToClipboard(locationText);
 
       const now = Date.now();
       const hasPhotoNow = Boolean(tempCompressedPhotoDataUrl);
@@ -3162,7 +3177,7 @@ async function submitVendorArrival() {
         currentVendor.startMs = now + prepMin * 60000;
         currentVendor.endedMs = 0;
         currentVendor.quotaUsed = true;
-        showToast(`已公布位置並開始 ${prepMin} 分鐘準備倒數！${prepMin === 5 ? '已立即提醒收藏您的最愛訪客！' : '將於開攤前 5 分鐘提醒最愛訪客！'}`);
+        showToast(`已公布位置並開始 ${prepMin} 分鐘準備倒數！${prepMin === 5 ? '已立即提醒收藏您的最愛訪客！' : '將於開攤前提醒最愛訪客！'}`);
       } else {
         showToast('已更新所在發放位置與照片！');
       }
@@ -3176,6 +3191,7 @@ async function submitVendorArrival() {
       updateVendorUI();
       renderTimeline();
       checkFiveMinNotifications();
+      promptOpenProductPost('所在位置已複製');
     }
 
     function openImageLightbox(src, caption) {
@@ -3230,6 +3246,8 @@ async function submitVendorArrival() {
 
       checkFiveMinNotifications();
       checkHalfHourShowtimeAlert();
+      updateVendorElapsedUI();
+      checkSoldOutPrompt();
 
       if (needReRender) {
         updateVendorUI();
@@ -3246,7 +3264,9 @@ async function submitVendorArrival() {
         if (pBar) pBar.style.width = `${Math.max(0, Math.min(100, (remain / total) * 100))}%`;
       }
 
-      if (activeTab === 'timeline' && VENDORS_LIST.some(v => v.status === 'preparing')) {
+      const minKey = Math.floor(now / 60000);
+      if (activeTab === 'timeline' && (VENDORS_LIST.some(v => v.status === 'preparing') || (minKey !== lastTimelineMinKey && VENDORS_LIST.some(v => v.status === 'in_use')))) {
+        lastTimelineMinKey = minKey;
         renderTimeline();
       }
     }
@@ -3260,6 +3280,7 @@ async function submitVendorArrival() {
       if (!idlePanel || !activeCard || !endedPanel || !v) return;
 
       updateVendorArrivalButtonLock();
+      renderAdminVendorPicker();
 
       if (v.status === 'upcoming' && !v.quotaUsed) {
         idlePanel.classList.remove('hidden');
@@ -3317,21 +3338,49 @@ async function submitVendorArrival() {
       }
 
       if (v.status === 'preparing') {
-        if (badge) {
-          badge.className = 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200';
-          badge.innerText = '抵達準備中 (倒數計時)';
-        }
+        if (badge) { badge.className = 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200'; badge.innerText = '抵達準備中 (倒數計時)'; }
+        const lb = document.getElementById('vCountdownLabel'), cd = document.getElementById('vendorCountdown'), pb = document.getElementById('vendorProgressBar');
+        if (lb) lb.innerText = '距離開始發放倒數：';
+        if (cd) cd.className = 'text-xl sm:text-2xl font-mono font-black text-amber-500';
+        if (pb) pb.className = 'bg-amber-400 h-1.5 rounded-full transition-all duration-300';
         if (cBox) cBox.classList.remove('hidden');
         if (btnStartNow) btnStartNow.classList.remove('hidden');
       } else if (v.status === 'in_use') {
-        if (badge) {
-          badge.className = 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200';
-          badge.innerText = '現場發放應援中 (不限時)';
-        }
-        if (cBox) cBox.classList.add('hidden');
+        if (badge) { badge.className = 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200'; badge.innerText = '現場發放應援中 (不限時)'; }
+        if (cBox) cBox.classList.remove('hidden');
         if (btnStartNow) btnStartNow.classList.add('hidden');
+        updateVendorElapsedUI();
       }
     }
+
+function renderAdminVendorPicker() {
+  const wrap = document.getElementById('adminVendorPickerWrap'), sel = document.getElementById('adminVendorPicker');
+  if (!wrap || !sel) return;
+  if (currentRole !== 'admin') { wrap.classList.add('hidden'); return; }
+  wrap.classList.remove('hidden');
+  const st = { upcoming: '未報到', preparing: '準備中', in_use: '發放中', ended: '已結束' };
+  const cur = (currentVendor && currentVendor.uid) || '';
+  const html = '<option value="">— 請選擇要代操作的攤主 —</option>' +
+    VENDORS_LIST.filter(v => v.isApproved).map(v =>
+      `<option value="${esc(v.uid)}"${v.uid === cur ? ' selected' : ''}>${esc(v.nickname)}（${st[v.status] || ''}）</option>`).join('');
+  if (sel.dataset.sig !== html) { sel.innerHTML = html; sel.dataset.sig = html; }
+}
+async function adminPickVendor(uid) {
+  const v = VENDORS_LIST.find(x => x.uid === uid);
+  if (!v) return;
+  currentVendor = v;
+  if (v.hasPhoto && !safeImgSrc(v.locationImg) && !DEMO_MODE && backendReady) {
+    try {
+      const p = await FB().getDoc(FB().doc(firestoreDb, 'vendor_photos', uid));
+      if (p.exists() && safeImgSrc(p.data().locationImg)) {
+        const d = safeImgSrc(p.data().locationImg);
+        savePhotoToSessionCache(uid, d); v.locationImg = d;
+      }
+    } catch (e) {}
+  }
+  updateVendorUI();
+}
+
 
     async function vendorStartNow() {
       if (!currentVendor || currentVendor.status !== 'preparing') return;
@@ -3360,17 +3409,13 @@ async function submitVendorArrival() {
 
     async function executeSoldOut() {
       if (!currentVendor || (currentVendor.status !== 'in_use' && currentVendor.status !== 'preparing')) return;
+      copyTextToClipboard('已發放完畢');
       const now = Date.now();
       const patch = { status: 'ended', endedMs: now, quotaUsedToday: true };
       if (!DEMO_MODE && backendReady && currentVendor.uid) {
         try {
-          await FB().setDoc(FB().doc(firestoreDb, 'market_public', 'live'), {
-            vendors: { [currentVendor.uid]: patch }
-          }, { merge: true });
-        } catch (e) {
-          showToast('操作失敗');
-          return;
-        }
+          await FB().setDoc(FB().doc(firestoreDb, 'market_public', 'live'), { vendors: { [currentVendor.uid]: patch } }, { merge: true });
+        } catch (e) { showToast('操作失敗'); return; }
       }
       currentVendor.status = 'ended';
       currentVendor.endedMs = now;
@@ -3379,9 +3424,9 @@ async function submitVendorArrival() {
         Object.assign(PUBLIC_LIVE_MAP[currentVendor.uid], patch);
         savePublicLiveCache(PUBLIC_LIVE_MAP);
       }
-      showToast('已標記為【已發放完畢】！您的攤位已移至時序最下方。');
       updateVendorUI();
       renderTimeline();
+      promptOpenProductPost('已發放完畢，已複製');
     }
 
     function toggleLiteMode() {
