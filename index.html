@@ -3453,7 +3453,7 @@ async function adminPickVendor(uid) {
 
     async function executeSoldOut() {
       if (!currentVendor || (currentVendor.status !== 'in_use' && currentVendor.status !== 'preparing')) return;
-      copyTextToClipboard('已發放完畢');
+      copyTextToClipboard('今日應援已發放完畢，感謝大家的喜愛！');
       const now = Date.now();
       const patch = { status: 'ended', endedMs: now, quotaUsedToday: true };
       if (!DEMO_MODE && backendReady && currentVendor.uid) {
