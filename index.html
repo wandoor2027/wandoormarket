@@ -538,11 +538,6 @@
             </span>
           </div>
 
-          <!-- 管理者名單改由最高權限管理者於 Firebase Console 手動維護 -->
-          <div class="bg-white/90 p-3 rounded-xl border border-rose-100 text-[11px] text-slate-600 leading-relaxed">
-            管理者不在網站上新增。請至 <strong>Firebase Console ➔ Authentication</strong> 建立帳號並複製 <strong>User UID</strong>，再到 <strong>Firestore ➔ admins</strong> 以該 UID 作為文件 ID 建立資料（欄位：role、name、email）。詳見「防竄改規則與最高權限教學」。
-          </div>
-
           <!-- 目前授權之管理者清單 -->
           <div class="overflow-x-auto bg-white/90 rounded-xl border border-rose-100">
             <table class="w-full text-left text-xs border-collapse">
@@ -725,7 +720,6 @@
       <!-- 管理者登入（已移除原本資安保護機制說明文字，並加上不常用信箱與防詐騙提醒） -->
       <div id="authAdminBlock" class="space-y-3.5 text-xs hidden">
         <div class="p-3 bg-rose-50 rounded-xl border border-rose-100 text-[11px] text-rose-700 space-y-1.5 leading-relaxed">
-          <div class="text-rose-600 font-bold"><i class="fa-solid fa-key mr-1"></i>密碼格式規定：務必包含「英文＋數字」且最少 8 碼。</div>
           <div class="text-slate-600"><i class="fa-solid fa-triangle-exclamation text-amber-500 mr-1"></i>建議使用不常用信箱作為登入Mail，雖已加強防盜但仍有風險，如有收到不明訊息請留意。相關通知皆以管理者SNS訊息為準。</div>
         </div>
         <div>
@@ -733,7 +727,7 @@
           <input type="email" id="adminLoginEmail" autocomplete="username" placeholder="請輸入管理者 Email" class="w-full bg-white rounded-xl p-2.5 border border-slate-200 font-mono text-slate-800 focus:outline-none focus:border-rose-400">
         </div>
         <div>
-          <label class="block font-bold text-slate-700 mb-1">管理者密碼 <span class="text-[10px] font-normal text-rose-500">(英文+數字，最少 8 碼)</span></label>
+          <label class="block font-bold text-slate-700 mb-1">管理者密碼 <span class="text-[10px] font-normal text-rose-500"></span></label>
           <input type="password" id="adminLoginPass" autocomplete="current-password" placeholder="請輸入管理者密碼" class="w-full bg-white rounded-xl p-2.5 border border-slate-200 font-mono text-slate-800 focus:outline-none focus:border-rose-400">
         </div>
         <button onclick="handleAdminLogin()" class="w-full py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl shadow-sm transition">
@@ -1705,11 +1699,11 @@ function toggleFavorite(uid, vendorName, btnEl) {
     /* ---------- Spark 免費版零綁卡核心：單一聚合文件 + 2 分鐘本地快取 + 照片按需讀取 ---------- */
     const PUBLIC_LIVE_CACHE_KEY = 'kk_market_live_cache_v47';
     const PHOTO_SESSION_CACHE_KEY = 'kk_vendor_photos_v47';
-    const PUBLIC_CACHE_TTL_MS = 90 * 1000;       // 重新整理冷卻快取：90 秒內重整網頁 0 次資料庫讀取
-    const PUBLIC_AUTO_POLL_MS = 90 * 1000;       // 前台自動同步週期：每 90 秒自動拉取最新時序
-    // 有收藏最愛的人 150 秒，只瀏覽的人 300 秒
+    const PUBLIC_CACHE_TTL_MS = 120 * 1000;       // 重新整理冷卻快取：120 秒內重整網頁 0 次資料庫讀取
+    const PUBLIC_AUTO_POLL_MS = 120 * 1000;       // 前台自動同步週期：每 120 秒自動拉取最新時序
+    // 有收藏最愛的人 90 秒，只瀏覽的人 150 秒
     function currentPollMs() {
-      return favoriteUids.length > 0 ? 150 * 1000 : 300 * 1000;
+      return favoriteUids.length > 0 ? 90 * 1000 : 150 * 1000;
     }
     const MANUAL_SYNC_COOLDOWN_MS = 60 * 1000;   // 手動同步按鈕冷卻：60 秒
     let lastPublicFetchMs = 0;
@@ -3401,7 +3395,7 @@ function checkSoldOutPrompt() {
         needReRender = true;
       }
 
-      // Spark 省流分級自動同步：有收藏最愛 150 秒、純瀏覽 300 秒自動拉取一次單一聚合文件（僅消耗 1 次讀取）
+      // Spark 省流分級自動同步：有收藏最愛 90 秒、純瀏覽 150 秒自動拉取一次單一聚合文件（僅消耗 1 次讀取）
       if (!DEMO_MODE && backendReady && !document.hidden && !vendorsAll && (now - lastPublicFetchMs >= currentPollMs())) {
         lastPublicFetchMs = now;
         fetchPublicMarketLive(true);
