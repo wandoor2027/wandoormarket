@@ -202,7 +202,7 @@
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>連線正常
         </span>
         <span class="hidden xs:inline">最後更新：<span id="lastUpdateText" class="font-mono font-bold text-slate-700">--:--:--</span></span>
-        <button onclick="manualRefreshPublicLive()" id="btnManualSync" class="px-1.5 py-0.5 rounded bg-white/80 border border-slate-200 text-skyBlue-600 hover:bg-skyBlue-50 font-bold transition flex items-center space-x-1 whitespace-nowrap" title="手動同步最新時序（冷卻 30 秒）">
+        <button onclick="manualRefreshPublicLive()" id="btnManualSync" class="px-1.5 py-0.5 rounded bg-white/80 border border-slate-200 text-skyBlue-600 hover:bg-skyBlue-50 font-bold transition flex items-center space-x-1 whitespace-nowrap" title="手動同步最新時序（冷卻 60 秒）">
           <i class="fa-solid fa-arrows-rotate text-[10px]"></i>
           <span>同步</span>
         </button>
@@ -1003,21 +1003,32 @@
     };
   </script>
 
-/* ---------- 統一標準時間（以網站伺服器時間校正手機時間） ---------- */
-const _realNow = Date.now.bind(Date);
-let serverOffsetMs = 0;
-async function syncServerTime() {
-  try {
-    const t0 = _realNow();
-    const res = await fetch(location.pathname + '?t=' + t0, { method: 'HEAD', cache: 'no-store' });
-    const t1 = _realNow();
-    const d = res.headers.get('Date');
-    if (d) serverOffsetMs = new Date(d).getTime() - (t0 + t1) / 2;
-  } catch (e) {}
-}
-Date.now = () => _realNow() + serverOffsetMs;
-     
   <script>
+    /* ---------- 統一標準時間（以網站伺服器時間校正手機時間） ---------- */
+    const _realNow = Date.now.bind(Date);
+    let serverOffsetMs = 0;
+    async function syncServerTime() {
+      try {
+        const t0 = _realNow();
+        const res = await fetch(location.pathname + '?t=' + t0, { method: 'HEAD', cache: 'no-store' });
+        const t1 = _realNow();
+        const d = res.headers.get('Date');
+        if (d) {
+          const newOffset = Math.round(new Date(d).getTime() - (t0 + t1) / 2);
+          const delta = newOffset - serverOffsetMs;
+          serverOffsetMs = newOffset;
+          if (lastPublicFetchMs > 0 && Math.abs(delta) > 1000) {
+            lastPublicFetchMs += delta;
+          }
+          if (lastUpdateLabel && Math.abs(delta) > 1000) {
+            lastUpdateLabel = fmtHMS(Date.now());
+            setLastUpdate(lastUpdateLabel);
+          }
+        }
+      } catch (e) {}
+    }
+    Date.now = () => _realNow() + serverOffsetMs;
+
     /* ========================================================================
        防右鍵與防檢視原始碼保護 (阻止一般使用者直接右鍵或快捷鍵偷看網頁結構)
        ======================================================================== */
@@ -1148,7 +1159,7 @@ Date.now = () => _realNow() + serverOffsetMs;
       return { hour, minute, totalMin: hour * 60 + minute };
     }
     function deriveTodayKey() {
-      const p = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+      const p = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(Date.now()));
       const [, m, d] = p.split('-').map(Number);
       return `${m}/${d}`;
     }
@@ -1692,11 +1703,15 @@ function toggleFavorite(uid, vendorName, btnEl) {
     }
 
     /* ---------- Spark 免費版零綁卡核心：單一聚合文件 + 2 分鐘本地快取 + 照片按需讀取 ---------- */
-const PUBLIC_LIVE_CACHE_KEY = 'kk_market_live_cache_v47';
+    const PUBLIC_LIVE_CACHE_KEY = 'kk_market_live_cache_v47';
     const PHOTO_SESSION_CACHE_KEY = 'kk_vendor_photos_v47';
     const PUBLIC_CACHE_TTL_MS = 90 * 1000;       // 重新整理冷卻快取：90 秒內重整網頁 0 次資料庫讀取
     const PUBLIC_AUTO_POLL_MS = 90 * 1000;       // 前台自動同步週期：每 90 秒自動拉取最新時序
-    const MANUAL_SYNC_COOLDOWN_MS = 30 * 1000;   // 手動同步按鈕冷卻：30 秒
+    // 有收藏最愛的人 150 秒，只瀏覽的人 300 秒
+    function currentPollMs() {
+      return favoriteUids.length > 0 ? 150 * 1000 : 300 * 1000;
+    }
+    const MANUAL_SYNC_COOLDOWN_MS = 60 * 1000;   // 手動同步按鈕冷卻：60 秒
     let lastPublicFetchMs = 0;
     let lastManualSyncMs = 0;
     let PUBLIC_LIVE_MAP = {};
@@ -1822,7 +1837,7 @@ const PUBLIC_LIVE_CACHE_KEY = 'kk_market_live_cache_v47';
             const parsed = JSON.parse(raw);
             if (parsed && parsed.vendors && typeof parsed.vendors === 'object') {
               applyPublicLiveMapToUI(parsed.vendors, parsed.ts);
-              if (now - (parsed.ts || 0) < PUBLIC_CACHE_TTL_MS) {
+              if (now >= (parsed.ts || 0) && now - (parsed.ts || 0) < PUBLIC_CACHE_TTL_MS) {
                 lastPublicFetchMs = parsed.ts;
                 return;
               }
@@ -3386,8 +3401,8 @@ function checkSoldOutPrompt() {
         needReRender = true;
       }
 
-      // Spark 省流自動同步：網頁在前景顯示時，每 2.5 分鐘自動拉取一次單一聚合文件（僅消耗 1 次讀取）
-      if (!DEMO_MODE && backendReady && !document.hidden && !vendorsAll && (now - lastPublicFetchMs >= PUBLIC_AUTO_POLL_MS)) {
+      // Spark 省流分級自動同步：有收藏最愛 150 秒、純瀏覽 300 秒自動拉取一次單一聚合文件（僅消耗 1 次讀取）
+      if (!DEMO_MODE && backendReady && !document.hidden && !vendorsAll && (now - lastPublicFetchMs >= currentPollMs())) {
         lastPublicFetchMs = now;
         fetchPublicMarketLive(true);
       }
@@ -3743,9 +3758,9 @@ async function adminPickVendor(uid) {
       loop();
     }
 
-/* ---------- 初始化掛載 ---------- */
+    /* ---------- 初始化掛載 ---------- */
     document.addEventListener('DOMContentLoaded', function() {
-     syncServerTime();
+      syncServerTime();
       initSnow();
       loadFavoritesFromCookie();
       updateNotifPermButtonUI();
@@ -3760,10 +3775,11 @@ async function adminPickVendor(uid) {
       window.addEventListener('offline', () => { if (!DEMO_MODE) setOfflineState(true); });
       window.addEventListener('online', () => { if (!DEMO_MODE) setOfflineState(false); });
 
-      // 前景喚醒同步：訪客從其他 App 切回本網頁時，若距離上次同步已超過 90 秒則立即強制拉取最新聚合文件
+      // 前景喚醒同步：訪客從其他 App 切回本網頁時，先校正時間，若距離上次同步已超過分級輪詢週期則立即拉取最新聚合文件
       document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) syncServerTime();
         if (DEMO_MODE || !backendReady || vendorsAll) return;
-        if (!document.hidden && (Date.now() - lastPublicFetchMs >= 90 * 1000)) {
+        if (!document.hidden && (Date.now() - lastPublicFetchMs >= currentPollMs())) {
           fetchPublicMarketLive(true);
         }
       });
@@ -3772,7 +3788,7 @@ async function adminPickVendor(uid) {
         if (DEMO_MODE && !isOfflineSim) setLastUpdate(fmtHMS(Date.now()));
         tickSystem();
       }, 1000);
-         setInterval(syncServerTime, 10 * 60 * 1000);
+      setInterval(syncServerTime, 10 * 60 * 1000);
     });
   </script>
 </body>
