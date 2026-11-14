@@ -865,16 +865,29 @@
         <button data-faq-tab="guest" onclick="switchFaqTab('guest')" class="flex-1 py-1.5 rounded-lg font-medium text-slate-500">訪客</button>
         <button data-faq-tab="vendor" onclick="switchFaqTab('vendor')" class="flex-1 py-1.5 rounded-lg font-medium text-slate-500">攤主</button>
       </div>
-      <div data-faq-panel="common" class="space-y-2 "><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
+     <div data-faq-panel="common" class="space-y-2 ">
+        <details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
           <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q1</span><span>如果活動當日沒有網路或訊號不好怎麼辦？</span></summary>
           <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A1：</span>本網站支援離線快取，若短暫斷網畫面會顯示離線提示，建議可提前截圖或等訊號恢復後點擊畫面左上角的「同步」按鈕更新最新時序。</p>
-        </details><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
+        </details>
+        <details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
           <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q2</span><span>網頁上的開唱時間與截止報位時間是怎麼規定的？</span></summary>
           <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A2：</span>1/8（五）19:00 開唱（18:30 停止報位）、1/9（六）18:00 開唱（17:30 停止報位）、1/10（日）17:00 開唱（16:30 停止報位）。</p>
-        </details><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
+        </details>
+        <details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
           <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q3</span><span>網站資料會保留到什麼時候？活動結束後會刪除嗎？</span></summary>
           <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A3：</span>所有應援與攤主資料將嚴格保留至 2027/01/17，之後將全數從資料庫中刪除，保障大家個資安全。</p>
-        </details></div>
+        </details>
+        <details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
+          <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q4</span><span>如何讓手機跳出「系統推播通知」（iPhone / Android 設定方式）？</span></summary>
+          <div class="mt-1.5 pl-6 text-slate-600 leading-relaxed space-y-1.5">
+            <p><span class="font-bold text-rose-500">A4：</span>請先避開 LINE、IG、Threads 的內建瀏覽器，改用手機預設瀏覽器開啟本站：</p>
+            <p><strong>・iPhone (Safari)：</strong>Apple 官方規定，一般 Safari 分頁不開放系統推播；iPhone 必須點選 Safari 下方「<strong>分享 ➔ 加入主畫面</strong>」，從桌面圖示打開網站並開啟推播（iOS 16.4+ 支援），才能收到手機系統推播。</p>
+            <p><strong>・Android 手機：</strong>網站已內建自動註冊 Service Worker 手機系統級推播機制，請使用 Chrome 等瀏覽器開啟本站，點擊右上角「<strong>開啟推播提醒</strong>」允許權限後，就能從手機頂部自動彈出系統通知並震動！</p>
+            <p class="text-[11px] text-slate-400">※ 若未開啟系統推播，停留在網頁上時仍會透過「網頁內置頂強提醒橫幅＋提示音」通知您。</p>
+          </div>
+        </details>
+      </div>
       <div data-faq-panel="guest" class="space-y-2 hidden"><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
           <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q1</span><span>為什麼我加入最愛的攤位不見了？</span></summary>
           <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A1：</span>最愛攤位僅存在您當初加入時的原始裝置（如使用電腦加入，手機端就不會同步顯示），建議全程使用同一裝置同一個瀏覽器開啟本站，避免切換 App 導致最愛名單重置。</p>
