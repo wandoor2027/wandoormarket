@@ -1003,6 +1003,20 @@
     };
   </script>
 
+/* ---------- 統一標準時間（以網站伺服器時間校正手機時間） ---------- */
+const _realNow = Date.now.bind(Date);
+let serverOffsetMs = 0;
+async function syncServerTime() {
+  try {
+    const t0 = _realNow();
+    const res = await fetch(location.pathname + '?t=' + t0, { method: 'HEAD', cache: 'no-store' });
+    const t1 = _realNow();
+    const d = res.headers.get('Date');
+    if (d) serverOffsetMs = new Date(d).getTime() - (t0 + t1) / 2;
+  } catch (e) {}
+}
+Date.now = () => _realNow() + serverOffsetMs;
+     
   <script>
     /* ========================================================================
        防右鍵與防檢視原始碼保護 (阻止一般使用者直接右鍵或快捷鍵偷看網頁結構)
@@ -1129,7 +1143,7 @@
       return new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Taipei', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }).format(new Date(ms));
     }
     function getTaipeiHM() {
-      const str = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Taipei', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date());
+      const str = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Taipei', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date(Date.now()));
       const [hour, minute] = str.split(':').map(Number);
       return { hour, minute, totalMin: hour * 60 + minute };
     }
@@ -3731,6 +3745,7 @@ async function adminPickVendor(uid) {
 
 /* ---------- 初始化掛載 ---------- */
     document.addEventListener('DOMContentLoaded', function() {
+     syncServerTime();
       initSnow();
       loadFavoritesFromCookie();
       updateNotifPermButtonUI();
@@ -3757,6 +3772,7 @@ async function adminPickVendor(uid) {
         if (DEMO_MODE && !isOfflineSim) setLastUpdate(fmtHMS(Date.now()));
         tickSystem();
       }, 1000);
+         setInterval(syncServerTime, 10 * 60 * 1000);
     });
   </script>
 </body>
