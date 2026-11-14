@@ -143,22 +143,22 @@
   <!-- 輕量六角分支雪花飄雪特效 -->
   <canvas id="snowCanvas"></canvas>
 
-  <!-- 置頂強提醒推播橫幅（當最愛攤位距離發放剩 5 分鐘時彈出） -->
+  <!-- 置頂強提醒推播橫幅（當最愛攤位距離發放剩 5 分鐘、剛開攤、或已發放完畢時彈出） -->
   <div id="fiveMinAlertBar" class="fixed top-3 left-1/2 transform -translate-x-1/2 z-50 w-[94vw] max-w-lg hidden">
-    <div class="rounded-2xl p-3.5 bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-2xl border border-white/40 flex items-start justify-between gap-3">
+    <div id="fiveMinAlertInner" class="rounded-2xl p-3.5 bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-2xl border border-white/40 flex items-start justify-between gap-3">
       <div class="flex items-start space-x-2.5 min-w-0">
         <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-          <i class="fa-solid fa-bell text-base animate-bounce"></i>
+          <i id="alertBellIcon" class="fa-solid fa-bell text-base animate-bounce"></i>
         </div>
         <div class="min-w-0">
           <div class="flex items-center space-x-1.5">
-            <span class="text-[10px] font-black px-1.5 py-0.5 rounded bg-white text-rose-600">擺攤前提醒</span>
+            <span id="alertBadgeLabel" class="text-[10px] font-black px-1.5 py-0.5 rounded bg-white text-rose-600">擺攤前提醒</span>
             <span id="alertVendorName" class="text-xs sm:text-sm font-black truncate">創作者</span>
           </div>
           <p id="alertLocationText" class="text-xs text-white/95 mt-1 line-clamp-2 font-medium">位置說明載入中...</p>
           <div class="mt-2 flex items-center space-x-2">
             <button id="alertJumpBtn" class="px-2.5 py-1 rounded-lg bg-white text-rose-600 font-bold text-[11px] shadow-xs hover:bg-rose-50 transition">
-              查看位置與照片
+              查看攤位狀態
             </button>
             <button onclick="dismissFiveMinAlert()" class="px-2 py-1 rounded-lg bg-black/20 text-white/90 text-[11px] hover:bg-black/30 transition">
               知道了
@@ -1359,7 +1359,7 @@
       return favoriteUids.includes(uid);
     }
 
-    function toggleFavorite(uid, vendorName, btnEl) {
+function toggleFavorite(uid, vendorName, btnEl) {
       if (!uid) return;
       const idx = favoriteUids.indexOf(uid);
       if (idx >= 0) {
@@ -1367,12 +1367,18 @@
         showToast(`已將【${vendorName || '攤位'}】從最愛移除`);
       } else {
         favoriteUids.push(uid);
+        // 防呆：若加入最愛當下該攤位已經「發放中」或「已結束」，先標記目前狀態已讀，避免剛點愛心就誤跳彈窗
+        const targetV = VENDORS_LIST.find(x => x.uid === uid);
+        if (targetV) {
+          if (targetV.status === 'in_use') notifiedSessions[`${currentSimDate}_start_${uid}`] = true;
+          if (targetV.status === 'ended') notifiedSessions[`${currentSimDate}_ended_${uid}`] = true;
+        }
         if (btnEl) {
           btnEl.classList.remove('heart-pop');
           void btnEl.offsetWidth;
           btnEl.classList.add('heart-pop');
         }
-        showToast(`❤️ 已將【${vendorName || '攤位'}】加入最愛！將於擺攤前提醒您`);
+        showToast(`❤️ 已將【${vendorName || '攤位'}】加入最愛！開攤前與發放完畢時都會提醒您`);
         if ('Notification' in window && Notification.permission === 'default') {
           Notification.requestPermission().then(updateNotifPermButtonUI);
         }
@@ -1401,7 +1407,42 @@
       renderTimeline();
     }
 
-    /* ---------- 擺攤前推播通知（Web Notification + 置頂強提醒 + 提示音） ---------- */
+    /* ---------- 擺攤前／已開攤／已發放完畢 推播通知（支援手機 ServiceWorker 系統推播 + 置頂橫幅 + 提示音） ---------- */
+    function initServiceWorkerForPush() {
+      if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      }
+    }
+
+    async function sendSystemNotification(title, bodyText, tagKey, onClickFn) {
+      if (!('Notification' in window) || Notification.permission !== 'granted') return;
+      const options = {
+        body: bodyText,
+        tag: tagKey,
+        renotify: true,
+        vibrate: [200, 100, 200]
+      };
+      // 1. 優先使用 ServiceWorkerRegistration.showNotification（修復 Android 手機 Chrome 無法彈出系統推播的問題）
+      if ('serviceWorker' in navigator) {
+        try {
+          const reg = await navigator.serviceWorker.getRegistration();
+          if (reg && typeof reg.showNotification === 'function') {
+            await reg.showNotification(title, options);
+            return;
+          }
+        } catch (e) {}
+      }
+      // 2. 退回傳統桌面瀏覽器 Notification
+      try {
+        const n = new Notification(title, options);
+        n.onclick = () => {
+          window.focus();
+          if (typeof onClickFn === 'function') onClickFn();
+          n.close();
+        };
+      } catch (e) {}
+    }
+
     function updateNotifPermButtonUI() {
       const lbl = document.getElementById('notifPermLabel');
       const btn = document.getElementById('btnNotifPerm');
@@ -1422,16 +1463,17 @@
 
     function requestNotifPermissionManual() {
       if (!('Notification' in window)) {
-        showToast('您的瀏覽器將使用「網頁內置頂彈窗與提示音」進行擺攤前提醒！');
+        showToast('您的瀏覽器將使用「網頁內置頂彈窗與提示音」進行擺攤與完畢提醒！');
         return;
       }
       if (Notification.permission === 'granted') {
-        showToast('系統推播通知已經開啟！當最愛攤位即將開攤時會立即通知您。');
+        showToast('系統推播通知已經開啟！最愛攤位開攤前與發放完畢時都會通知您。');
         return;
       }
       Notification.requestPermission().then(perm => {
         updateNotifPermButtonUI();
         if (perm === 'granted') {
+          initServiceWorkerForPush();
           showToast('已成功開啟系統推播提醒！');
         } else {
           showToast('未授權系統通知，將自動使用「網頁置頂強提醒彈窗」通知您！');
@@ -1460,17 +1502,42 @@
       } catch (e) {}
     }
 
-    function triggerFiveMinAlert(item) {
+    // alertType: 'preparing' (擺攤前提醒) | 'started' (已開始擺攤補通知) | 'ended' (已發放完畢防白跑通知)
+    function triggerFiveMinAlert(item, alertType = 'preparing') {
       playNotificationChime();
 
       const bar = document.getElementById('fiveMinAlertBar');
+      const inner = document.getElementById('fiveMinAlertInner');
+      const badgeLbl = document.getElementById('alertBadgeLabel');
+      const bellIcon = document.getElementById('alertBellIcon');
       const vName = document.getElementById('alertVendorName');
       const locTxt = document.getElementById('alertLocationText');
       const jumpBtn = document.getElementById('alertJumpBtn');
 
       const remainMin = Math.max(1, Math.ceil((item.startMs - Date.now()) / 60000));
-      if (vName) vName.innerText = item.nickname || item.owner;
-      if (locTxt) locTxt.innerText = `將於約 ${remainMin} 分鐘後開始發放「${item.items}」！地點：${item.locationText || '請見卡片說明'}`;
+      const nick = item.nickname || item.owner || '創作者';
+      if (vName) vName.innerText = nick;
+
+      if (alertType === 'ended') {
+        if (inner) inner.className = 'rounded-2xl p-3.5 bg-gradient-to-r from-slate-700 to-slate-600 text-white shadow-2xl border border-white/40 flex items-start justify-between gap-3';
+        if (badgeLbl) { badgeLbl.className = 'text-[10px] font-black px-1.5 py-0.5 rounded bg-white text-slate-700'; badgeLbl.innerText = '已發放完畢'; }
+        if (bellIcon) bellIcon.className = 'fa-solid fa-flag-checkered text-base';
+        if (locTxt) locTxt.innerText = `🏁 已經發放完畢，不要白跑一趟囉！（應援物：${item.items}）`;
+        if (jumpBtn) { jumpBtn.className = 'px-2.5 py-1 rounded-lg bg-white text-slate-700 font-bold text-[11px] shadow-xs hover:bg-slate-100 transition'; jumpBtn.innerText = '查看時序卡片'; }
+      } else if (alertType === 'started') {
+        if (inner) inner.className = 'rounded-2xl p-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-2xl border border-white/40 flex items-start justify-between gap-3';
+        if (badgeLbl) { badgeLbl.className = 'text-[10px] font-black px-1.5 py-0.5 rounded bg-white text-emerald-600'; badgeLbl.innerText = '現正發放中'; }
+        if (bellIcon) bellIcon.className = 'fa-solid fa-fire text-base animate-bounce';
+        if (locTxt) locTxt.innerText = `🔥 已經開始發放「${item.items}」囉！地點：${item.locationText || '請見卡片說明'}`;
+        if (jumpBtn) { jumpBtn.className = 'px-2.5 py-1 rounded-lg bg-white text-emerald-600 font-bold text-[11px] shadow-xs hover:bg-emerald-50 transition'; jumpBtn.innerText = '查看位置與照片'; }
+      } else {
+        if (inner) inner.className = 'rounded-2xl p-3.5 bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-2xl border border-white/40 flex items-start justify-between gap-3';
+        if (badgeLbl) { badgeLbl.className = 'text-[10px] font-black px-1.5 py-0.5 rounded bg-white text-rose-600'; badgeLbl.innerText = '擺攤前提醒'; }
+        if (bellIcon) bellIcon.className = 'fa-solid fa-bell text-base animate-bounce';
+        if (locTxt) locTxt.innerText = `將於約 ${remainMin} 分鐘後開始發放「${item.items}」！地點：${item.locationText || '請見卡片說明'}`;
+        if (jumpBtn) { jumpBtn.className = 'px-2.5 py-1 rounded-lg bg-white text-rose-600 font-bold text-[11px] shadow-xs hover:bg-rose-50 transition'; jumpBtn.innerText = '查看位置與照片'; }
+      }
+
       if (jumpBtn) {
         jumpBtn.onclick = () => {
           dismissFiveMinAlert();
@@ -1482,27 +1549,30 @@
               cardEl.classList.add('card-flash');
               setTimeout(() => cardEl.classList.remove('card-flash'), 2500);
             }
-            if (item.hasPhoto && !safeImgSrc(item.locationImg)) {
-              loadAndShowVendorPhoto(item.uid, item.nickname + ' - ' + (item.locationText || '發放位置'));
+            if (alertType !== 'ended' && item.hasPhoto && !safeImgSrc(item.locationImg)) {
+              loadAndShowVendorPhoto(item.uid, nick + ' - ' + (item.locationText || '發放位置'));
             }
           }, 120);
         };
       }
       if (bar) bar.classList.remove('hidden');
 
-      if ('Notification' in window && Notification.permission === 'granted') {
-        try {
-          const n = new Notification(`🔔 ${item.nickname || item.owner} 將於 ${remainMin} 分鐘後開始發放！`, {
-            body: `應援物：${item.items}\n發放位置：${item.locationText || '點擊查看詳情'}`,
-            tag: `kk-fav-${item.sessionId || item.uid}`
-          });
-          n.onclick = () => {
-            window.focus();
-            if (jumpBtn) jumpBtn.click();
-            n.close();
-          };
-        } catch (e) {}
+      // 發送瀏覽器／手機系統推播通知
+      let sysTitle = '';
+      let sysBody = '';
+      if (alertType === 'ended') {
+        sysTitle = `🏁 【${nick}】已經發放完畢！`;
+        sysBody = `應援物「${item.items}」已經發放完畢，不要白跑一趟囉！`;
+      } else if (alertType === 'started') {
+        sysTitle = `🔥 【${nick}】已經開始發放應援囉！`;
+        sysBody = `應援物：${item.items}\n發放位置：${item.locationText || '點擊查看詳情'}`;
+      } else {
+        sysTitle = `🔔 【${nick}】將於 ${remainMin} 分鐘後開始發放！`;
+        sysBody = `應援物：${item.items}\n發放位置：${item.locationText || '點擊查看詳情'}`;
       }
+      sendSystemNotification(sysTitle, sysBody, `kk-fav-${currentSimDate}-${item.uid}-${alertType}`, () => {
+        if (jumpBtn) jumpBtn.click();
+      });
     }
 
     function dismissFiveMinAlert() {
@@ -1515,12 +1585,37 @@
       VENDORS_LIST.forEach(v => {
         if (!v.isApproved) return;
         if (!isFav(v.uid)) return;
-        if (v.status === 'preparing' && v.startMs) {
+
+        const startKey = `${currentSimDate}_start_${v.uid}`;
+        const endKey = `${currentSimDate}_ended_${v.uid}`;
+
+        // 若管理員重置了該攤位回未報到狀態，清除今日通知紀錄以便重新報到時能再次提醒
+        if (v.status === 'upcoming') {
+          delete notifiedSessions[startKey];
+          delete notifiedSessions[endKey];
+          return;
+        }
+
+        // 1. 準備中且距離開攤 <= 5 分鐘：發送「擺攤前提醒」
+        if (v.status === 'preparing' && v.startMs && !notifiedSessions[startKey]) {
           const remainMs = v.startMs - now;
-          const sKey = `${v.uid}_${v.startMs}`;
-          if (remainMs <= 5 * 60 * 1000 && remainMs > -30000 && !notifiedSessions[sKey]) {
-            notifiedSessions[sKey] = true;
-            triggerFiveMinAlert(v);
+          if (remainMs <= 5 * 60 * 1000 && remainMs > -60000) {
+            notifiedSessions[startKey] = true;
+            triggerFiveMinAlert(v, 'preparing');
+          }
+        }
+        // 2. 提早開攤或剛開攤補通知：若尚未收過開攤提醒，且攤主已切換為發放中（60 分鐘內），立即補發「現正發放中」提醒
+        else if (v.status === 'in_use' && v.startMs && !notifiedSessions[startKey]) {
+          if (now - v.startMs <= 60 * 60 * 1000) {
+            notifiedSessions[startKey] = true;
+            triggerFiveMinAlert(v, 'started');
+          }
+        }
+        // 3. 最愛攤主結束擺攤通知：當狀態變為 ended（且於 45 分鐘內剛結束），立即跳出「已經發放完畢，不要白跑一趟囉」提醒
+        else if (v.status === 'ended' && !notifiedSessions[endKey]) {
+          if (!v.endedMs || (now - v.endedMs <= 45 * 60 * 1000)) {
+            notifiedSessions[endKey] = true;
+            triggerFiveMinAlert(v, 'ended');
           }
         }
       });
@@ -1570,10 +1665,10 @@
     }
 
     /* ---------- Spark 免費版零綁卡核心：單一聚合文件 + 2 分鐘本地快取 + 照片按需讀取 ---------- */
-    const PUBLIC_LIVE_CACHE_KEY = 'kk_market_live_cache_v47';
+const PUBLIC_LIVE_CACHE_KEY = 'kk_market_live_cache_v47';
     const PHOTO_SESSION_CACHE_KEY = 'kk_vendor_photos_v47';
-    const PUBLIC_CACHE_TTL_MS = 120 * 1000;      // 重新整理冷卻快取：2 分鐘內重整網頁 0 次資料庫讀取
-    const PUBLIC_AUTO_POLL_MS = 150 * 1000;      // 前台自動同步週期：2.5 分鐘僅消耗 1 次文件讀取
+    const PUBLIC_CACHE_TTL_MS = 90 * 1000;       // 重新整理冷卻快取：90 秒內重整網頁 0 次資料庫讀取
+    const PUBLIC_AUTO_POLL_MS = 90 * 1000;       // 前台自動同步週期：每 90 秒自動拉取最新時序
     const MANUAL_SYNC_COOLDOWN_MS = 30 * 1000;   // 手動同步按鈕冷卻：30 秒
     let lastPublicFetchMs = 0;
     let lastManualSyncMs = 0;
@@ -2276,15 +2371,13 @@
     }
 
 function promptOpenProductPost(msg) {
-  showToast(msg);
+  const href = safePostUrl(currentVendor && currentVendor.productPost);
+  if (!href) return;
   setTimeout(() => {
-    const href = safePostUrl(currentVendor && currentVendor.productPost);
-    if (!href) return;
-    if (confirm(msg + '\n\n是否要開啟註冊時的應援物貼文？')) {
-      const w = window.open(href, '_blank', 'noopener');
-      if (!w) location.href = href;
+    if (confirm(msg + '\n\n是否要開新分頁前往註冊時的應援物貼文？')) {
+      window.open(href, '_blank', 'noopener,noreferrer');
     }
-  }, 300);
+  }, 400);
 }
 
 const soldOutPrompted = {};
@@ -2299,11 +2392,11 @@ function updateVendorElapsedUI() {
 }
 function checkSoldOutPrompt() {
   const v = currentVendor;
-  if (currentRole === 'guest' || !v || !v.uid || v.status !== 'in_use' || !v.startMs) return;
+  if (currentRole !== 'vendor' || !v || !v.uid || v.status !== 'in_use' || !v.startMs) return;
   if (Math.floor((Date.now() - v.startMs) / 60000) < 45) return;
   const key = v.uid + '_' + v.startMs;
   if (soldOutPrompted[key]) return;
-  soldOutPrompted[key] = true;                       // 每個擺攤場次只跳一次；選「否」會維持擺攤
+  soldOutPrompted[key] = true;
   setTimeout(() => {
     if (confirm('您已發放 45 分鐘，請確認是否已發放完畢？\n\n【確定】已發放完畢（自動結束擺攤）\n【取消】尚未發完，繼續擺攤')) executeSoldOut();
   }, 100);
@@ -3623,11 +3716,12 @@ async function adminPickVendor(uid) {
       loop();
     }
 
-    /* ---------- 初始化掛載 ---------- */
+/* ---------- 初始化掛載 ---------- */
     document.addEventListener('DOMContentLoaded', function() {
       initSnow();
       loadFavoritesFromCookie();
       updateNotifPermButtonUI();
+      initServiceWorkerForPush();
       syncDateSelect();
       initFirebaseLive();
       setAppRole('guest');
@@ -3638,11 +3732,11 @@ async function adminPickVendor(uid) {
       window.addEventListener('offline', () => { if (!DEMO_MODE) setOfflineState(true); });
       window.addEventListener('online', () => { if (!DEMO_MODE) setOfflineState(false); });
 
-      // 前景喚醒同步：訪客從其他 App 切回本網頁時，若距離上次同步已超過 2 分鐘則自動拉取最新聚合文件
+      // 前景喚醒同步：訪客從其他 App 切回本網頁時，若距離上次同步已超過 90 秒則立即強制拉取最新聚合文件
       document.addEventListener('visibilitychange', () => {
         if (DEMO_MODE || !backendReady || vendorsAll) return;
-        if (!document.hidden && (Date.now() - lastPublicFetchMs >= PUBLIC_CACHE_TTL_MS)) {
-          fetchPublicMarketLive(false);
+        if (!document.hidden && (Date.now() - lastPublicFetchMs >= 90 * 1000)) {
+          fetchPublicMarketLive(true);
         }
       });
 
