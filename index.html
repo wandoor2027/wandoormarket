@@ -2,7 +2,7 @@
 <!-- =========================================================================
      Project: KNOCK！KNOCK！ 小門應援市集
      Author: From @onedoor_boice_0820
-     Version: V2026.11.14
+     Version: V2026.11.15 (Sync & Traffic Optimized)
      Notice: 該網站由 @onedoor_boice_0820 維護，非官方正式應援團隊維護。
      ========================================================================= -->
 <html lang="zh-TW">
@@ -198,7 +198,7 @@
     <!-- 頂部微型資訊列 -->
     <div class="flex flex-wrap items-center justify-between gap-1.5 px-2 pt-1 text-[10px] sm:text-[11px] text-slate-500">
       <div class="flex items-center space-x-2">
-        <span id="connBadge" class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 font-bold whitespace-nowrap">
+        <span id="connBadge" onclick="manualRefreshPublicLive()" class="cursor-pointer inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 font-bold whitespace-nowrap" title="點擊可立即同步">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>連線正常
         </span>
         <span class="hidden xs:inline">最後更新：<span id="lastUpdateText" class="font-mono font-bold text-slate-700">--:--:--</span></span>
@@ -717,7 +717,7 @@
         </button>
       </div>
 
-      <!-- 管理者登入（已移除原本資安保護機制說明文字，並加上不常用信箱與防詐騙提醒） -->
+      <!-- 管理者登入 -->
       <div id="authAdminBlock" class="space-y-3.5 text-xs hidden">
         <div class="p-3 bg-rose-50 rounded-xl border border-rose-100 text-[11px] text-rose-700 space-y-1.5 leading-relaxed">
           <div class="text-slate-600"><i class="fa-solid fa-triangle-exclamation text-amber-500 mr-1"></i>建議使用不常用信箱作為登入Mail，雖已加強防盜但仍有風險，如有收到不明訊息請留意。相關通知皆以管理者SNS訊息為準。</div>
@@ -781,14 +781,14 @@
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">創作者／攤販暱稱 <span class="text-rose-500">*</span> (限15字內)</label>
-            <input type="text" id="appNickname" required maxlength="15" placeholder="例如：星空手作" class="w-full bg-white rounded-xl p-2 border border-slate-200 focus:outline-none focus:border-skyBlue-400">
+            <input type="text" id="appNickname" required maxlength="15" placeholder="例如：我大吃一口雪喵" class="w-full bg-white rounded-xl p-2 border border-slate-200 focus:outline-none focus:border-skyBlue-400">
           </div>
 
           <div>
             <label class="block font-bold text-slate-700 mb-1">
               主要應援物內容簡述 <span class="text-skyBlue-500 text-[10px] font-normal">(核准後顯示於時序供訪客收藏)</span>
             </label>
-            <input type="text" id="appItemDesc" maxlength="30" placeholder="例如：手燈套、小卡組、雷射透扇" class="w-full bg-white rounded-xl p-2 border border-slate-200 focus:outline-none focus:border-skyBlue-400">
+            <input type="text" id="appItemDesc" maxlength="30" placeholder="例如：笨蛋z徽章、朴成淏好吃筷子、金雲喝湯匙" class="w-full bg-white rounded-xl p-2 border border-slate-200 focus:outline-none focus:border-skyBlue-400">
           </div>
 
           <div>
@@ -1013,6 +1013,9 @@
           serverOffsetMs = newOffset;
           if (lastPublicFetchMs > 0 && Math.abs(delta) > 1000) {
             lastPublicFetchMs += delta;
+            if (lastPublicFetchMs > Date.now()) {
+              lastPublicFetchMs = Date.now() - PUBLIC_CACHE_TTL_MS;
+            }
           }
           if (lastUpdateLabel && Math.abs(delta) > 1000) {
             lastUpdateLabel = fmtHMS(Date.now());
@@ -1042,11 +1045,10 @@
     });
 
     /* ========================================================================
-       Firebase 專案設定常數 (部署至 GitHub Pages 時填入您的 Firebase Config)
-       * 注意：Firebase Web API Key 僅用於識別專案，真正的讀寫權限由 Firestore Rules 強制把關！
+       Firebase 專案設定常數
        ======================================================================== */
     const firebaseConfig = {
-       apiKey: "AIzaSyCqW8Q7yZ5nhsX58ZwBeQ994ZU_75TVU6Q",
+      apiKey: "AIzaSyCqW8Q7yZ5nhsX58ZwBeQ994ZU_75TVU6Q",
       authDomain: "wandoor2027.firebaseapp.com",
       projectId: "wandoor2027",
       storageBucket: "wandoor2027.firebasestorage.app",
@@ -1061,13 +1063,12 @@
     );
 
     const DEMO_MODE = !isFirebaseConfigured;
-    const APP_CHECK_SITE_KEY = ''; // 若啟用 reCAPTCHA v3 App Check 可填入 Site Key
+    const APP_CHECK_SITE_KEY = '';
     const EVENT_YEAR = 2027;
     const FAV_COOKIE_NAME = 'kk_favorites_v4';
     const ALLOWED_POST_HOSTS = ['threads.net', 'threads.com', 'instagram.com', 'x.com', 'twitter.com'];
     const CONCERT_DAYS = ['1/8', '1/9', '1/10'];
 
-    // 管理者密碼強度規則：必須同時包含英文字母與數字，且長度至少 8 碼
     const ADMIN_PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d\W_]{8,}$/;
 
     let firebaseApp = null;
@@ -1080,7 +1081,7 @@
     let lastTimelineMinKey = 0;
     let userPickedDate = false;
     let lastUpdateLabel = '';
-    const unsubs = { admin: null, bookings: null, managers: null, secrets: null, vendors: null };
+    const unsubs = { admin: null, bookings: null, managers: null, secrets: null, vendors: null, liveDoc: null };
     let vendorsAll = false;
     const VENDOR_SECRET_EMAILS = {};
 
@@ -1102,13 +1103,11 @@
     }
     const SAFE_IMG_PREFIX = 'data:image/jpeg;base64,';
     const MAX_IMG_LEN = 90000;
-    // 位置照片只接受本站壓縮產生的 JPEG data URL，拒絕任何外部圖片網址
     function safeImgSrc(v) {
       const s = String(v || '');
       if (!s.startsWith(SAFE_IMG_PREFIX) || s.length > MAX_IMG_LEN) return '';
       return /^[A-Za-z0-9+\/=]+$/.test(s.slice(SAFE_IMG_PREFIX.length)) ? s : '';
     }
-    // CSV 欄位跳脫：雙引號加倍，並阻擋以 = + - @ 開頭的公式注入
     function csvCell(v) {
       let s = String(v == null ? '' : v);
       if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
@@ -1123,7 +1122,7 @@
     function isValidEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
     function isValidAdminPassword(pw) { return ADMIN_PASSWORD_REGEX.test(String(pw || '')); }
 
-    /* ---------- 信箱隱碼保護（防止前端與公開 API 洩漏真實信箱） ---------- */
+    /* ---------- 信箱隱碼保護 ---------- */
     function maskEmail(email) {
       const s = String(email || '').trim();
       if (!s || !s.includes('@')) return '***';
@@ -1193,7 +1192,7 @@
       '1/11': { showTime: '已結束', cutoffLabel: '已結束', cutoffHour: null, cutoffMin: null, showHour: null, showMin: null }
     };
 
-    /* 全域狀態（自動抓取當下實際日期） */
+    /* 全域狀態 */
     let currentRole = 'guest';        // 'guest' | 'vendor' | 'admin'
     let currentAdminTier = 'none';    // 'none' | 'admin' | 'super_admin'
     let currentAdminEmail = '';
@@ -1201,6 +1200,7 @@
     let searchQuery = '';
     let isLiteMode = false;
     let isOfflineSim = false;
+    let isSyncError = false;
     let tempCompressedPhotoDataUrl = '';
     let isEditingExistingArrival = false;
     const halfHourAlertShownForDay = {};
@@ -1224,7 +1224,6 @@
       quotaUsed: false
     };
 
-    // 嚴格對應三種角色之可存取頁籤
     const ROLE_PERMISSIONS = {
       guest: ['timeline'],
       vendor: ['timeline', 'vendor'],
@@ -1391,7 +1390,7 @@
       return favoriteUids.includes(uid);
     }
 
-function toggleFavorite(uid, vendorName, btnEl) {
+    function toggleFavorite(uid, vendorName, btnEl) {
       if (!uid) return;
       const idx = favoriteUids.indexOf(uid);
       if (idx >= 0) {
@@ -1399,7 +1398,6 @@ function toggleFavorite(uid, vendorName, btnEl) {
         showToast(`已將【${vendorName || '攤位'}】從最愛移除`);
       } else {
         favoriteUids.push(uid);
-        // 防呆：若加入最愛當下該攤位已經「發放中」或「已結束」，先標記目前狀態已讀，避免剛點愛心就誤跳彈窗
         const targetV = VENDORS_LIST.find(x => x.uid === uid);
         if (targetV) {
           if (targetV.status === 'in_use') notifiedSessions[`${currentSimDate}_start_${uid}`] = true;
@@ -1439,7 +1437,7 @@ function toggleFavorite(uid, vendorName, btnEl) {
       renderTimeline();
     }
 
-    /* ---------- 擺攤前／已開攤／已發放完畢 推播通知（支援手機 ServiceWorker 系統推播 + 置頂橫幅 + 提示音） ---------- */
+    /* ---------- 推播通知 ---------- */
     function initServiceWorkerForPush() {
       if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
         navigator.serviceWorker.register('./sw.js').catch(() => {});
@@ -1454,7 +1452,6 @@ function toggleFavorite(uid, vendorName, btnEl) {
         renotify: true,
         vibrate: [200, 100, 200]
       };
-      // 1. 優先使用 ServiceWorkerRegistration.showNotification（修復 Android 手機 Chrome 無法彈出系統推播的問題）
       if ('serviceWorker' in navigator) {
         try {
           const reg = await navigator.serviceWorker.getRegistration();
@@ -1464,7 +1461,6 @@ function toggleFavorite(uid, vendorName, btnEl) {
           }
         } catch (e) {}
       }
-      // 2. 退回傳統桌面瀏覽器 Notification
       try {
         const n = new Notification(title, options);
         n.onclick = () => {
@@ -1534,7 +1530,6 @@ function toggleFavorite(uid, vendorName, btnEl) {
       } catch (e) {}
     }
 
-    // alertType: 'preparing' (擺攤前提醒) | 'started' (已開始擺攤補通知) | 'ended' (已發放完畢防白跑通知)
     function triggerFiveMinAlert(item, alertType = 'preparing') {
       playNotificationChime();
 
@@ -1589,7 +1584,6 @@ function toggleFavorite(uid, vendorName, btnEl) {
       }
       if (bar) bar.classList.remove('hidden');
 
-      // 發送瀏覽器／手機系統推播通知
       let sysTitle = '';
       let sysBody = '';
       if (alertType === 'ended') {
@@ -1621,14 +1615,12 @@ function toggleFavorite(uid, vendorName, btnEl) {
         const startKey = `${currentSimDate}_start_${v.uid}`;
         const endKey = `${currentSimDate}_ended_${v.uid}`;
 
-        // 若管理員重置了該攤位回未報到狀態，清除今日通知紀錄以便重新報到時能再次提醒
         if (v.status === 'upcoming') {
           delete notifiedSessions[startKey];
           delete notifiedSessions[endKey];
           return;
         }
 
-        // 1. 準備中且距離開攤 <= 5 分鐘：發送「擺攤前提醒」
         if (v.status === 'preparing' && v.startMs && !notifiedSessions[startKey]) {
           const remainMs = v.startMs - now;
           if (remainMs <= 5 * 60 * 1000 && remainMs > -60000) {
@@ -1636,14 +1628,12 @@ function toggleFavorite(uid, vendorName, btnEl) {
             triggerFiveMinAlert(v, 'preparing');
           }
         }
-        // 2. 提早開攤或剛開攤補通知：若尚未收過開攤提醒，且攤主已切換為發放中（60 分鐘內），立即補發「現正發放中」提醒
         else if (v.status === 'in_use' && v.startMs && !notifiedSessions[startKey]) {
           if (now - v.startMs <= 60 * 60 * 1000) {
             notifiedSessions[startKey] = true;
             triggerFiveMinAlert(v, 'started');
           }
         }
-        // 3. 最愛攤主結束擺攤通知：當狀態變為 ended（且於 45 分鐘內剛結束），立即跳出「已經發放完畢，不要白跑一趟囉」提醒
         else if (v.status === 'ended' && !notifiedSessions[endKey]) {
           if (!v.endedMs || (now - v.endedMs <= 45 * 60 * 1000)) {
             notifiedSessions[endKey] = true;
@@ -1696,16 +1686,16 @@ function toggleFavorite(uid, vendorName, btnEl) {
       }
     }
 
-    /* ---------- Spark 免費版零綁卡核心：單一聚合文件 + 2 分鐘本地快取 + 照片按需讀取 ---------- */
+    /* ---------- 省流核心：單一聚合文件 + 本地快取 + 分級輪詢 ---------- */
     const PUBLIC_LIVE_CACHE_KEY = 'kk_market_live_cache_v47';
     const PHOTO_SESSION_CACHE_KEY = 'kk_vendor_photos_v47';
-    const PUBLIC_CACHE_TTL_MS = 120 * 1000;       // 重新整理冷卻快取：120 秒內重整網頁 0 次資料庫讀取
-    const PUBLIC_AUTO_POLL_MS = 120 * 1000;       // 前台自動同步週期：每 120 秒自動拉取最新時序
-    // 有收藏最愛的人 90 秒，只瀏覽的人 150 秒
+    const PUBLIC_CACHE_TTL_MS = 120 * 1000;       // 重新整理冷卻快取：120 秒
+    const FOREGROUND_SYNC_MIN_MS = 120 * 1000;     // 從背景切回前景時，超過 120 秒即立刻同步
+    // 有收藏最愛的人 120 秒自動同步，未收藏純瀏覽的人 180 秒自動同步
     function currentPollMs() {
-      return favoriteUids.length > 0 ? 90 * 1000 : 150 * 1000;
+      return favoriteUids.length > 0 ? 120 * 1000 : 180 * 1000;
     }
-    const MANUAL_SYNC_COOLDOWN_MS = 60 * 1000;   // 手動同步按鈕冷卻：60 秒
+    const MANUAL_SYNC_COOLDOWN_MS = 60 * 1000;    // 手動同步按鈕冷卻：60 秒
     let lastPublicFetchMs = 0;
     let lastManualSyncMs = 0;
     let PUBLIC_LIVE_MAP = {};
@@ -1749,13 +1739,11 @@ function toggleFavorite(uid, vendorName, btnEl) {
       const rawEndedMs = msOf(v.ended_at || v.endedMs);
       const lastActiveDate = deriveDateKeyFromMs(rawStartMs || rawEndedMs);
 
-      // 跨過台灣時間午夜 00:00 後（最後報位日不等於當前檢視日），自動重置為未到場與可用額度 1 次
       const isFromToday = (lastActiveDate === currentSimDate);
       let effectiveStatus = isFromToday && ['upcoming', 'preparing', 'in_use', 'ended'].includes(v.status)
         ? v.status
         : 'upcoming';
 
-      // 若準備時間已屆滿且尚未結束擺攤，直接視為發放中（省去倒數結束時的額外雲端寫入）
       if (effectiveStatus === 'preparing' && rawStartMs > 0 && Date.now() >= rawStartMs) {
         effectiveStatus = 'in_use';
       }
@@ -1841,14 +1829,20 @@ function toggleFavorite(uid, vendorName, btnEl) {
       }
 
       try {
-        // 全場 150 攤位濃縮為單一文件讀取（僅消耗 1 次 Read！）
+        // 全場攤位濃縮為單一文件讀取（僅消耗 1 次 Read）
         const snap = await FB().getDoc(FB().doc(firestoreDb, 'market_public', 'live'));
+        isSyncError = false;
         setOfflineState(false);
         const vendorsMap = (snap.exists() && snap.data() && snap.data().vendors) ? snap.data().vendors : {};
         savePublicLiveCache(vendorsMap);
         applyPublicLiveMapToUI(vendorsMap, Date.now());
       } catch (e) {
-        if (!navigator.onLine) setOfflineState(true);
+        lastPublicFetchMs = now;
+        if (!navigator.onLine) {
+          setOfflineState(true);
+        } else {
+          setSyncErrorState();
+        }
       }
     }
 
@@ -1860,13 +1854,15 @@ function toggleFavorite(uid, vendorName, btnEl) {
       }
       const now = Date.now();
       const remainSec = Math.ceil((MANUAL_SYNC_COOLDOWN_MS - (now - lastManualSyncMs)) / 1000);
-      if (now - lastManualSyncMs < MANUAL_SYNC_COOLDOWN_MS) {
+      if (!isSyncError && (now - lastManualSyncMs < MANUAL_SYNC_COOLDOWN_MS)) {
         showToast(`目前已是最新狀態，請於 ${remainSec} 秒後再手動同步`);
         return;
       }
       lastManualSyncMs = now;
       await fetchPublicMarketLive(true);
-      showToast('已同步全場最新應援時序！');
+      if (!isSyncError && !isOfflineSim) {
+        showToast('已同步全場最新應援時序！');
+      }
     }
 
     async function loadAndShowVendorPhoto(uid, caption) {
@@ -1902,14 +1898,20 @@ function toggleFavorite(uid, vendorName, btnEl) {
 
     function subscribeVendors(all) {
       stopListener('vendors');
+      stopListener('liveDoc');
       vendorsAll = !!all;
       if (!all) {
-        // 訪客與一般攤主：使用單一聚合文件讀取（不建立 150 筆即時監聽，守住每日 5 萬次免費讀取）
         fetchPublicMarketLive(false);
         return;
       }
-      // 僅管理者登入審核控台時，才監聽 vendors_private 申請名冊並自動同步至聚合文件
-      fetchPublicMarketLive(true);
+      unsubs.liveDoc = FB().onSnapshot(FB().doc(firestoreDb, 'market_public', 'live'), (snap) => {
+        isSyncError = false;
+        setOfflineState(false);
+        const vendorsMap = (snap.exists() && snap.data() && snap.data().vendors) ? snap.data().vendors : {};
+        savePublicLiveCache(vendorsMap);
+        applyPublicLiveMapToUI(vendorsMap, Date.now());
+      }, () => {});
+
       const col = FB().collection(firestoreDb, 'vendors_private');
       unsubs.vendors = FB().onSnapshot(col, async (qs) => {
         setOfflineState(qs.metadata.fromCache && !navigator.onLine);
@@ -1918,7 +1920,6 @@ function toggleFavorite(uid, vendorName, btnEl) {
           const me = VENDORS_LIST.find(x => x.uid === currentVendor.uid);
           if (me) currentVendor = me;
         }
-        // 自動檢查是否有已核准攤位尚未寫入 market_public/live 聚合文件
         const missingApproved = {};
         let hasMissing = false;
         VENDORS_LIST.forEach(v => {
@@ -1980,6 +1981,7 @@ function toggleFavorite(uid, vendorName, btnEl) {
       stopListener('bookings');
       stopListener('managers');
       stopListener('secrets');
+      stopListener('liveDoc');
       Object.keys(VENDOR_SECRET_EMAILS).forEach(k => delete VENDOR_SECRET_EMAILS[k]);
       if (vendorsAll && backendReady) subscribeVendors(false);
     }
@@ -1995,7 +1997,7 @@ function toggleFavorite(uid, vendorName, btnEl) {
 
       let networkErr = false;
 
-      // 1. 管理者：以 Firebase Auth UID 比對 Firestore `admins/{uid}`（由最高管理者於 Console 手動建立）
+      // 1. 管理者
       try {
         const adminSnap = await FB().getDoc(FB().doc(firestoreDb, 'admins', user.uid));
         if (adminSnap.exists()) {
@@ -2012,7 +2014,7 @@ function toggleFavorite(uid, vendorName, btnEl) {
         networkErr = true;
       }
 
-      // 2. 攤主：透過免寄信派生金鑰登入，且管理者核准時已建立 vendor_links/{email} 綁定
+      // 2. 攤主
       if (user.email) {
         try {
           const linkSnap = await FB().getDoc(FB().doc(firestoreDb, 'vendor_links', user.email.toLowerCase()));
@@ -2049,7 +2051,6 @@ function toggleFavorite(uid, vendorName, btnEl) {
         }
       }
 
-      // 若因場館瞬間斷網導致無法查詢權限，保留當前 Auth 狀態不強制 signOut
       if (networkErr && !intent) {
         setOfflineState(true);
         return;
@@ -2255,7 +2256,7 @@ function toggleFavorite(uid, vendorName, btnEl) {
       }
     }
 
-    /* ---------- 管理者登入（強制驗證英文+數字最少 8 碼 & Firebase Auth 雲端驗證） ---------- */
+    /* ---------- 管理者登入 ---------- */
     async function handleAdminLogin() {
       const emailInput = document.getElementById('adminLoginEmail');
       const passInput = document.getElementById('adminLoginPass');
@@ -2301,7 +2302,6 @@ function toggleFavorite(uid, vendorName, btnEl) {
         return;
       }
 
-      // 僅限 DEMO_MODE（尚未填入 Firebase 金鑰）時的本機預覽流程；金鑰填好後不會走到這裡
       const existingMgr = ADMIN_MANAGERS_LIST.find(m => m.email.toLowerCase() === email);
       if (ADMIN_MANAGERS_LIST.length === 0) {
         ADMIN_MANAGERS_LIST.push({
@@ -2406,38 +2406,37 @@ function toggleFavorite(uid, vendorName, btnEl) {
       }
     }
 
-function promptOpenProductPost(msg) {
-  const href = safePostUrl(currentVendor && currentVendor.productPost);
-  if (!href) return;
-  setTimeout(() => {
-    if (confirm(msg + '\n\n是否要開新分頁前往註冊時的應援物貼文？')) {
-      window.open(href, '_blank', 'noopener,noreferrer');
+    function promptOpenProductPost(msg) {
+      const href = safePostUrl(currentVendor && currentVendor.productPost);
+      if (!href) return;
+      setTimeout(() => {
+        if (confirm(msg + '\n\n是否要開新分頁前往註冊時的應援物貼文？')) {
+          window.open(href, '_blank', 'noopener,noreferrer');
+        }
+      }, 400);
     }
-  }, 400);
-}
 
-const soldOutPrompted = {};
-function updateVendorElapsedUI() {
-  const v = currentVendor;
-  if (!v || v.status !== 'in_use' || !v.startMs) return;
-  const min = Math.max(0, Math.floor((Date.now() - v.startMs) / 60000));
-  const c = document.getElementById('vendorCountdown'), l = document.getElementById('vCountdownLabel'), b = document.getElementById('vendorProgressBar');
-  if (l) l.innerText = '已擺攤：';
-  if (c) { c.innerText = `${min} 分`; c.className = 'text-xl sm:text-2xl font-mono font-black ' + (min >= 45 ? 'text-rose-500' : 'text-emerald-500'); }
-  if (b) { b.className = 'bg-emerald-400 h-1.5 rounded-full transition-all duration-300'; b.style.width = Math.min(100, min / 45 * 100) + '%'; }
-}
-function checkSoldOutPrompt() {
-  const v = currentVendor;
-  if (currentRole !== 'vendor' || !v || !v.uid || v.status !== 'in_use' || !v.startMs) return;
-  if (Math.floor((Date.now() - v.startMs) / 60000) < 45) return;
-  const key = v.uid + '_' + v.startMs;
-  if (soldOutPrompted[key]) return;
-  soldOutPrompted[key] = true;
-  setTimeout(() => {
-    if (confirm('您已發放 45 分鐘，請確認是否已發放完畢？\n\n【確定】已發放完畢（自動結束擺攤）\n【取消】尚未發完，繼續擺攤')) executeSoldOut();
-  }, 100);
-}
-
+    const soldOutPrompted = {};
+    function updateVendorElapsedUI() {
+      const v = currentVendor;
+      if (!v || v.status !== 'in_use' || !v.startMs) return;
+      const min = Math.max(0, Math.floor((Date.now() - v.startMs) / 60000));
+      const c = document.getElementById('vendorCountdown'), l = document.getElementById('vCountdownLabel'), b = document.getElementById('vendorProgressBar');
+      if (l) l.innerText = '已擺攤：';
+      if (c) { c.innerText = `${min} 分`; c.className = 'text-xl sm:text-2xl font-mono font-black ' + (min >= 45 ? 'text-rose-500' : 'text-emerald-500'); }
+      if (b) { b.className = 'bg-emerald-400 h-1.5 rounded-full transition-all duration-300'; b.style.width = Math.min(100, min / 45 * 100) + '%'; }
+    }
+    function checkSoldOutPrompt() {
+      const v = currentVendor;
+      if (currentRole !== 'vendor' || !v || !v.uid || v.status !== 'in_use' || !v.startMs) return;
+      if (Math.floor((Date.now() - v.startMs) / 60000) < 45) return;
+      const key = v.uid + '_' + v.startMs;
+      if (soldOutPrompted[key]) return;
+      soldOutPrompted[key] = true;
+      setTimeout(() => {
+        if (confirm('您已發放 45 分鐘，請確認是否已發放完畢？\n\n【確定】已發放完畢（自動結束擺攤）\n【取消】尚未發完，繼續擺攤')) executeSoldOut();
+      }, 100);
+    }
 
     function copyVendorEmailByUid(uid) {
       const v = VENDORS_LIST.find(x => x.uid === uid);
@@ -2460,7 +2459,7 @@ function checkSoldOutPrompt() {
       }
     }
 
-    /* ---------- 攤主登入與申請（免寄登入信直登・公開文件完全不儲存信箱或雜湊） ---------- */
+    /* ---------- 攤主登入與申請 ---------- */
     async function handleVendorLogin() {
       const emailInput = document.getElementById('vendorLoginEmail');
       const passInput = document.getElementById('vendorLoginPass');
@@ -2475,7 +2474,6 @@ function checkSoldOutPrompt() {
         if (!pass) { showToast('請輸入管理者私訊給您的登入密碼'); return; }
         authBusy = true;
         try {
-          // 只允許登入「管理者已在 Console 建立」的帳號，網站不會自動註冊
           const cred = await FB().signInWithEmailAndPassword(firebaseAuth, email, pass);
           if (passInput) passInput.value = '';
           await applyUserRole(cred.user, 'vendor');
@@ -2590,7 +2588,6 @@ function checkSoldOutPrompt() {
       } catch (e) {}
       const vendorUid = newVendorId();
 
-      // 公開文件完全不儲存信箱與雜湊值，徹底防止透過 API 爬蟲竊取信箱
       const publicVendorDoc = {
         uid: vendorUid,
         nickname: nick,
@@ -2651,7 +2648,6 @@ function checkSoldOutPrompt() {
         return;
       }
 
-      // 排序：未核准置頂（醒目）；演唱會日 ➔ 當日未報到 / 當日已報到 / 當日已結束 / 非本日場次；非演唱會日 ➔ 已核准依申請順序
       const isConcertView = CONCERT_DAYS.includes(currentSimDate);
       const groupOf = (v) => {
         if (!v.isApproved) return 0;
@@ -2659,7 +2655,7 @@ function checkSoldOutPrompt() {
         if (Array.isArray(v.expectedDays) && !v.expectedDays.includes(currentSimDate)) return 5;
         if (v.status === 'upcoming') return 2;
         if (v.status === 'ended') return 4;
-        return 3; // preparing / in_use
+        return 3;
       };
       const GROUP_LABELS = isConcertView
         ? { 0: '⚠ 尚未核准（需審核）', 2: '當日未報到', 3: '當日已報到', 4: '當日已結束', 5: '非本日場次（已核准）' }
@@ -2759,7 +2755,6 @@ function checkSoldOutPrompt() {
       if (!DEMO_MODE && backendReady) {
         try {
           if (!isValidEmail(ownerEmail)) { showToast('讀不到此攤主的登記信箱，無法核准'); return; }
-          // 於點擊事件當下立即自動複製攤主 Email 至剪貼簿，方便直接貼至 Firebase Auth 建立使用者
           copyTextToClipboard(ownerEmail);
           const publicSlot = buildPublicSlotPayload({ ...v, isApproved: true });
           await FB().setDoc(FB().doc(firestoreDb, 'vendor_links', ownerEmail), { vendorId: uid, createdAt: Date.now() });
@@ -2849,13 +2844,7 @@ function checkSoldOutPrompt() {
       showToast('已匯出創作者名冊 CSV 檔案！');
     }
 
-    /* ---------- 計算「其餘場次發放」的日期排序 ----------
-       規則：
-       - 若今日是 1/9：其餘場次先顯示未來場 1/10，最下方顯示已過去的 1/8
-       - 若今日是 1/7 或 1/11（非演唱會日）：今日發放顯示「今日非演唱會日」，其餘場次依序顯示 1/8、1/9、1/10
-       - 若今日是 1/8：其餘場次顯示 1/9、1/10
-       - 若今日是 1/10：其餘場次顯示 1/8、1/9
-    ------------------------------------------------------- */
+    /* ---------- 計算「其餘場次發放」的日期排序 ---------- */
     function getOtherConcertDaysOrder(todayStr) {
       if (!CONCERT_DAYS.includes(todayStr)) {
         return ['1/8', '1/9', '1/10'];
@@ -2866,7 +2855,7 @@ function checkSoldOutPrompt() {
       return [...futureDays, ...pastDays];
     }
 
-    /* ---------- 訪客時序畫面渲染（今日發放 + 其餘場次發放） ---------- */
+    /* ---------- 訪客時序畫面渲染 ---------- */
     function renderTimeline() {
       const container = document.getElementById('timelineContainer');
       const dateBadge = document.getElementById('timelineDateBadge');
@@ -3140,7 +3129,7 @@ function checkSoldOutPrompt() {
       showToast(`管理檢視日已切換至：${d}`);
     }
 
-    /* ---------- 攤主操作台：抵達報位、圖片壓縮、5~15 分鐘準備倒數、手動結束 ---------- */
+    /* ---------- 攤主操作台：抵達報位、圖片壓縮、準備倒數、手動結束 ---------- */
     function openArrivalModal(isEdit = false) {
       if (!currentVendor) return;
       if (currentRole === 'admin' && !currentVendor.uid) { showToast('請先選擇要代操作的攤主'); return; }
@@ -3153,7 +3142,7 @@ function checkSoldOutPrompt() {
         showToast('距離開唱僅剩半小時，已停止開放攤主確認抵達填寫發放！');
         return;
       }
-       if (!isEdit && currentRole !== 'admin' && currentVendor.quotaUsed && currentVendor.status === 'ended') {
+      if (!isEdit && currentRole !== 'admin' && currentVendor.quotaUsed && currentVendor.status === 'ended') {
         showToast('您今日的 1 次擺攤發放額度已使用完畢！');
         return;
       }
@@ -3395,8 +3384,8 @@ function checkSoldOutPrompt() {
         needReRender = true;
       }
 
-      // Spark 省流分級自動同步：有收藏最愛 90 秒、純瀏覽 150 秒自動拉取一次單一聚合文件（僅消耗 1 次讀取）
-      if (!DEMO_MODE && backendReady && !document.hidden && !vendorsAll && (now - lastPublicFetchMs >= currentPollMs())) {
+      // 分級自動同步：有收藏最愛 120 秒、純瀏覽 180 秒自動拉取一次單一聚合文件
+      if (!DEMO_MODE && backendReady && !document.hidden && (now - lastPublicFetchMs >= currentPollMs())) {
         lastPublicFetchMs = now;
         fetchPublicMarketLive(true);
       }
@@ -3526,34 +3515,33 @@ function checkSoldOutPrompt() {
       }
     }
 
-function renderAdminVendorPicker() {
-  const wrap = document.getElementById('adminVendorPickerWrap'), sel = document.getElementById('adminVendorPicker');
-  if (!wrap || !sel) return;
-  if (currentRole !== 'admin') { wrap.classList.add('hidden'); return; }
-  wrap.classList.remove('hidden');
-  const st = { upcoming: '未報到', preparing: '準備中', in_use: '發放中', ended: '已結束' };
-  const cur = (currentVendor && currentVendor.uid) || '';
-  const html = '<option value="">— 請選擇要代操作的攤主 —</option>' +
-    VENDORS_LIST.filter(v => v.isApproved).map(v =>
-      `<option value="${esc(v.uid)}"${v.uid === cur ? ' selected' : ''}>${esc(v.nickname)}（${st[v.status] || ''}）</option>`).join('');
-  if (sel.dataset.sig !== html) { sel.innerHTML = html; sel.dataset.sig = html; }
-}
-async function adminPickVendor(uid) {
-  const v = VENDORS_LIST.find(x => x.uid === uid);
-  if (!v) return;
-  currentVendor = v;
-  if (v.hasPhoto && !safeImgSrc(v.locationImg) && !DEMO_MODE && backendReady) {
-    try {
-      const p = await FB().getDoc(FB().doc(firestoreDb, 'vendor_photos', uid));
-      if (p.exists() && safeImgSrc(p.data().locationImg)) {
-        const d = safeImgSrc(p.data().locationImg);
-        savePhotoToSessionCache(uid, d); v.locationImg = d;
+    function renderAdminVendorPicker() {
+      const wrap = document.getElementById('adminVendorPickerWrap'), sel = document.getElementById('adminVendorPicker');
+      if (!wrap || !sel) return;
+      if (currentRole !== 'admin') { wrap.classList.add('hidden'); return; }
+      wrap.classList.remove('hidden');
+      const st = { upcoming: '未報到', preparing: '準備中', in_use: '發放中', ended: '已結束' };
+      const cur = (currentVendor && currentVendor.uid) || '';
+      const html = '<option value="">— 請選擇要代操作的攤主 —</option>' +
+        VENDORS_LIST.filter(v => v.isApproved).map(v =>
+          `<option value="${esc(v.uid)}"${v.uid === cur ? ' selected' : ''}>${esc(v.nickname)}（${st[v.status] || ''}）</option>`).join('');
+      if (sel.dataset.sig !== html) { sel.innerHTML = html; sel.dataset.sig = html; }
+    }
+    async function adminPickVendor(uid) {
+      const v = VENDORS_LIST.find(x => x.uid === uid);
+      if (!v) return;
+      currentVendor = v;
+      if (v.hasPhoto && !safeImgSrc(v.locationImg) && !DEMO_MODE && backendReady) {
+        try {
+          const p = await FB().getDoc(FB().doc(firestoreDb, 'vendor_photos', uid));
+          if (p.exists() && safeImgSrc(p.data().locationImg)) {
+            const d = safeImgSrc(p.data().locationImg);
+            savePhotoToSessionCache(uid, d); v.locationImg = d;
+          }
+        } catch (e) {}
       }
-    } catch (e) {}
-  }
-  updateVendorUI();
-}
-
+      updateVendorUI();
+    }
 
     async function vendorStartNow() {
       if (!currentVendor || currentVendor.status !== 'preparing') return;
@@ -3616,6 +3604,15 @@ async function adminPickVendor(uid) {
       }
     }
 
+    function setSyncErrorState() {
+      isSyncError = true;
+      const badge = document.getElementById('connBadge');
+      if (badge) {
+        badge.className = 'cursor-pointer inline-flex items-center px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-200 font-bold whitespace-nowrap';
+        badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-rose-500 mr-1.5"></span>同步異常 (點此重試)';
+      }
+    }
+
     function setOfflineState(off) {
       isOfflineSim = !!off;
       const banner = document.getElementById('offlineBanner');
@@ -3623,13 +3620,13 @@ async function adminPickVendor(uid) {
       if (isOfflineSim) {
         if (banner) banner.classList.remove('hidden');
         if (badge) {
-          badge.className = 'inline-flex items-center px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200 font-bold';
+          badge.className = 'cursor-pointer inline-flex items-center px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200 font-bold whitespace-nowrap';
           badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>已離線 (快取顯示)';
         }
       } else {
         if (banner) banner.classList.add('hidden');
-        if (badge) {
-          badge.className = 'inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 font-bold';
+        if (!isSyncError && badge) {
+          badge.className = 'cursor-pointer inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 font-bold whitespace-nowrap';
           badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>連線正常';
         }
       }
@@ -3639,8 +3636,10 @@ async function adminPickVendor(uid) {
       if (DEMO_MODE) { setOfflineState(false); return; }
       if (!navigator.onLine) { showToast('裝置目前沒有網路，此畫面僅供參考'); return; }
       if (!backendReady) { location.reload(); return; }
+      isSyncError = false;
       setOfflineState(false);
-      showToast('正在重新連線…');
+      fetchPublicMarketLive(true);
+      showToast('正在重新連線並同步…');
     }
 
     function showToast(msg) {
@@ -3767,14 +3766,20 @@ async function adminPickVendor(uid) {
       checkHalfHourShowtimeAlert();
 
       window.addEventListener('offline', () => { if (!DEMO_MODE) setOfflineState(true); });
-      window.addEventListener('online', () => { if (!DEMO_MODE) setOfflineState(false); });
-
-      // 前景喚醒同步：訪客從其他 App 切回本網頁時，先校正時間，若距離上次同步已超過分級輪詢週期則立即拉取最新聚合文件
-      document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) syncServerTime();
-        if (DEMO_MODE || !backendReady || vendorsAll) return;
-        if (!document.hidden && (Date.now() - lastPublicFetchMs >= currentPollMs())) {
+      window.addEventListener('online', () => {
+        if (!DEMO_MODE) {
+          setOfflineState(false);
           fetchPublicMarketLive(true);
+        }
+      });
+
+      // 前景喚醒同步：從背景切回本網頁時，若距離上次同步已超過 120 秒，立即拉取最新資料
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          syncServerTime();
+          if (!DEMO_MODE && backendReady && (Date.now() - lastPublicFetchMs >= FOREGROUND_SYNC_MIN_MS)) {
+            fetchPublicMarketLive(true);
+          }
         }
       });
 
@@ -3782,7 +3787,7 @@ async function adminPickVendor(uid) {
         if (DEMO_MODE && !isOfflineSim) setLastUpdate(fmtHMS(Date.now()));
         tickSystem();
       }, 1000);
-      setInterval(syncServerTime, 10 * 60 * 1000);
+      setInterval(syncServerTime, 10 * 120 * 1000);
     });
   </script>
 </body>
