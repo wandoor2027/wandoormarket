@@ -2,7 +2,7 @@
 <!-- =========================================================================
      Project: KNOCK！KNOCK！ 小門應援市集
      Author: From @onedoor_boice_0820
-     Version: V2026.11.15 (Sync & Traffic Optimized)
+     Version: V2026.11.17 (預埋場館對應地圖、官方公告時程表與 VIP 搖滾區整隊前15分鐘提醒)
      Notice: 該網站由 @onedoor_boice_0820 維護，非官方正式應援團隊維護。
      ========================================================================= -->
 <html lang="zh-TW">
@@ -193,6 +193,7 @@
     </div>
   </div>
 
+
   <div class="relative z-10 w-full max-w-full md:max-w-4xl lg:max-w-6xl mx-auto min-h-screen flex flex-col px-2.5 sm:px-6 pt-2">
 
     <!-- 頂部微型資訊列 -->
@@ -232,6 +233,17 @@
       <span class="text-[10px] sm:text-[11px] font-bold text-amber-800/90 whitespace-nowrap pl-5 sm:pl-0">
         該網站由 @onedoor_boice_0820 維護，非官方正式應援團隊維護。
       </span>
+    </div>
+
+    <!-- 搖滾區整隊結束前 15 分鐘置頂提醒橫幅（不彈窗，點擊「知道了」自動消失） -->
+    <div id="vipQueueTopBanner" class="hidden mt-1.5 rounded-2xl px-3.5 py-2.5 bg-gradient-to-r from-amber-500 to-rose-500 text-white text-xs font-bold flex items-center justify-between gap-2 shadow-md">
+      <div class="flex items-center space-x-2 min-w-0">
+        <i class="fa-solid fa-bullhorn animate-bounce flex-shrink-0"></i>
+        <span class="leading-relaxed">距離搖滾區整隊結束剩15分鐘，請VIP的攤主及訪客留意時間</span>
+      </div>
+      <button onclick="dismissVipQueueBanner()" class="px-2.5 py-1 rounded-lg bg-white text-rose-600 hover:bg-rose-50 font-black text-[11px] shadow-xs transition flex-shrink-0 whitespace-nowrap">
+        知道了
+      </button>
     </div>
 
     <!-- 開唱前半小時常駐提醒橫幅（當進入開唱前 30 分鐘時顯示於畫面頂部） -->
@@ -324,8 +336,16 @@
               點擊卡片右上角愛心加入最愛，將於擺攤前推播通知
             </p>
           </div>
-          <div class="flex items-center space-x-1.5">
-            <div class="text-xs px-2.5 py-1 rounded-lg bg-skyBlue-50 border border-skyBlue-200 text-skyBlue-600 font-bold" id="timelineDateBadge">
+          <div class="flex flex-wrap items-center gap-1.5">
+            <button onclick="openOfficialSchedule()" id="btnOfficialSchedule" class="px-2.5 py-1 rounded-lg bg-white hover:bg-skyBlue-50 border border-skyBlue-200 text-skyBlue-600 font-bold text-xs shadow-2xs transition flex items-center space-x-1 whitespace-nowrap">
+              <i class="fa-regular fa-calendar-check"></i>
+              <span>官方時程表</span>
+            </button>
+            <button onclick="openVenueMap()" id="btnVenueMap" class="px-2.5 py-1 rounded-lg bg-white hover:bg-skyBlue-50 border border-skyBlue-200 text-skyBlue-600 font-bold text-xs shadow-2xs transition flex items-center space-x-1 whitespace-nowrap" title="場館人工對應地圖">
+              <i class="fa-solid fa-map-location-dot"></i>
+              <span>場館地圖 <span class="text-[10px] font-normal text-slate-400">（人工對照僅供參考）</span></span>
+            </button>
+            <div class="text-xs px-2.5 py-1 rounded-lg bg-skyBlue-50 border border-skyBlue-200 text-skyBlue-600 font-bold whitespace-nowrap" id="timelineDateBadge">
               今日：判定中
             </div>
           </div>
@@ -644,9 +664,15 @@
         </div>
 
         <div>
-          <label class="block font-bold text-slate-700 mb-1">
-            所在發放位置說明 <span class="text-rose-500">*</span> <span class="text-[10px] font-normal text-slate-400">(請描述地標或穿搭特徵)</span>
-          </label>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block font-bold text-slate-700">
+              所在發放位置說明 <span class="text-rose-500">*</span> <span class="text-[10px] font-normal text-slate-400">(請描述地標或穿搭特徵)</span>
+            </label>
+            <button type="button" onclick="openVenueMap()" class="text-[11px] font-bold text-skyBlue-600 hover:text-skyBlue-700 flex items-center space-x-1 whitespace-nowrap">
+              <i class="fa-solid fa-map-location-dot"></i>
+              <span>場館地圖（人工對照僅供參考）</span>
+            </button>
+          </div>
           <textarea id="arriveLocationText" rows="2" maxlength="80" placeholder="例如：Gate 2 階梯下方靠近花圃，穿白色外套、背藍色痛包" class="w-full bg-white rounded-xl p-2.5 border border-slate-200 text-slate-800 focus:outline-none focus:border-skyBlue-400 resize-none"></textarea>
         </div>
 
@@ -1185,14 +1211,21 @@
     }
     const msOf = v => (v && typeof v.toMillis === 'function') ? v.toMillis() : (typeof v === 'number' ? v : 0);
 
-    /* ---------- 每日演出時間與「開唱前半小時」截止設定 ---------- */
-    const NON_CONCERT_DAY_CONFIG = { showTime: '無演出', cutoffLabel: '無限制', cutoffHour: null, cutoffMin: null, showHour: null, showMin: null };
+    /* ---------- 1/1 改版集中設定區（場館地圖、官方時程表連結、每日演出與搖滾區整隊結束時間） ---------- */
+    // 【1/1 改版填寫區 1】填入做好的場館地圖圖片路徑（例如 './venue_map.jpg'），未完成前留空字串 ''
+    const VENUE_MAP_IMAGE_URL = '';
+
+    // 【1/1 改版填寫區 2】填入官方公告時程表連結（可填主辦 FB/IG/X 貼文 https 網址，或圖片路徑 './schedule.jpg'），未公布前留空字串 ''
+    const OFFICIAL_SCHEDULE_URL = '';
+
+    // 【1/1 改版填寫區 3】待官方公布後，將 1/8、1/9、1/10 的「搖滾區整隊結束時間」填入 vipQueueEndHour 與 vipQueueEndMin（例如 17:30 結束則填 vipQueueEndHour: 17, vipQueueEndMin: 30）
+    const NON_CONCERT_DAY_CONFIG = { showTime: '無演出', cutoffLabel: '無限制', cutoffHour: null, cutoffMin: null, showHour: null, showMin: null, vipQueueEndHour: null, vipQueueEndMin: null };
     const SCHEDULE_CONFIG = {
-      '1/7':  { showTime: '無演出', cutoffLabel: '無限制', cutoffHour: null, cutoffMin: null, showHour: null, showMin: null },
-      '1/8':  { showTime: '19:00', cutoffLabel: '18:30', cutoffHour: 18, cutoffMin: 30, showHour: 19, showMin: 0 },
-      '1/9':  { showTime: '18:00', cutoffLabel: '17:30', cutoffHour: 17, cutoffMin: 30, showHour: 18, showMin: 0 },
-      '1/10': { showTime: '17:00', cutoffLabel: '16:30', cutoffHour: 16, cutoffMin: 30, showHour: 17, showMin: 0 },
-      '1/11': { showTime: '已結束', cutoffLabel: '已結束', cutoffHour: null, cutoffMin: null, showHour: null, showMin: null }
+      '1/7':  { showTime: '無演出', cutoffLabel: '無限制', cutoffHour: null, cutoffMin: null, showHour: null, showMin: null, vipQueueEndHour: null, vipQueueEndMin: null },
+      '1/8':  { showTime: '19:00', cutoffLabel: '18:30', cutoffHour: 18, cutoffMin: 30, showHour: 19, showMin: 0, vipQueueEndHour: null, vipQueueEndMin: null },
+      '1/9':  { showTime: '18:00', cutoffLabel: '17:30', cutoffHour: 17, cutoffMin: 30, showHour: 18, showMin: 0, vipQueueEndHour: null, vipQueueEndMin: null },
+      '1/10': { showTime: '17:00', cutoffLabel: '16:30', cutoffHour: 16, cutoffMin: 30, showHour: 17, showMin: 0, vipQueueEndHour: null, vipQueueEndMin: null },
+      '1/11': { showTime: '已結束', cutoffLabel: '已結束', cutoffHour: null, cutoffMin: null, showHour: null, showMin: null, vipQueueEndHour: null, vipQueueEndMin: null }
     };
 
     /* 全域狀態 */
@@ -1292,6 +1325,61 @@
     function dismissHalfHourBanner() {
       halfHourAlertShownForDay[currentSimDate + '_bannerDismissed'] = true;
       const topBanner = document.getElementById('halfHourTopBanner');
+      if (topBanner) topBanner.classList.add('hidden');
+    }
+
+    /* ---------- 場館對應地圖、官方時程表與「搖滾區整隊結束前 15 分鐘」提醒 ---------- */
+    const vipQueueAlertShownForDay = {};
+
+    function openVenueMap() {
+      const url = String(VENUE_MAP_IMAGE_URL || '').trim();
+      if (!url) {
+        showToast('場館對應地圖（人工對照僅供參考）製作中，預計於 2027/1/1 更新公布！');
+        return;
+      }
+      openImageLightbox(url, '場館對應地圖（人工對照僅供參考）');
+    }
+
+    function openOfficialSchedule() {
+      const url = String(OFFICIAL_SCHEDULE_URL || '').trim();
+      if (!url) {
+        showToast('官方時程表尚未公布，待主辦單位公告後更新！');
+        return;
+      }
+      if (/\.(png|jpe?g|webp|gif)(\?.*)?$/i.test(url)) {
+        openImageLightbox(url, '官方公告時程表');
+        return;
+      }
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+
+    function isWithinFifteenMinBeforeVipQueueEnd() {
+      const sch = SCHEDULE_CONFIG[currentSimDate];
+      if (!sch || sch.vipQueueEndHour === null || sch.vipQueueEndMin === null) return false;
+      const realToday = deriveTodayKey();
+      if (realToday && realToday !== currentSimDate) return false;
+
+      const { totalMin } = getTaipeiHM();
+      const vipEndTotal = sch.vipQueueEndHour * 60 + sch.vipQueueEndMin;
+      const vipAlertStartTotal = vipEndTotal - 15;
+      return totalMin >= vipAlertStartTotal && totalMin <= vipEndTotal;
+    }
+
+    function checkVipQueueAlert() {
+      const inVipWindow = (currentRole !== 'admin') && isWithinFifteenMinBeforeVipQueueEnd();
+      const topBanner = document.getElementById('vipQueueTopBanner');
+      if (!topBanner) return;
+
+      if (inVipWindow && !vipQueueAlertShownForDay[currentSimDate + '_bannerDismissed']) {
+        topBanner.classList.remove('hidden');
+      } else {
+        topBanner.classList.add('hidden');
+      }
+    }
+
+    function dismissVipQueueBanner() {
+      vipQueueAlertShownForDay[currentSimDate + '_bannerDismissed'] = true;
+      const topBanner = document.getElementById('vipQueueTopBanner');
       if (topBanner) topBanner.classList.add('hidden');
     }
 
@@ -3129,6 +3217,7 @@
       updateVendorUI();
       if (currentRole === 'admin') renderAdminVendorTable();
       checkHalfHourShowtimeAlert();
+      checkVipQueueAlert();
       showToast(`管理檢視日已切換至：${d}`);
     }
 
@@ -3406,6 +3495,7 @@
 
       checkFiveMinNotifications();
       checkHalfHourShowtimeAlert();
+      checkVipQueueAlert();
       updateVendorElapsedUI();
       checkSoldOutPrompt();
 
@@ -3767,6 +3857,7 @@
       renderTimeline();
       updateVendorUI();
       checkHalfHourShowtimeAlert();
+      checkVipQueueAlert();
 
       window.addEventListener('offline', () => { if (!DEMO_MODE) setOfflineState(true); });
       window.addEventListener('online', () => {
