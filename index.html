@@ -1278,16 +1278,15 @@
 
     /* ---------- 檢查是否已進入「開唱前半小時」管制時段 ---------- */
     function isWithinHalfHourBeforeShow() {
-      const sch = SCHEDULE_CONFIG[currentSimDate];
-      if (!sch || sch.cutoffHour === null) return false;
-      const realToday = deriveTodayKey();
-      if (realToday && realToday !== currentSimDate) return false;
+  const sch = SCHEDULE_CONFIG[currentSimDate];
+  if (!sch || sch.cutoffHour === null) return false;
+  const realToday = deriveTodayKey();
+  if (realToday && realToday !== currentSimDate) return false;
 
-      const { totalMin } = getTaipeiHM();
-      const cutoffTotal = sch.cutoffHour * 60 + sch.cutoffMin;
-      const showEndTotal = (sch.showHour * 60 + sch.showMin) + 180;
-      return totalMin >= cutoffTotal && totalMin <= showEndTotal;
-    }
+  const { totalMin } = getTaipeiHM();
+  const cutoffTotal = sch.cutoffHour * 60 + sch.cutoffMin;
+  return totalMin >= cutoffTotal; // 超過停止報位時間後，當日全天鎖定不再解鎖
+}
 
     function checkHalfHourShowtimeAlert() {
       const inCutoff = (currentRole !== 'admin') && isWithinHalfHourBeforeShow();
