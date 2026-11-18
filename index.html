@@ -1535,32 +1535,36 @@
       }
     }
 
-    async function sendSystemNotification(title, bodyText, tagKey, onClickFn) {
-      if (!('Notification' in window) || Notification.permission !== 'granted') return;
-      const options = {
-        body: bodyText,
-        tag: tagKey,
-        renotify: true,
-        vibrate: [200, 100, 200]
-      };
-      if ('serviceWorker' in navigator) {
-        try {
-          const reg = await navigator.serviceWorker.getRegistration();
-          if (reg && typeof reg.showNotification === 'function') {
-            await reg.showNotification(title, options);
-            return;
-          }
-        } catch (e) {}
-      }
-      try {
-        const n = new Notification(title, options);
-        n.onclick = () => {
-          window.focus();
-          if (typeof onClickFn === 'function') onClickFn();
-          n.close();
-        };
-      } catch (e) {}
-    }
+    async function getSwRegistration() {
+  if (!('serviceWorker' in navigator)) return null;
+  try {
+    const existing = await navigator.serviceWorker.getRegistration();
+    if (existing && existing.active) return existing;
+    // 等 SW 就緒，最多等 1.5 秒
+    return await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise(r => setTimeout(() => r(null), 1500))
+    ]);
+  } catch (e) { return null; }
+}
+
+async function sendSystemNotification(title, bodyText, tagKey, onClickFn, data = {}) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  const options = { body: bodyText, tag: tagKey, renotify: true, vibrate: [200, 100, 200], data };
+
+  const reg = await getSwRegistration();
+  if (reg && typeof reg.showNotification === 'function') {
+    try { await reg.showNotification(title, options); return; } catch (e) {}
+  }
+  try {
+    const n = new Notification(title, options);
+    n.onclick = () => {
+      window.focus();
+      if (typeof onClickFn === 'function') onClickFn();
+      n.close();
+    };
+  } catch (e) {}
+}
 
     function updateNotifPermButtonUI() {
       const lbl = document.getElementById('notifPermLabel');
@@ -1621,118 +1625,179 @@
       } catch (e) {}
     }
 
-    function triggerFiveMinAlert(item, alertType = 'preparing') {
-      playNotificationChime();
+    // ==================== 修改 4：提示音重用 AudioContext ====================
+let _audioCtx = null;
+function playNotificationChime() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    if (!_audioCtx) _audioCtx = new AudioCtx();
+    const ctx = _audioCtx;
+    if (ctx.state === 'suspended') ctx.resume();
+    [587.33, 880].forEach((freq, idx) => {
+      const t0 = ctx.currentTime + idx * 0.16;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t0);
+      gain.gain.setValueAtTime(0.18, t0);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.35);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(t0); osc.stop(t0 + 0.36);
+    });
+  } catch (e) {}
+}
 
-      const bar = document.getElementById('fiveMinAlertBar');
-      const inner = document.getElementById('fiveMinAlertInner');
-      const badgeLbl = document.getElementById('alertBadgeLabel');
-      const bellIcon = document.getElementById('alertBellIcon');
-      const vName = document.getElementById('alertVendorName');
-      const locTxt = document.getElementById('alertLocationText');
-      const jumpBtn = document.getElementById('alertJumpBtn');
+// 第一次使用者互動時就先解鎖，避免之後自動觸發被瀏覽器擋
+document.addEventListener('pointerdown', () => {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (AudioCtx && !_audioCtx) _audioCtx = new AudioCtx();
+    if (_audioCtx && _audioCtx.state === 'suspended') _audioCtx.resume();
+  } catch (e) {}
+}, { once: true });
 
-      const remainMin = Math.max(1, Math.ceil((item.startMs - Date.now()) / 60000));
-      const nick = item.nickname || item.owner || '創作者';
-      if (vName) vName.innerText = nick;
 
-      if (alertType === 'ended') {
-        if (inner) inner.className = 'rounded-2xl p-3.5 bg-gradient-to-r from-slate-700 to-slate-600 text-white shadow-2xl border border-white/40 flex items-start justify-between gap-3';
-        if (badgeLbl) { badgeLbl.className = 'text-[10px] font-black px-1.5 py-0.5 rounded bg-white text-slate-700'; badgeLbl.innerText = '已發放完畢'; }
-        if (bellIcon) bellIcon.className = 'fa-solid fa-flag-checkered text-base';
-        if (locTxt) locTxt.innerText = `🏁 已經發放完畢，不要白跑一趟囉！（應援物：${item.items}）`;
-        if (jumpBtn) { jumpBtn.className = 'px-2.5 py-1 rounded-lg bg-white text-slate-700 font-bold text-[11px] shadow-xs hover:bg-slate-100 transition'; jumpBtn.innerText = '查看時序卡片'; }
-      } else if (alertType === 'started') {
-        if (inner) inner.className = 'rounded-2xl p-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-2xl border border-white/40 flex items-start justify-between gap-3';
-        if (badgeLbl) { badgeLbl.className = 'text-[10px] font-black px-1.5 py-0.5 rounded bg-white text-emerald-600'; badgeLbl.innerText = '現正發放中'; }
-        if (bellIcon) bellIcon.className = 'fa-solid fa-fire text-base animate-bounce';
-        if (locTxt) locTxt.innerText = `🔥 已經開始發放「${item.items}」囉！地點：${item.locationText || '請見卡片說明'}`;
-        if (jumpBtn) { jumpBtn.className = 'px-2.5 py-1 rounded-lg bg-white text-emerald-600 font-bold text-[11px] shadow-xs hover:bg-emerald-50 transition'; jumpBtn.innerText = '查看位置與照片'; }
-      } else {
-        if (inner) inner.className = 'rounded-2xl p-3.5 bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-2xl border border-white/40 flex items-start justify-between gap-3';
-        if (badgeLbl) { badgeLbl.className = 'text-[10px] font-black px-1.5 py-0.5 rounded bg-white text-rose-600'; badgeLbl.innerText = '擺攤前提醒'; }
-        if (bellIcon) bellIcon.className = 'fa-solid fa-bell text-base animate-bounce';
-        if (locTxt) locTxt.innerText = `將於約 ${remainMin} 分鐘後開始發放「${item.items}」！地點：${item.locationText || '請見卡片說明'}`;
-        if (jumpBtn) { jumpBtn.className = 'px-2.5 py-1 rounded-lg bg-white text-rose-600 font-bold text-[11px] shadow-xs hover:bg-rose-50 transition'; jumpBtn.innerText = '查看位置與照片'; }
-      }
+// ==================== 修改 3：抽出跳到卡片邏輯 & 接收 SW 訊息 ====================
 
-      if (jumpBtn) {
-        jumpBtn.onclick = () => {
-          dismissFiveMinAlert();
-          selectTab('timeline');
-          setTimeout(() => {
-            const cardEl = document.getElementById(`vendor-card-${item.uid}`);
-            if (cardEl) {
-              cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              cardEl.classList.add('card-flash');
-              setTimeout(() => cardEl.classList.remove('card-flash'), 2500);
-            }
-            if (alertType !== 'ended' && item.hasPhoto && !safeImgSrc(item.locationImg)) {
-              loadAndShowVendorPhoto(item.uid, nick + ' - ' + (item.locationText || '發放位置'));
-            }
-          }, 120);
-        };
-      }
-      if (bar) bar.classList.remove('hidden');
+// 1. 獨立的跳轉函式
+function jumpToVendorCard(item, alertType) {
+  dismissFiveMinAlert();
+  selectTab('timeline');
+  setTimeout(() => {
+    const cardEl = document.getElementById(`vendor-card-${item.uid}`);
+    if (cardEl) {
+      cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      cardEl.classList.add('card-flash');
+      setTimeout(() => cardEl.classList.remove('card-flash'), 2500);
+    }
+    const nick = item.nickname || item.owner || '創作者';
+    if (alertType !== 'ended' && item.hasPhoto && !safeImgSrc(item.locationImg)) {
+      loadAndShowVendorPhoto(item.uid, nick + ' - ' + (item.locationText || '發放位置'));
+    }
+  }, 120);
+}
 
-      let sysTitle = '';
-      let sysBody = '';
-      if (alertType === 'ended') {
-        sysTitle = `🏁 【${nick}】已經發放完畢！`;
-        sysBody = `應援物「${item.items}」已經發放完畢，不要白跑一趟囉！`;
-      } else if (alertType === 'started') {
-        sysTitle = `🔥 【${nick}】已經開始發放應援囉！`;
-        sysBody = `應援物：${item.items}\n發放位置：${item.locationText || '點擊查看詳情'}`;
-      } else {
-        sysTitle = `🔔 【${nick}】將於 ${remainMin} 分鐘後開始發放！`;
-        sysBody = `應援物：${item.items}\n發放位置：${item.locationText || '點擊查看詳情'}`;
-      }
-      sendSystemNotification(sysTitle, sysBody, `kk-fav-${currentSimDate}-${item.uid}-${alertType}`, () => {
-        if (jumpBtn) jumpBtn.click();
-      });
+// 2. 處理「從通知點進來」：資料可能還沒載入，所以先記著，tickSystem 每秒嘗試
+let pendingJump = null;
+function consumePendingJump() {
+  if (!pendingJump) return;
+  const item = VENDORS_LIST.find(v => v.uid === pendingJump.uid);
+  if (!item) return;                       // 資料還沒到，下一秒再試
+  const { alertType } = pendingJump;
+  pendingJump = null;
+  jumpToVendorCard(item, alertType);
+}
+
+
+// 3. 修改後的 triggerFiveMinAlert
+function triggerFiveMinAlert(item, alertType = 'preparing') {
+  playNotificationChime();
+
+  const bar = document.getElementById('fiveMinAlertBar');
+  const inner = document.getElementById('fiveMinAlertInner');
+  const badgeLbl = document.getElementById('alertBadgeLabel');
+  const bellIcon = document.getElementById('alertBellIcon');
+  const vName = document.getElementById('alertVendorName');
+  const locTxt = document.getElementById('alertLocationText');
+  const jumpBtn = document.getElementById('alertJumpBtn');
+
+  const remainMin = Math.max(1, Math.ceil((item.startMs - Date.now()) / 60000));
+  const nick = item.nickname || item.owner || '創作者';
+  if (vName) vName.innerText = nick;
+
+  if (alertType === 'ended') {
+    if (inner) inner.className = 'rounded-2xl p-3.5 bg-gradient-to-r from-slate-700 to-slate-600 text-white shadow-2xl border border-white/40 flex items-start justify-between gap-3';
+    if (badgeLbl) { badgeLbl.className = 'text-[10px] font-black px-1.5 py-0.5 rounded bg-white text-slate-700'; badgeLbl.innerText = '已發放完畢'; }
+    if (bellIcon) bellIcon.className = 'fa-solid fa-flag-checkered text-base';
+    if (locTxt) locTxt.innerText = `🏁 已經發放完畢，不要白跑一趟囉！（應援物：${item.items}）`;
+    if (jumpBtn) { jumpBtn.className = 'px-2.5 py-1 rounded-lg bg-white text-slate-700 font-bold text-[11px] shadow-xs hover:bg-slate-100 transition'; jumpBtn.innerText = '查看時序卡片'; }
+  } else if (alertType === 'started') {
+    if (inner) inner.className = 'rounded-2xl p-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-2xl border border-white/40 flex items-start justify-between gap-3';
+    if (badgeLbl) { badgeLbl.className = 'text-[10px] font-black px-1.5 py-0.5 rounded bg-white text-emerald-600'; badgeLbl.innerText = '現正發放中'; }
+    if (bellIcon) bellIcon.className = 'fa-solid fa-fire text-base animate-bounce';
+    if (locTxt) locTxt.innerText = `🔥 已經開始發放「${item.items}」囉！地點：${item.locationText || '請見卡片說明'}`;
+    if (jumpBtn) { jumpBtn.className = 'px-2.5 py-1 rounded-lg bg-white text-emerald-600 font-bold text-[11px] shadow-xs hover:bg-emerald-50 transition'; jumpBtn.innerText = '查看位置與照片'; }
+  } else {
+    if (inner) inner.className = 'rounded-2xl p-3.5 bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-2xl border border-white/40 flex items-start justify-between gap-3';
+    if (badgeLbl) { badgeLbl.className = 'text-[10px] font-black px-1.5 py-0.5 rounded bg-white text-rose-600'; badgeLbl.innerText = '擺攤前提醒'; }
+    if (bellIcon) bellIcon.className = 'fa-solid fa-bell text-base animate-bounce';
+    if (locTxt) locTxt.innerText = `將於約 ${remainMin} 分鐘後開始發放「${item.items}」！地點：${item.locationText || '請見卡片說明'}`;
+    if (jumpBtn) { jumpBtn.className = 'px-2.5 py-1 rounded-lg bg-white text-rose-600 font-bold text-[11px] shadow-xs hover:bg-rose-50 transition'; jumpBtn.innerText = '查看位置與照片'; }
+  }
+
+  // 套用抽出來的獨立跳轉函式
+  if (jumpBtn) {
+    jumpBtn.onclick = () => jumpToVendorCard(item, alertType);
+  }
+  if (bar) bar.classList.remove('hidden');
+
+  let sysTitle = '';
+  let sysBody = '';
+  if (alertType === 'ended') {
+    sysTitle = `🏁 【${nick}】已經發放完畢！`;
+    sysBody = `應援物「${item.items}」已經發放完畢，不要白跑一趟囉！`;
+  } else if (alertType === 'started') {
+    sysTitle = `🔥 【${nick}】已經開始發放應援囉！`;
+    sysBody = `應援物：${item.items}\n發放位置：${item.locationText || '點擊查看詳情'}`;
+  } else {
+    sysTitle = `🔔 【${nick}】將於 ${remainMin} 分鐘後開始發放！`;
+    sysBody = `應援物：${item.items}\n發放位置：${item.locationText || '點擊查看詳情'}`;
+  }
+
+  // 發送系統通知，並把 uid 與 alertType 帶給 Service Worker
+  sendSystemNotification(
+    sysTitle, sysBody,
+    `kk-fav-${currentSimDate}-${item.uid}-${alertType}`,
+    () => jumpToVendorCard(item, alertType),
+    { uid: item.uid, alertType } // ← 這裡加入了傳給 SW 的參數
+  );
+}
+
+function dismissFiveMinAlert() {
+  const bar = document.getElementById('fiveMinAlertBar');
+  if (bar) bar.classList.add('hidden');
+}
+
+function checkFiveMinNotifications() {
+  const now = Date.now();
+  VENDORS_LIST.forEach(v => {
+    if (!v.isApproved) return;
+    if (!isFav(v.uid)) return;
+
+    const startKey = `${currentSimDate}_start_${v.uid}`;
+    const endKey = `${currentSimDate}_ended_${v.uid}`;
+
+    if (v.status === 'upcoming') {
+      delete notifiedSessions[startKey];
+      delete notifiedSessions[endKey];
+      return;
     }
 
-    function dismissFiveMinAlert() {
-      const bar = document.getElementById('fiveMinAlertBar');
-      if (bar) bar.classList.add('hidden');
+    if (v.status === 'preparing' && v.startMs && !notifiedSessions[startKey]) {
+      const remainMs = v.startMs - now;
+      if (remainMs <= 5 * 60 * 1000 && remainMs > -60000) {
+        notifiedSessions[startKey] = true;
+        triggerFiveMinAlert(v, 'preparing');
+      }
     }
-
-    function checkFiveMinNotifications() {
-      const now = Date.now();
-      VENDORS_LIST.forEach(v => {
-        if (!v.isApproved) return;
-        if (!isFav(v.uid)) return;
-
-        const startKey = `${currentSimDate}_start_${v.uid}`;
-        const endKey = `${currentSimDate}_ended_${v.uid}`;
-
-        if (v.status === 'upcoming') {
-          delete notifiedSessions[startKey];
-          delete notifiedSessions[endKey];
-          return;
-        }
-
-        if (v.status === 'preparing' && v.startMs && !notifiedSessions[startKey]) {
-          const remainMs = v.startMs - now;
-          if (remainMs <= 5 * 60 * 1000 && remainMs > -60000) {
-            notifiedSessions[startKey] = true;
-            triggerFiveMinAlert(v, 'preparing');
-          }
-        }
-        else if (v.status === 'in_use' && v.startMs && !notifiedSessions[startKey]) {
-          if (now - v.startMs <= 60 * 60 * 1000) {
-            notifiedSessions[startKey] = true;
-            triggerFiveMinAlert(v, 'started');
-          }
-        }
-        else if (v.status === 'ended' && !notifiedSessions[endKey]) {
-          if (!v.endedMs || (now - v.endedMs <= 45 * 60 * 1000)) {
-            notifiedSessions[endKey] = true;
-            triggerFiveMinAlert(v, 'ended');
-          }
-        }
-      });
+    else if (v.status === 'in_use' && v.startMs && !notifiedSessions[startKey]) {
+      if (now - v.startMs <= 60 * 60 * 1000) {
+        notifiedSessions[startKey] = true;
+        triggerFiveMinAlert(v, 'started');
+      }
     }
+    else if (v.status === 'ended' && !notifiedSessions[endKey]) {
+      if (!v.endedMs || (now - v.endedMs <= 45 * 60 * 1000)) {
+        notifiedSessions[endKey] = true;
+        triggerFiveMinAlert(v, 'ended');
+      }
+    }
+  });
+
+  // 4. 每一秒檢查看看有沒有因為「從通知點進來」而暫存的跳轉需求
+  consumePendingJump();
+}
 
     /* ---------- 後端呼叫與雲端同步 ---------- */
     async function callBackend(name, data) {
@@ -3867,6 +3932,25 @@
         }
       });
 
+// SW → 頁面：通知被點擊
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', (ev) => {
+      if (ev.data && ev.data.type === 'notif-click' && ev.data.uid) {
+        pendingJump = { uid: ev.data.uid, alertType: ev.data.alertType };
+      }
+    });
+  }
+  
+  // 冷啟動：從 #jump=uid&t=type 進來
+  (function readJumpHash() {
+    const m = location.hash.match(/^#jump=([^&]+)&t=(\w*)/);
+    if (m) {
+      pendingJump = { uid: decodeURIComponent(m[1]), alertType: m[2] || 'preparing' };
+      history.replaceState(null, '', location.pathname + location.search);
+    }
+  })();
+});
+
       // 前景喚醒同步：從背景切回本網頁時，若距離上次同步已超過 120 秒，立即拉取最新資料
       document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {
@@ -3881,7 +3965,7 @@
         if (DEMO_MODE && !isOfflineSim) setLastUpdate(fmtHMS(Date.now()));
         tickSystem();
       }, 1000);
-      setInterval(syncServerTime, 10 * 120 * 1000);
+      setInterval(syncServerTime, 120 * 1000);
     });
   </script>
 </body>
