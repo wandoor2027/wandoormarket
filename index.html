@@ -3939,26 +3939,66 @@ function openOfficialSchedule() {
       buildPineGarland();
     }
     function buildPineGarland() {
+      var W = 320, H = 64, oNight = '', oDay = '';
+      var nightCols = ['#17402a', '#25623a', '#357f49', '#4a9a5c'];
+      var dayCols = ['#2b5b6c', '#3b7387', '#4e8ca3', '#6ba6bd'];
+      function r(i) { var x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
+      function Y(x) { return 12 + Math.sin(x / W * 6.283 * 3) * 7; }
 
-    var W=320,H=64,o='',cols=['#17402a','#25623a','#357f49','#4a9a5c'];
-    function r(i){var x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x)}
-    function Y(x){return 12+Math.sin(x/W*6.283*3)*7}
-    o+='<path d="M0 '+Y(0)+' ';
-    for(var x=4;x<=W;x+=4)o+='L'+x+' '+Y(x).toFixed(1)+' ';
-    o+='" fill="none" stroke="#3b2a1c" stroke-width="3"/>';
-    for(var i=0,x=2;x<W;x+=7,i++){
-      var y=Y(x),len=16+r(i)*22,dx=(r(i+9)-.5)*12,ex=x+dx,ey=y+len;
-      o+='<line x1="'+x+'" y1="'+y.toFixed(1)+'" x2="'+ex.toFixed(1)+'" y2="'+ey.toFixed(1)+'" stroke="#1d4a2e" stroke-width="2"/>';
-      for(var k=1;k<=5;k++){
-        var t=k/5.5,px=x+dx*t,py=y+len*t,nl=7-k*.7;
-        for(var sd=-1;sd<=1;sd+=2)
-          o+='<line x1="'+px.toFixed(1)+'" y1="'+py.toFixed(1)+'" x2="'+(px+sd*nl).toFixed(1)+'" y2="'+(py+nl*.9).toFixed(1)+'" stroke="'+cols[(i+k)%4]+'" stroke-width="1.6" stroke-linecap="round"/>';
+      var branchPath = 'M0 ' + Y(0) + ' ';
+      for (var x = 4; x <= W; x += 4) branchPath += 'L' + x + ' ' + Y(x).toFixed(1) + ' ';
+      var snowCapPath = 'M0 ' + (Y(0) - 2.2).toFixed(1) + ' ';
+      for (var x = 4; x <= W; x += 4) snowCapPath += 'L' + x + ' ' + (Y(x) - 2.2).toFixed(1) + ' ';
+
+      // 夜版主幹
+      oNight += '<path d="' + branchPath + '" fill="none" stroke="#3b2a1c" stroke-width="3"/>';
+      // 日版主幹 + 主幹上方厚積雪層
+      oDay += '<path d="' + branchPath + '" fill="none" stroke="#4a3728" stroke-width="4.2" stroke-linecap="round"/>';
+      oDay += '<path d="' + snowCapPath + '" fill="none" stroke="#ffffff" stroke-width="4.8" stroke-linecap="round"/>';
+      oDay += '<path d="' + snowCapPath + '" fill="none" stroke="#e0f2fe" stroke-width="2" stroke-dasharray="10 6" stroke-linecap="round"/>';
+
+      for (var i = 0, x = 2; x < W; x += 7, i++) {
+        var y = Y(x), len = 16 + r(i) * 22, dx = (r(i + 9) - 0.5) * 12, ex = x + dx, ey = y + len;
+
+        // 分支枝幹
+        oNight += '<line x1="' + x + '" y1="' + y.toFixed(1) + '" x2="' + ex.toFixed(1) + '" y2="' + ey.toFixed(1) + '" stroke="#1d4a2e" stroke-width="2"/>';
+        oDay += '<line x1="' + x + '" y1="' + y.toFixed(1) + '" x2="' + ex.toFixed(1) + '" y2="' + ey.toFixed(1) + '" stroke="#523e2e" stroke-width="2.2"/>';
+        // 日版分支上的積雪白邊
+        oDay += '<line x1="' + x + '" y1="' + (y - 1.2).toFixed(1) + '" x2="' + (x + dx * 0.75).toFixed(1) + '" y2="' + (y + len * 0.75 - 1.2).toFixed(1) + '" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round"/>';
+
+        for (var k = 1; k <= 5; k++) {
+          var t = k / 5.5, px = x + dx * t, py = y + len * t, nl = 7 - k * 0.7;
+          for (var sd = -1; sd <= 1; sd += 2) {
+            oNight += '<line x1="' + px.toFixed(1) + '" y1="' + py.toFixed(1) + '" x2="' + (px + sd * nl).toFixed(1) + '" y2="' + (py + nl * 0.9).toFixed(1) + '" stroke="' + nightCols[(i + k) % 4] + '" stroke-width="1.6" stroke-linecap="round"/>';
+            oDay += '<line x1="' + px.toFixed(1) + '" y1="' + py.toFixed(1) + '" x2="' + (px + sd * nl).toFixed(1) + '" y2="' + (py + nl * 0.9).toFixed(1) + '" stroke="' + dayCols[(i + k) % 4] + '" stroke-width="1.6" stroke-linecap="round"/>';
+          }
+        }
+
+        // 夜版點綴雪花
+        if (i % 2 === 0) oNight += '<ellipse cx="' + (x + dx * 0.35).toFixed(1) + '" cy="' + (y + len * 0.35 - 1).toFixed(1) + '" rx="5" ry="1.6" fill="#f3f6fa" opacity=".9"/>';
+        if (i % 3 === 1) oNight += '<ellipse cx="' + ex.toFixed(1) + '" cy="' + (ey + 1).toFixed(1) + '" rx="2.6" ry="2" fill="#f3f6fa" opacity=".9"/>';
+
+        // 日版：飽滿厚積雪團 + 晶瑩冰柱 + 冰晶紅果實
+        oDay += '<ellipse cx="' + (x + dx * 0.32).toFixed(1) + '" cy="' + (y + len * 0.32 - 1).toFixed(1) + '" rx="6.8" ry="2.8" fill="#ffffff"/>';
+        oDay += '<ellipse cx="' + (x + dx * 0.68).toFixed(1) + '" cy="' + (y + len * 0.68).toFixed(1) + '" rx="5.2" ry="2.3" fill="#ffffff"/>';
+        oDay += '<circle cx="' + ex.toFixed(1) + '" cy="' + (ey + 1).toFixed(1) + '" r="3.2" fill="#ffffff" stroke="#bae6fd" stroke-width="0.8"/>';
+        if (i % 3 === 0) {
+          var ix = (x + 3).toFixed(1), iy = (y + 1).toFixed(1), ih = (10 + r(i * 3) * 11).toFixed(1);
+          oDay += '<polygon points="' + (x + 1.2).toFixed(1) + ',' + iy + ' ' + (x + 4.8).toFixed(1) + ',' + iy + ' ' + ix + ',' + (y + 1 + parseFloat(ih)).toFixed(1) + '" fill="#e0f2fe" stroke="#ffffff" stroke-width="0.6" opacity="0.92"/>';
+        }
+        if (i % 5 === 2) {
+          oDay += '<circle cx="' + (x + dx * 0.45).toFixed(1) + '" cy="' + (y + len * 0.45 + 1.5).toFixed(1) + '" r="2.2" fill="#f43f5e"/>';
+          oDay += '<circle cx="' + (x + dx * 0.45 - 0.6).toFixed(1) + '" cy="' + (y + len * 0.45 + 0.9).toFixed(1) + '" r="0.7" fill="#ffffff"/>';
+        }
       }
-      if(i%2===0)o+='<ellipse cx="'+(x+dx*.35).toFixed(1)+'" cy="'+(y+len*.35-1).toFixed(1)+'" rx="5" ry="1.6" fill="#f3f6fa" opacity=".9"/>';
-      if(i%3===1)o+='<ellipse cx="'+ex.toFixed(1)+'" cy="'+(ey+1).toFixed(1)+'" rx="2.6" ry="2" fill="#f3f6fa" opacity=".9"/>';
-    }
-    var svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'">'+o+'</svg>';
-    document.getElementById('garland').style.backgroundImage='url("data:image/svg+xml,'+encodeURIComponent(svg)+'")';
+
+      var svgNight = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '">' + oNight + '</svg>';
+      var svgDay = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '">' + oDay + '</svg>';
+      var el = document.getElementById('garland');
+      if (el) {
+        el.style.setProperty('--garland-night', 'url("data:image/svg+xml,' + encodeURIComponent(svgNight) + '")');
+        el.style.setProperty('--garland-day', 'url("data:image/svg+xml,' + encodeURIComponent(svgDay) + '")');
+      }
     }
 
     function toggleLiteMode() {
