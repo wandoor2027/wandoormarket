@@ -336,7 +336,11 @@
               點擊卡片右上角愛心加入最愛，將於擺攤前推播通知
             </p>
           </div>
-          <div class="flex flex-wrap items-center gap-1.5">
+<div class="flex flex-wrap items-center gap-1.5">
+            <button onclick="openSupportTeamIG()" id="btnSupportTeamIG" class="px-2.5 py-1 rounded-lg bg-white hover:bg-rose-50 border border-rose-200 text-rose-600 font-bold text-xs shadow-2xs transition flex items-center space-x-1 whitespace-nowrap" title="前往應援團隊 Instagram">
+              <i class="fa-brands fa-instagram"></i>
+              <span>應援團隊IG</span>
+            </button>
             <button onclick="openOfficialSchedule()" id="btnOfficialSchedule" class="px-2.5 py-1 rounded-lg bg-white hover:bg-skyBlue-50 border border-skyBlue-200 text-skyBlue-600 font-bold text-xs shadow-2xs transition flex items-center space-x-1 whitespace-nowrap">
               <i class="fa-regular fa-calendar-check"></i>
               <span>官方時程表</span>
@@ -1212,11 +1216,15 @@
     const msOf = v => (v && typeof v.toMillis === 'function') ? v.toMillis() : (typeof v === 'number' ? v : 0);
 
     /* ---------- 1/1 改版集中設定區（場館地圖、官方時程表連結、每日演出與搖滾區整隊結束時間） ---------- */
+/* ---------- 1/1 改版集中設定區（場館地圖、官方時程表連結、應援團隊IG、每日演出與搖滾區整隊結束時間） ---------- */
     // 【1/1 改版填寫區 1】填入做好的場館地圖圖片路徑（例如 './venue_map.jpg'），未完成前留空字串 ''
     const VENUE_MAP_IMAGE_URL = './venue_map.jpg';
 
     // 【1/1 改版填寫區 2】填入官方公告時程表連結（可填主辦 FB/IG/X 貼文 https 網址，或圖片路徑 './schedule.jpg'），未公布前留空字串 ''
     const OFFICIAL_SCHEDULE_URL = '';
+
+    // 應援團隊 IG 連結
+    const SUPPORT_TEAM_IG_URL = 'https://www.instagram.com/tw_boynextdoor_sup?utm_source=ig_web_button_share_sheet&bqrl=ZDNlZDc0MzIxNw==';
 
     // 【1/1 改版填寫區 3】待官方公布後，將 1/8、1/9、1/10 的「搖滾區整隊結束時間」填入 vipQueueEndHour 與 vipQueueEndMin（例如 17:30 結束則填 vipQueueEndHour: 17, vipQueueEndMin: 30）
     const NON_CONCERT_DAY_CONFIG = { showTime: '無演出', cutoffLabel: '無限制', cutoffHour: null, cutoffMin: null, showHour: null, showMin: null, vipQueueEndHour: null, vipQueueEndMin: null };
@@ -1340,7 +1348,7 @@
       openImageLightbox(url, '場館對應地圖（人工對照僅供參考）');
     }
 
-    function openOfficialSchedule() {
+function openOfficialSchedule() {
       const url = String(OFFICIAL_SCHEDULE_URL || '').trim();
       if (!url) {
         showToast('官方時程表尚未公布，待主辦單位公告後更新！');
@@ -1348,6 +1356,15 @@
       }
       if (/\.(png|jpe?g|webp|gif)(\?.*)?$/i.test(url)) {
         openImageLightbox(url, '官方公告時程表');
+        return;
+      }
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+
+    function openSupportTeamIG() {
+      const url = String(SUPPORT_TEAM_IG_URL || '').trim();
+      if (!url) {
+        showToast('應援團隊 IG 連結尚未設定！');
         return;
       }
       window.open(url, '_blank', 'noopener,noreferrer');
