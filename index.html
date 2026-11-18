@@ -1849,11 +1849,37 @@ function openOfficialSchedule() {
       if (savedPhotos) PHOTO_CACHE = JSON.parse(savedPhotos) || {};
     } catch (e) {}
 
-    function savePhotoToSessionCache(uid, dataUrl) {
+    /* 照片版本號：攤主每次更換／移除照片，market_public/live 的 photoVer 就會變動，
+       訪客端快取版本不符時會丟棄舊圖並重新向 vendor_photos 抓取 */
+    const PHOTO_VER_SESSION_KEY = 'kk_vendor_photo_vers_v1';
+    let PHOTO_VER_CACHE = {};
+    try {
+      const savedVers = sessionStorage.getItem(PHOTO_VER_SESSION_KEY);
+      if (savedVers) PHOTO_VER_CACHE = JSON.parse(savedVers) || {};
+    } catch (e) {}
+
+    function savePhotoToSessionCache(uid, dataUrl, ver) {
       if (!uid) return;
-      if (dataUrl) PHOTO_CACHE[uid] = dataUrl;
-      else delete PHOTO_CACHE[uid];
+      if (dataUrl) {
+        PHOTO_CACHE[uid] = dataUrl;
+        PHOTO_VER_CACHE[uid] = (ver !== undefined && ver !== null)
+          ? (Number(ver) || 0)
+          : (Number((PUBLIC_LIVE_MAP[uid] || {}).photoVer) || 0);
+      } else {
+        delete PHOTO_CACHE[uid];
+        delete PHOTO_VER_CACHE[uid];
+      }
       try { sessionStorage.setItem(PHOTO_SESSION_CACHE_KEY, JSON.stringify(PHOTO_CACHE)); } catch (e) {}
+      try { sessionStorage.setItem(PHOTO_VER_SESSION_KEY, JSON.stringify(PHOTO_VER_CACHE)); } catch (e) {}
+    }
+
+    /* 取得「版本仍有效」的快取照片；liveVer 為 0（舊資料無版本號）時沿用快取 */
+    function getValidCachedPhoto(uid, liveVer) {
+      const img = safeImgSrc(PHOTO_CACHE[uid]);
+      if (!img) return '';
+      const want = Number(liveVer) || 0;
+      if (want && (Number(PHOTO_VER_CACHE[uid]) || 0) !== want) return '';
+      return img;
     }
 
     function buildPublicSlotPayload(v) {
@@ -1866,7 +1892,8 @@ function openOfficialSchedule() {
         isApproved: true,
         status: ['upcoming', 'preparing', 'in_use', 'ended'].includes(v.status) ? v.status : 'upcoming',
         locationText: v.locationText || '',
-        hasPhoto: Boolean(v.hasPhoto || v.locationImg || PHOTO_CACHE[v.uid]),
+        hasPhoto: Boolean(v.hasPhoto),
+        photoVer: v.hasPhoto ? (Number(v.photoVer) || 0) : 0,
         startMs: msOf(v.start_at || v.startMs),
         prepTotalMs: v.prepTotalMs || 10 * 60000,
         endedMs: msOf(v.ended_at || v.endedMs),
@@ -1891,8 +1918,13 @@ function openOfficialSchedule() {
         effectiveStatus = 'in_use';
       }
 
-      const cachedImg = safeImgSrc(PHOTO_CACHE[id] || v.locationImg || '');
-      const hasPhotoFlag = isFromToday ? Boolean(v.hasPhoto || cachedImg) : false;
+      // 只信任資料庫旗標 hasPhoto；攤主刪除照片後，訪客不會再看到舊快取
+      const hasPhotoFlag = isFromToday ? Boolean(v.hasPhoto) : false;
+      const photoVer = hasPhotoFlag ? (Number(v.photoVer) || 0) : 0;
+      // 快取版本與 live 的 photoVer 不符 → 視為舊照片，交給「看位置圖」重新抓取
+      const cachedImg = hasPhotoFlag
+        ? (getValidCachedPhoto(id, photoVer) || safeImgSrc(v.locationImg || ''))
+        : '';
 
       return {
         uid: id,
@@ -1906,6 +1938,7 @@ function openOfficialSchedule() {
         status: effectiveStatus,
         locationText: isFromToday ? (v.locationText || '') : '',
         hasPhoto: hasPhotoFlag,
+        photoVer,
         locationImg: isFromToday ? cachedImg : '',
         startMs: isFromToday ? rawStartMs : 0,
         prepTotalMs: v.prepTotalMs || 10 * 60000,
@@ -2010,7 +2043,8 @@ function openOfficialSchedule() {
 
     async function loadAndShowVendorPhoto(uid, caption) {
       if (!uid) return;
-      const cached = safeImgSrc(PHOTO_CACHE[uid]);
+      const liveVer = Number((PUBLIC_LIVE_MAP[uid] || {}).photoVer) || 0;
+      const cached = getValidCachedPhoto(uid, liveVer);
       if (cached) {
         openImageLightbox(cached, caption);
         return;
@@ -2024,7 +2058,7 @@ function openOfficialSchedule() {
         const pSnap = await FB().getDoc(FB().doc(firestoreDb, 'vendor_photos', uid));
         if (pSnap.exists() && pSnap.data() && safeImgSrc(pSnap.data().locationImg)) {
           const imgData = safeImgSrc(pSnap.data().locationImg);
-          savePhotoToSessionCache(uid, imgData);
+          savePhotoToSessionCache(uid, imgData, Number(pSnap.data().updatedAt) || liveVer);
           const target = VENDORS_LIST.find(x => x.uid === uid);
           if (target) target.locationImg = imgData;
           if (currentVendor && currentVendor.uid === uid) currentVendor.locationImg = imgData;
@@ -2184,7 +2218,7 @@ function openOfficialSchedule() {
                   const pSnap = await FB().getDoc(FB().doc(firestoreDb, 'vendor_photos', vid));
                   if (pSnap.exists() && pSnap.data() && safeImgSrc(pSnap.data().locationImg)) {
                     const imgData = safeImgSrc(pSnap.data().locationImg);
-                    savePhotoToSessionCache(vid, imgData);
+                    savePhotoToSessionCache(vid, imgData, Number(pSnap.data().updatedAt) || currentVendor.photoVer || 0);
                     currentVendor.locationImg = imgData;
                   }
                 } catch (pe) {}
@@ -2553,14 +2587,31 @@ function openOfficialSchedule() {
       }
     }
 
+    /* 手機瀏覽器（iOS Safari 等）會封鎖 await / setTimeout 之後的 window.open，
+       因此改成顯示一個「真實 <a> 連結」的浮動提示條，由攤主親自點擊開啟（新的使用者手勢，不會被擋） */
+    let productPostBannerTimer = null;
+    function dismissProductPostBanner() {
+      if (productPostBannerTimer) { clearTimeout(productPostBannerTimer); productPostBannerTimer = null; }
+      const old = document.getElementById('productPostBanner');
+      if (old) old.remove();
+    }
     function promptOpenProductPost(msg) {
       const href = safePostUrl(currentVendor && currentVendor.productPost);
       if (!href) return;
-      setTimeout(() => {
-        if (confirm(msg + '\n\n是否要開新分頁前往註冊時的應援物貼文？')) {
-          window.open(href, '_blank', 'noopener,noreferrer');
-        }
-      }, 400);
+      dismissProductPostBanner();
+      const bar = document.createElement('div');
+      bar.id = 'productPostBanner';
+      bar.className = 'fixed left-1/2 transform -translate-x-1/2 z-[60] glass-card px-3 py-2.5 rounded-2xl shadow-xl border border-skyBlue-200 flex items-center space-x-2 max-w-[92vw]';
+      bar.style.bottom = 'calc(1.25rem + env(safe-area-inset-bottom, 0px))';
+      bar.innerHTML =
+        '<span class="text-xs font-bold text-slate-700">' + esc(msg) + '</span>' +
+        '<a href="' + esc(href) + '" target="_blank" rel="noopener noreferrer" ' +
+          'onclick="setTimeout(dismissProductPostBanner, 300)" ' +
+          'class="px-3 py-1.5 rounded-xl bg-skyBlue-500 hover:bg-skyBlue-600 text-white text-xs font-bold flex items-center space-x-1 flex-shrink-0">' +
+          '<span>前往應援物貼文</span><i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a>' +
+        '<button type="button" onclick="dismissProductPostBanner()" aria-label="關閉" class="text-slate-400 hover:text-slate-600 px-1 text-sm flex-shrink-0">✕</button>';
+      document.body.appendChild(bar);
+      productPostBannerTimer = setTimeout(dismissProductPostBanner, 20000);
     }
 
     const soldOutPrompted = {};
@@ -2933,6 +2984,7 @@ function openOfficialSchedule() {
             status: 'upcoming',
             locationText: '',
             hasPhoto: false,
+            photoVer: 0,
             startMs: 0,
             endedMs: 0
           };
@@ -2962,6 +3014,7 @@ function openOfficialSchedule() {
       v.status = 'upcoming';
       v.locationText = '';
       v.hasPhoto = false;
+      v.photoVer = 0;
       v.locationImg = '';
       v.startMs = 0;
       v.endedMs = 0;
@@ -3439,10 +3492,20 @@ function openOfficialSchedule() {
 
       const now = Date.now();
       const hasPhotoNow = Boolean(tempCompressedPhotoDataUrl);
+      const photoChanged = hasPhotoNow && tempCompressedPhotoDataUrl !== currentVendor.locationImg;
+      const prevPhotoVer = Number(currentVendor.photoVer || (currentVendor._raw && currentVendor._raw.photoVer)) || 0;
+      // 換照片 → 新版本號；沒換 → 沿用；移除 → 0
+      const photoVer = hasPhotoNow ? (photoChanged || !prevPhotoVer ? now : prevPhotoVer) : 0;
+      // 一併帶入基本欄位，確保 market_public/live 的攤位資料永遠完整
       const updatedFields = {
+        nickname: currentVendor.nickname || '(未命名)',
+        expectedDays: Array.isArray(currentVendor.expectedDays) ? currentVendor.expectedDays : ['1/8'],
+        productPost: safePostUrl(currentVendor.productPost) || '',
+        isApproved: true,
         items,
         locationText,
-        hasPhoto: hasPhotoNow
+        hasPhoto: hasPhotoNow,
+        photoVer
       };
 
       if (!isEditingExistingArrival) {
@@ -3455,11 +3518,11 @@ function openOfficialSchedule() {
 
       if (!DEMO_MODE && backendReady && currentVendor.uid) {
         try {
-          if (hasPhotoNow && tempCompressedPhotoDataUrl !== currentVendor.locationImg) {
+          if (photoChanged) {
             await FB().setDoc(FB().doc(firestoreDb, 'vendor_photos', currentVendor.uid), {
               uid: currentVendor.uid,
               locationImg: tempCompressedPhotoDataUrl,
-              updatedAt: now
+              updatedAt: photoVer
             });
           } else if (!hasPhotoNow && (currentVendor.hasPhoto || (currentVendor._raw && currentVendor._raw.hasPhoto))) {
             try { await FB().deleteDoc(FB().doc(firestoreDb, 'vendor_photos', currentVendor.uid)); } catch (de) {}
@@ -3473,12 +3536,13 @@ function openOfficialSchedule() {
         }
       }
 
-      savePhotoToSessionCache(currentVendor.uid, tempCompressedPhotoDataUrl || '');
+      savePhotoToSessionCache(currentVendor.uid, tempCompressedPhotoDataUrl || '', photoVer);
       currentVendor.items = items;
       currentVendor.locationText = locationText;
       currentVendor.hasPhoto = hasPhotoNow;
+      currentVendor.photoVer = photoVer;
       currentVendor.locationImg = tempCompressedPhotoDataUrl || '';
-      if (currentVendor._raw) currentVendor._raw.hasPhoto = hasPhotoNow;
+      if (currentVendor._raw) { currentVendor._raw.hasPhoto = hasPhotoNow; currentVendor._raw.photoVer = photoVer; }
 
       if (!isEditingExistingArrival) {
         currentVendor.status = 'preparing';
@@ -3689,7 +3753,7 @@ function openOfficialSchedule() {
           const p = await FB().getDoc(FB().doc(firestoreDb, 'vendor_photos', uid));
           if (p.exists() && safeImgSrc(p.data().locationImg)) {
             const d = safeImgSrc(p.data().locationImg);
-            savePhotoToSessionCache(uid, d); v.locationImg = d;
+            savePhotoToSessionCache(uid, d, Number(p.data().updatedAt) || v.photoVer || 0); v.locationImg = d;
           }
         } catch (e) {}
       }
