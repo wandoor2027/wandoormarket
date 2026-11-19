@@ -149,9 +149,15 @@
 
 /* ===== 夜間主題（壁爐暖冬） ===== */
 
-/* 切換按鈕 */
-.theme-toggle{display:inline-flex;align-items:center;gap:2px;padding:2px;border-radius:999px;background:rgba(255,255,255,.85);border:1px solid #e2e8f0;cursor:pointer}
-.theme-toggle span{width:24px;height:20px;display:grid;place-items:center;border-radius:999px;font-size:11px;color:#94a3b8;transition:.25s}
+/* 頂部四顆功能按鈕一致化樣式（加到主畫面／開啟推播提醒／主題切換／簡易模式） */
+.top-ctrl-btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;height:26px;padding:0 8px;border-radius:999px;font-size:10.5px;font-weight:700;line-height:1;white-space:nowrap;flex-shrink:0;box-sizing:border-box;transition:all .2s ease}
+.top-ctrl-btn.hidden{display:none!important}
+@media (min-width:640px){.top-ctrl-btn{height:28px;padding:0 10px;font-size:11px}}
+
+/* 主題切換按鈕（與 .top-ctrl-btn 同高、同圓角） */
+.theme-toggle{display:inline-flex;align-items:center;gap:2px;height:26px;padding:2px;border-radius:999px;background:rgba(255,255,255,.85);border:1px solid #e2e8f0;cursor:pointer;box-sizing:border-box;flex-shrink:0}
+.theme-toggle span{width:22px;height:20px;display:grid;place-items:center;border-radius:999px;font-size:10px;color:#94a3b8;transition:.25s}
+@media (min-width:640px){.theme-toggle{height:28px}.theme-toggle span{width:24px;height:22px;font-size:11px}}
 body:not(.night) .theme-toggle .t-sun{background:#00A0E9;color:#fff}
 body.night .theme-toggle{background:#3a2218;border-color:rgba(255,190,110,.35)}
 body.night .theme-toggle .t-moon{background:#ff9f43;color:#2b1208}
@@ -312,36 +318,44 @@ body.night .hearth{opacity:1}
 
   <div class="relative z-10 w-full max-w-full md:max-w-4xl lg:max-w-6xl mx-auto min-h-screen flex flex-col px-2.5 sm:px-6 pt-2">
 
-    <!-- 頂部微型資訊列 -->
-    <div class="flex flex-wrap items-center justify-between gap-1.5 px-2 pt-1 text-[10px] sm:text-[11px] text-slate-500">
-      <div class="flex items-center space-x-2">
-        <span id="connBadge" onclick="manualRefreshPublicLive()" class="cursor-pointer inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 font-bold whitespace-nowrap" title="點擊可立即同步">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>連線正常
-        </span>
-        <span class="hidden xs:inline">最後更新：<span id="lastUpdateText" class="font-mono font-bold text-slate-700">--:--:--</span></span>
-        <button onclick="manualRefreshPublicLive()" id="btnManualSync" class="px-1.5 py-0.5 rounded bg-white/80 border border-slate-200 text-skyBlue-600 hover:bg-skyBlue-50 font-bold transition flex items-center space-x-1 whitespace-nowrap" title="手動同步最新時序（冷卻 60 秒）">
+    <!-- 頂部微型資訊列（上排：連線與同步狀態；下排：四顆功能按鈕單排左右對齊） -->
+    <div class="space-y-1.5 px-1 sm:px-2 pt-1 text-[10px] sm:text-[11px] text-slate-500">
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center space-x-2 min-w-0">
+          <span id="connBadge" onclick="manualRefreshPublicLive()" class="cursor-pointer inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 font-bold whitespace-nowrap" title="點擊可立即同步">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>連線正常
+          </span>
+          <span class="truncate">最後更新：<span id="lastUpdateText" class="font-mono font-bold text-slate-700">--:--:--</span></span>
+        </div>
+        <button onclick="manualRefreshPublicLive()" id="btnManualSync" class="px-2 py-0.5 rounded-full bg-white/85 border border-slate-200 text-skyBlue-600 hover:bg-skyBlue-50 font-bold transition inline-flex items-center space-x-1 whitespace-nowrap flex-shrink-0" title="手動同步最新時序（冷卻 60 秒）">
           <i class="fa-solid fa-arrows-rotate text-[10px]"></i>
           <span>同步</span>
         </button>
       </div>
 
-      <div class="flex items-center space-x-1.5">
-        <button onclick="handleInstallPwaClick()" id="btnInstallPwa" class="hidden px-2 py-0.5 rounded-md bg-skyBlue-50 border border-skyBlue-200 text-skyBlue-600 hover:bg-skyBlue-100 font-bold transition flex items-center space-x-1 whitespace-nowrap" title="加入主畫面安裝成 🏠 App">
-          <span class="text-xs leading-none">🏠</span>
-          <span id="installPwaLabel">加入主畫面</span>
-        </button>
-        <button onclick="requestNotifPermissionManual()" id="btnNotifPerm" class="px-2 py-0.5 rounded-md bg-white/80 border border-slate-200 text-slate-600 hover:text-rose-500 transition flex items-center space-x-1 whitespace-nowrap">
-          <i class="fa-regular fa-bell text-xs text-rose-500"></i>
-          <span id="notifPermLabel">開啟推播提醒</span>
-        </button>
-        <button onclick="toggleTheme()" id="btnTheme" class="theme-toggle" title="切換日／夜主題" aria-label="切換日夜主題">
-          <span class="t-sun"><i class="fa-solid fa-sun"></i></span>
-          <span class="t-moon"><i class="fa-solid fa-moon"></i></span>
-        </button>
-        <button onclick="toggleLiteMode()" id="btnLiteMode" class="px-2 py-0.5 rounded-md bg-white/80 border border-slate-200 text-slate-600 hover:text-skyBlue-600 transition flex items-center space-x-1 whitespace-nowrap">
-          <i class="fa-solid fa-leaf text-xs text-emerald-500"></i>
-          <span>簡易模式</span>
-        </button>
+      <!-- 四顆功能按鈕並列一排：左側（加到主畫面＋開啟推播提醒），右側（主題切換＋簡易模式） -->
+      <div class="flex flex-nowrap items-center justify-between gap-1 sm:gap-2 w-full">
+        <div class="flex flex-nowrap items-center gap-1 sm:gap-1.5 min-w-0">
+          <button onclick="handleInstallPwaClick()" id="btnInstallPwa" class="hidden top-ctrl-btn bg-skyBlue-50 border border-skyBlue-200 text-skyBlue-600 hover:bg-skyBlue-100 shadow-2xs" title="加到主畫面，從桌面快速開啟">
+            <span class="text-[11px] leading-none">🏠</span>
+            <span id="installPwaLabel">加到主畫面</span>
+          </button>
+          <button onclick="requestNotifPermissionManual()" id="btnNotifPerm" class="top-ctrl-btn bg-white/85 border border-slate-200 text-slate-600 hover:text-rose-500 shadow-2xs">
+            <i class="fa-regular fa-bell text-[11px] text-rose-500"></i>
+            <span id="notifPermLabel">開啟推播提醒</span>
+          </button>
+        </div>
+
+        <div class="flex flex-nowrap items-center gap-1 sm:gap-1.5 flex-shrink-0">
+          <button onclick="toggleTheme()" id="btnTheme" class="theme-toggle shadow-2xs" title="切換日／夜主題" aria-label="切換日夜主題">
+            <span class="t-sun"><i class="fa-solid fa-sun"></i></span>
+            <span class="t-moon"><i class="fa-solid fa-moon"></i></span>
+          </button>
+          <button onclick="toggleLiteMode()" id="btnLiteMode" class="top-ctrl-btn bg-white/85 border border-slate-200 text-slate-600 hover:text-skyBlue-600 shadow-2xs">
+            <i id="liteModeIcon" class="fa-solid fa-leaf text-[11px] text-emerald-500"></i>
+            <span>簡易模式</span>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -1031,28 +1045,28 @@ body.night .hearth{opacity:1}
           <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A4：</span>預設為開啟網頁時2-3分鐘自動同步一次，也可利用左上角同步按鈕(60秒冷卻)。</p>
         </details>
         <details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
-          <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q5</span><span>如何安裝成 🏠 App 並開啟「關掉網頁也能收的推播通知」（iOS / Android）？</span></summary>
+          <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q5</span><span>如何加到主畫面（🏠 桌面捷徑）並開啟「關掉網頁也能收的推播通知」（iOS / Android）？</span></summary>
           <div class="mt-1.5 pl-6 text-slate-600 leading-relaxed space-y-1.5">
-            <p><span class="font-bold text-rose-500">A5：</span><strong>LINE、IG、Threads 的內建瀏覽器無法安裝 PWA 與接收背景推播</strong>，請務必改用手機預設瀏覽器（Safari／Chrome）開啟本站：</p>
-            <p><strong>・iPhone (iOS 16.4+)：</strong>請先用 <strong>Safari</strong> 開啟本站 → 點底部「<strong>分享</strong>」→「<strong>加入主畫面</strong>」安裝成 🏠 App，<strong>接著請從桌面點擊 🏠 開啟後再點愛心收藏最愛與點右上角「開啟推播提醒」</strong>（Safari 與桌面 🏠 App 的最愛清單各自獨立）。設定完成後，即使關掉 App 仍會收到最愛攤主通知！</p>
-            <p><strong>・Android 手機：</strong>請用 <strong>Chrome</strong> 開啟本站，點擊右上角「<strong>🏠 安裝 App／加入主畫面</strong>」（或瀏覽器選單 → 安裝應用程式），再點「<strong>開啟推播提醒</strong>」允許權限。完成後即使關閉網頁，仍會在背景收到最愛攤主的開攤前、開攤、變更位置與完畢通知。</p>
+            <p><span class="font-bold text-rose-500">A5：</span><strong>LINE、IG、Threads 的內建瀏覽器無法加到主畫面與接收背景推播</strong>，請務必改用手機預設瀏覽器（Safari／Chrome）開啟本站（不需下載商店 App，僅建立網頁捷徑）：</p>
+            <p><strong>・iPhone (iOS 16.4+)：</strong>請先用 <strong>Safari</strong> 開啟本站 → 點底部「<strong>分享</strong>」→「<strong>加入主畫面</strong>」建立 🏠 桌面捷徑，<strong>接著請從桌面點擊 🏠 開啟後再點愛心收藏最愛與點上方「開啟推播提醒」</strong>（Safari 與桌面 🏠 捷徑的最愛清單各自獨立）。設定完成後，即使關掉頁面仍會收到最愛攤主通知！</p>
+            <p><strong>・Android 手機：</strong>請用 <strong>Chrome</strong> 開啟本站，點擊上方「<strong>🏠 加到主畫面</strong>」（或瀏覽器選單 → 加到主畫面），再點「<strong>開啟推播提醒</strong>」允許權限。完成後即使關閉網頁，仍會在背景收到最愛攤主的開攤前、開攤、變更位置與完畢通知。</p>
             <p class="text-[11px] text-slate-400">※ 若未開啟系統推播，停留在網頁上時仍會透過「網頁內置頂強提醒橫幅＋提示音」通知您。</p>
           </div>
         </details>
         <details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
           <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q6</span><span>最後審核攤主時間？</span></summary>
-          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A6：</span>最後審核攤主時間為 <strong>1/7 21:00</strong>。建議訪客可提前將喜歡的攤位點愛心收藏，並完成 🏠 加入主畫面與開啟推播提醒，系統會自動訂閱該攤主所有場次，以利活動當日第一時間收到通知！</p>
+          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A6：</span>最後審核攤主時間為 <strong>1/7 21:00</strong>。建議訪客可提前將喜歡的攤位點愛心收藏，並完成 🏠 加到主畫面與開啟推播提醒，系統會自動訂閱該攤主所有場次，以利活動當日第一時間收到通知！</p>
         </details>
       </div>
       <div data-faq-panel="guest" class="space-y-2 hidden"><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
           <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q1</span><span>為什麼我加入最愛的攤位不見了？</span></summary>
-          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A1：</span>最愛攤位僅存在您當初加入時的原始裝置與瀏覽器（特別提醒：<strong>iPhone 請先用 Safari 加入主畫面，再從桌面 🏠 開啟並點愛心收藏</strong>，Safari 與桌面 App 的儲存空間彼此獨立），建議固定由桌面 🏠 App 開啟本站，並避開 LINE / IG / Threads 內建瀏覽器。</p>
+          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A1：</span>最愛攤位僅存在您當初加入時的原始裝置與瀏覽器（特別提醒：<strong>iPhone 請先用 Safari 加到主畫面，再從桌面 🏠 開啟並點愛心收藏</strong>，Safari 與桌面 🏠 捷徑的儲存空間彼此獨立），建議固定由桌面 🏠 捷徑開啟本站，並避開 LINE / IG / Threads 內建瀏覽器。</p>
         </details><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
           <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q2</span><span>訪客進入網站需要註冊或登入帳號嗎？</span></summary>
           <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A2：</span>完全不需要！訪客端全程免登入、免填個資，直接打開網頁就能瀏覽全場即時時序。</p>
         </details><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
           <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q3</span><span>如何開啟擺攤前的推播提醒通知？</span></summary>
-          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A3：</span>請避開 LINE / IG / Threads 內建瀏覽器，改用 Safari（iPhone 請先加入主畫面後從桌面 🏠 開啟）或 Chrome 開啟本站，點擊右上角「開啟推播提醒」授權通知並提前收藏最愛攤位，即可在開攤前 5 分鐘、正式開攤、位置異動與完畢時即時收到推播（即使關掉網頁也收得到）。</p>
+          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A3：</span>請避開 LINE / IG / Threads 內建瀏覽器，改用 Safari（iPhone 請先加到主畫面後從桌面 🏠 開啟）或 Chrome 開啟本站，點擊上方「開啟推播提醒」授權通知並提前收藏最愛攤位，即可在開攤前 5 分鐘、正式開攤、位置異動與完畢時即時收到推播（即使關掉網頁也收得到）。</p>
         </details><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
           <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q4</span><span>如果我點了愛心收藏，但攤主還沒抵達現場會怎麼樣？</span></summary>
           <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A4：</span>攤主尚未抵達時狀態為「尚未到場」，等攤主抵達並按下報位、開始倒數時，系統就會在開攤前準時提醒您。</p>
@@ -1720,25 +1734,25 @@ function openOfficialSchedule() {
         return;
       }
       if (isIosDevice() || isInAppBrowser()) {
-        if (lbl) lbl.innerText = '加入主畫面';
+        if (lbl) lbl.innerText = '加到主畫面';
         btn.classList.remove('hidden');
       }
       window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPwaPrompt = e;
-        if (lbl) lbl.innerText = '安裝 App';
+        if (lbl) lbl.innerText = '加到主畫面';
         btn.classList.remove('hidden');
       });
       window.addEventListener('appinstalled', () => {
         deferredPwaPrompt = null;
         btn.classList.add('hidden');
-        showToast('🏠 已將小門應援市集加入主畫面！');
+        showToast('🏠 已將小門應援市集加到主畫面！');
       });
     }
 
     async function handleInstallPwaClick() {
       if (isInAppBrowser()) {
-        showToast('LINE / IG / Threads 內建瀏覽器無法安裝 PWA 與背景推播，請改用 Safari（iPhone）或 Chrome（Android）開啟！');
+        showToast('LINE / IG / Threads 內建瀏覽器無法加到主畫面與接收背景推播，請改用 Safari（iPhone）或 Chrome（Android）開啟！');
         return;
       }
       if (deferredPwaPrompt) {
@@ -1754,10 +1768,10 @@ function openOfficialSchedule() {
         return;
       }
       if (isIosDevice()) {
-        showToast('iPhone 請先用 Safari 點下方「分享」➔「加入主畫面」，再從桌面 🏠 開啟並點愛心收藏、開啟推播！');
+        showToast('iPhone 請先用 Safari 點下方「分享」➔「加入主畫面」，再從桌面 🏠 捷徑開啟並點愛心收藏、開啟推播！');
         return;
       }
-      showToast('請點擊 Chrome 右上角選單 ➔「安裝應用程式」或「加到主畫面」');
+      showToast('請點擊 Chrome 右上角選單 ➔ 選擇「加到主畫面」即可建立桌面 🏠 捷徑！');
     }
 
     function initServiceWorkerForPush() {
@@ -1947,17 +1961,21 @@ function openOfficialSchedule() {
       const lbl = document.getElementById('notifPermLabel');
       const btn = document.getElementById('btnNotifPerm');
       if (!lbl || !btn) return;
+      const defaultCls = 'top-ctrl-btn bg-white/85 border border-slate-200 text-slate-600 hover:text-rose-500 shadow-2xs';
       if (!('Notification' in window)) {
-        lbl.innerText = isIosDevice() && !isStandalonePwa() ? '先加主畫面開推播' : '網頁內建提醒已啟用';
+        lbl.innerText = isIosDevice() && !isStandalonePwa() ? '加主畫面開推播' : '網頁內建提醒';
+        btn.className = defaultCls;
         return;
       }
       if (Notification.permission === 'granted') {
-        lbl.innerText = fcmPushActive ? '背景推播已開啟' : '系統推播已開啟';
-        btn.className = 'px-2 py-0.5 rounded-md bg-rose-50 border border-rose-200 text-rose-600 font-bold transition flex items-center space-x-1 whitespace-nowrap';
+        lbl.innerText = fcmPushActive ? '背景推播已開' : '系統推播已開';
+        btn.className = 'top-ctrl-btn bg-rose-50 border border-rose-200 text-rose-600 shadow-2xs';
       } else if (Notification.permission === 'denied') {
-        lbl.innerText = '使用網頁內置頂提醒';
+        lbl.innerText = '網頁內置頂提醒';
+        btn.className = defaultCls;
       } else {
         lbl.innerText = '開啟推播提醒';
+        btn.className = defaultCls;
       }
     }
 
@@ -1968,7 +1986,7 @@ function openOfficialSchedule() {
       }
       if (!('Notification' in window)) {
         if (isIosDevice() && !isStandalonePwa()) {
-          showToast('iPhone 請先用 Safari 點「分享 → 加入主畫面」安裝 🏠 App，再從桌面 🏠 開啟並點愛心收藏、開啟推播提醒！');
+          showToast('iPhone 請先用 Safari 點「分享 → 加入主畫面」建立桌面 🏠 捷徑，再從桌面 🏠 開啟並點愛心收藏、開啟推播提醒！');
         } else {
           showToast('您的瀏覽器將使用「網頁內置頂彈窗與提示音」進行擺攤與完畢提醒！');
         }
@@ -4311,13 +4329,16 @@ function openOfficialSchedule() {
     function toggleLiteMode() {
       isLiteMode = !isLiteMode;
       const btn = document.getElementById('btnLiteMode');
+      const icon = document.getElementById('liteModeIcon');
       if (isLiteMode) {
         document.body.classList.add('lite-mode');
-        if (btn) btn.className = 'px-2 py-0.5 rounded-md bg-emerald-500 text-white font-bold transition flex items-center space-x-1';
+        if (btn) btn.className = 'top-ctrl-btn bg-emerald-500 border border-emerald-500 text-white shadow-2xs';
+        if (icon) icon.className = 'fa-solid fa-leaf text-[11px] text-white';
         showToast('已開啟【簡易模式】：停用飄雪與毛玻璃濾鏡');
       } else {
         document.body.classList.remove('lite-mode');
-        if (btn) btn.className = 'px-2 py-0.5 rounded-md bg-white/80 border border-slate-200 text-slate-600 hover:text-skyBlue-600 transition flex items-center space-x-1';
+        if (btn) btn.className = 'top-ctrl-btn bg-white/85 border border-slate-200 text-slate-600 hover:text-skyBlue-600 shadow-2xs';
+        if (icon) icon.className = 'fa-solid fa-leaf text-[11px] text-emerald-500';
         showToast('已還原完整視覺效果');
       }
     }
