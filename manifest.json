@@ -1,0 +1,38 @@
+{
+  "name": "KNOCK！KNOCK！ 小門應援市集",
+  "short_name": "🏠小門市集",
+  "description": "2027/1/8 - 1/10 場外自由發放・即時位置回報",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#dcf2fd",
+  "theme_color": "#dcf2fd",
+  "lang": "zh-TW",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
