@@ -2,7 +2,7 @@
 <!-- =========================================================================
      Project: KNOCK！KNOCK！ 小門應援市集
      Author: From @onedoor_boice_0820
-     Version: V2026.11.18
+     Version: V2026.11.19(PWAver)
      Notice: 該網站由 @onedoor_boice_0820 維護，非官方正式應援團隊維護。
      ========================================================================= -->
 <html lang="zh-TW">
@@ -12,6 +12,15 @@
   <meta name="author" content="From @onedoor_boice_0820">
   <meta name="theme-color" content="#dcf2fd">
   <title>KNOCK！KNOCK！ 小門應援市集</title>
+
+  <!-- PWA 設定與手繪風 🏠 圖示 -->
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" href="./icon-192.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="🏠小門市集">
+  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -205,6 +214,7 @@ body.night #fiveMinAlertInner{border-color:rgba(255,190,110,.4);box-shadow:0 12p
 body.night #fiveMinAlertInner[data-alert="preparing"]{background-image:linear-gradient(90deg,#7a2a18,#b5541c)!important}
 body.night #fiveMinAlertInner[data-alert="started"]{background-image:linear-gradient(90deg,#1f4a30,#3d6b3a)!important}
 body.night #fiveMinAlertInner[data-alert="ended"]{background-image:linear-gradient(90deg,#2e2420,#4a3a32)!important}
+body.night #fiveMinAlertInner[data-alert="location_update"]{background-image:linear-gradient(90deg,#1c4566,#2d6a8a)!important}
 body.night :is(#vipQueueTopBanner,#halfHourTopBanner){background-image:linear-gradient(90deg,#7a2a18,#b5541c)!important;box-shadow:0 8px 20px rgba(0,0,0,.45),0 0 18px rgba(255,130,40,.2)}
 body.night :is(#fiveMinAlertBar,#vipQueueTopBanner,#halfHourTopBanner) .bg-white{background:#ffe3bd!important;color:#4a2012!important}
 
@@ -316,6 +326,10 @@ body.night .hearth{opacity:1}
       </div>
 
       <div class="flex items-center space-x-1.5">
+        <button onclick="handleInstallPwaClick()" id="btnInstallPwa" class="hidden px-2 py-0.5 rounded-md bg-skyBlue-50 border border-skyBlue-200 text-skyBlue-600 hover:bg-skyBlue-100 font-bold transition flex items-center space-x-1 whitespace-nowrap" title="加入主畫面安裝成 🏠 App">
+          <span class="text-xs leading-none">🏠</span>
+          <span id="installPwaLabel">加入主畫面</span>
+        </button>
         <button onclick="requestNotifPermissionManual()" id="btnNotifPerm" class="px-2 py-0.5 rounded-md bg-white/80 border border-slate-200 text-slate-600 hover:text-rose-500 transition flex items-center space-x-1 whitespace-nowrap">
           <i class="fa-regular fa-bell text-xs text-rose-500"></i>
           <span id="notifPermLabel">開啟推播提醒</span>
@@ -1017,23 +1031,28 @@ body.night .hearth{opacity:1}
           <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A4：</span>預設為開啟網頁時2-3分鐘自動同步一次，也可利用左上角同步按鈕(60秒冷卻)。</p>
         </details>
         <details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
-          <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q5</span><span>如何讓手機跳出「系統推播通知」（Android 設定方式）？</span></summary>
+          <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q5</span><span>如何安裝成 🏠 App 並開啟「關掉網頁也能收的推播通知」（iOS / Android）？</span></summary>
           <div class="mt-1.5 pl-6 text-slate-600 leading-relaxed space-y-1.5">
-            <p><span class="font-bold text-rose-500">A5：</span>請先避開 LINE、IG、Threads 的內建瀏覽器，改用手機預設瀏覽器開啟本站：</p>
-            <p><strong>・Android 手機：</strong>網站已內建自動註冊 Service Worker 手機系統級推播機制，請使用 Chrome 等瀏覽器開啟本站，點擊右上角「<strong>開啟推播提醒</strong>」允許權限。開啟後，只要本站分頁仍在背景保持開啟，就會彈出系統通知並震動；若關閉分頁或手機將瀏覽器完全凍結，可能收不到，建議保持頁面開啟。</p>
+            <p><span class="font-bold text-rose-500">A5：</span><strong>LINE、IG、Threads 的內建瀏覽器無法安裝 PWA 與接收背景推播</strong>，請務必改用手機預設瀏覽器（Safari／Chrome）開啟本站：</p>
+            <p><strong>・iPhone (iOS 16.4+)：</strong>請先用 <strong>Safari</strong> 開啟本站 → 點底部「<strong>分享</strong>」→「<strong>加入主畫面</strong>」安裝成 🏠 App，<strong>接著請從桌面點擊 🏠 開啟後再點愛心收藏最愛與點右上角「開啟推播提醒」</strong>（Safari 與桌面 🏠 App 的最愛清單各自獨立）。設定完成後，即使關掉 App 仍會收到最愛攤主通知！</p>
+            <p><strong>・Android 手機：</strong>請用 <strong>Chrome</strong> 開啟本站，點擊右上角「<strong>🏠 安裝 App／加入主畫面</strong>」（或瀏覽器選單 → 安裝應用程式），再點「<strong>開啟推播提醒</strong>」允許權限。完成後即使關閉網頁，仍會在背景收到最愛攤主的開攤前、開攤、變更位置與完畢通知。</p>
             <p class="text-[11px] text-slate-400">※ 若未開啟系統推播，停留在網頁上時仍會透過「網頁內置頂強提醒橫幅＋提示音」通知您。</p>
           </div>
+        </details>
+        <details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
+          <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q6</span><span>最後審核攤主時間？</span></summary>
+          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A6：</span>最後審核攤主時間為 <strong>1/7 21:00</strong>。建議訪客可提前將喜歡的攤位點愛心收藏，並完成 🏠 加入主畫面與開啟推播提醒，系統會自動訂閱該攤主所有場次，以利活動當日第一時間收到通知！</p>
         </details>
       </div>
       <div data-faq-panel="guest" class="space-y-2 hidden"><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
           <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q1</span><span>為什麼我加入最愛的攤位不見了？</span></summary>
-          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A1：</span>最愛攤位僅存在您當初加入時的原始裝置（如使用電腦加入，手機端就不會同步顯示），建議全程使用同一裝置同一個瀏覽器開啟本站，避免切換 App 導致最愛名單重置。</p>
+          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A1：</span>最愛攤位僅存在您當初加入時的原始裝置與瀏覽器（特別提醒：<strong>iPhone 請先用 Safari 加入主畫面，再從桌面 🏠 開啟並點愛心收藏</strong>，Safari 與桌面 App 的儲存空間彼此獨立），建議固定由桌面 🏠 App 開啟本站，並避開 LINE / IG / Threads 內建瀏覽器。</p>
         </details><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
           <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q2</span><span>訪客進入網站需要註冊或登入帳號嗎？</span></summary>
           <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A2：</span>完全不需要！訪客端全程免登入、免填個資，直接打開網頁就能瀏覽全場即時時序。</p>
         </details><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
           <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q3</span><span>如何開啟擺攤前的推播提醒通知？</span></summary>
-          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A3：</span>點擊網頁右上角的「開啟推播提醒」按鈕並授權瀏覽器通知；若未授權系統通知，網站也會透過內建的置頂強提醒彈窗與提示音通知您。</p>
+          <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A3：</span>請避開 LINE / IG / Threads 內建瀏覽器，改用 Safari（iPhone 請先加入主畫面後從桌面 🏠 開啟）或 Chrome 開啟本站，點擊右上角「開啟推播提醒」授權通知並提前收藏最愛攤位，即可在開攤前 5 分鐘、正式開攤、位置異動與完畢時即時收到推播（即使關掉網頁也收得到）。</p>
         </details><details class="group bg-white/90 rounded-xl border border-slate-200 p-2.5 text-xs">
           <summary class="cursor-pointer font-bold text-slate-800 list-none flex items-start"><span class="text-skyBlue-500 mr-1.5 flex-shrink-0">Q4</span><span>如果我點了愛心收藏，但攤主還沒抵達現場會怎麼樣？</span></summary>
           <p class="mt-1.5 pl-6 text-slate-600 leading-relaxed"><span class="font-bold text-rose-500">A4：</span>攤主尚未抵達時狀態為「尚未到場」，等攤主抵達並按下報位、開始倒數時，系統就會在開攤前準時提醒您。</p>
@@ -1112,7 +1131,7 @@ body.night .hearth{opacity:1}
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, query, where, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js";
+    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app-check.js";
 
@@ -1129,8 +1148,9 @@ body.night .hearth{opacity:1}
       where,
       onSnapshot,
       writeBatch,
-      getFunctions,
-      httpsCallable,
+      getMessaging,
+      getToken,
+      onMessage,
       initializeAppCheck,
       ReCaptchaV3Provider,
       getAuth,
@@ -1207,8 +1227,15 @@ body.night .hearth{opacity:1}
 
     const DEMO_MODE = !isFirebaseConfigured;
     const APP_CHECK_SITE_KEY = '';
+    // 【FCM 背景推播設定區】維持 Firebase Spark 免費版，請填入以下兩項後即可啟用「關掉網頁仍推播」
+    // 1. Firebase Console -> 專案設定 -> Cloud Messaging -> 網頁推播憑證 (VAPID 金鑰組)
+    const FCM_VAPID_KEY = '';
+    // 2. Cloudflare Worker 網址（結尾勿加斜線，例如 'https://kk-market-push.你的帳號.workers.dev'）
+    const PUSH_WORKER_URL = '';
+
     const EVENT_YEAR = 2027;
     const FAV_COOKIE_NAME = 'kk_favorites_v4';
+    const FCM_SYNC_CACHE_KEY = 'kk_fcm_synced_topics_v1';
     const ALLOWED_POST_HOSTS = ['threads.net', 'threads.com', 'instagram.com', 'x.com', 'twitter.com'];
     const CONCERT_DAYS = ['1/8', '1/9', '1/10'];
 
@@ -1216,8 +1243,10 @@ body.night .hearth{opacity:1}
 
     let firebaseApp = null;
     let firestoreDb = null;
-    let cloudFunctions = null;
+    let firebaseMessaging = null;
     let firebaseAuth = null;
+    let currentFcmToken = '';
+    let fcmPushActive = false;
     let backendReady = false;
     let authBusy = false;
     let todayKey = null;
@@ -1628,10 +1657,17 @@ function openOfficialSchedule() {
         }
         showToast(`❤️ 已將【${vendorName || '攤位'}】加入最愛！開攤前與發放完畢時都會提醒您`);
         if ('Notification' in window && Notification.permission === 'default') {
-          Notification.requestPermission().then(updateNotifPermButtonUI);
+          Notification.requestPermission().then(perm => {
+            updateNotifPermButtonUI();
+            if (perm === 'granted') {
+              initServiceWorkerForPush();
+              ensureFcmTokenAndSync();
+            }
+          });
         }
       }
       saveFavoritesToCookie();
+      syncFcmFavoriteTopics();
       renderTimeline();
       checkFiveMinNotifications();
     }
@@ -1655,10 +1691,78 @@ function openOfficialSchedule() {
       renderTimeline();
     }
 
-    /* ---------- 推播通知 ---------- */
+    /* ---------- PWA 安裝、裝置偵測與 FCM 背景推播 ---------- */
+    let deferredPwaPrompt = null;
+    let fcmSyncInFlight = false;
+    let fcmSyncPending = false;
+
+    function isInAppBrowser() {
+      const ua = navigator.userAgent || '';
+      return /Line\/|Instagram|Barcelona|Threads|FBAN|FBAV|MicroMessenger/i.test(ua);
+    }
+    function isIosDevice() {
+      return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    }
+    function isStandalonePwa() {
+      return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    }
+    function isRemotePushConfigured() {
+      return Boolean(FCM_VAPID_KEY && PUSH_WORKER_URL && !DEMO_MODE);
+    }
+
+    function initPwaInstallUI() {
+      const btn = document.getElementById('btnInstallPwa');
+      const lbl = document.getElementById('installPwaLabel');
+      if (!btn) return;
+      if (isStandalonePwa()) {
+        btn.classList.add('hidden');
+        return;
+      }
+      if (isIosDevice() || isInAppBrowser()) {
+        if (lbl) lbl.innerText = '加入主畫面';
+        btn.classList.remove('hidden');
+      }
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPwaPrompt = e;
+        if (lbl) lbl.innerText = '安裝 App';
+        btn.classList.remove('hidden');
+      });
+      window.addEventListener('appinstalled', () => {
+        deferredPwaPrompt = null;
+        btn.classList.add('hidden');
+        showToast('🏠 已將小門應援市集加入主畫面！');
+      });
+    }
+
+    async function handleInstallPwaClick() {
+      if (isInAppBrowser()) {
+        showToast('LINE / IG / Threads 內建瀏覽器無法安裝 PWA 與背景推播，請改用 Safari（iPhone）或 Chrome（Android）開啟！');
+        return;
+      }
+      if (deferredPwaPrompt) {
+        deferredPwaPrompt.prompt();
+        try {
+          const { outcome } = await deferredPwaPrompt.userChoice;
+          if (outcome === 'accepted') {
+            const btn = document.getElementById('btnInstallPwa');
+            if (btn) btn.classList.add('hidden');
+          }
+        } catch (e) {}
+        deferredPwaPrompt = null;
+        return;
+      }
+      if (isIosDevice()) {
+        showToast('iPhone 請先用 Safari 點下方「分享」➔「加入主畫面」，再從桌面 🏠 開啟並點愛心收藏、開啟推播！');
+        return;
+      }
+      showToast('請點擊 Chrome 右上角選單 ➔「安裝應用程式」或「加到主畫面」');
+    }
+
     function initServiceWorkerForPush() {
-      if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
-        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      if ('serviceWorker' in navigator && window.isSecureContext) {
+        navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(() => {});
       }
     }
 
@@ -1667,17 +1771,163 @@ function openOfficialSchedule() {
       try {
         const existing = await navigator.serviceWorker.getRegistration();
         if (existing && existing.active) return existing;
-        // 等 SW 就緒，最多等 1.5 秒
         return await Promise.race([
           navigator.serviceWorker.ready,
-          new Promise(r => setTimeout(() => r(null), 1500))
+          new Promise(r => setTimeout(() => r(null), 2000))
         ]);
       } catch (e) { return null; }
     }
 
+    // 取得尚未過期的演唱會場次（2026 提前收藏或 1/8 前會自動訂閱全部 3 天，1/9 訂閱 1/9 與 1/10，1/10 訂閱 1/10）
+    function getActiveConcertDays() {
+      const p = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(Date.now()));
+      const [y, m, d] = p.split('-').map(Number);
+      let active = [];
+      if (y < EVENT_YEAR) {
+        active = [...CONCERT_DAYS];
+      } else if (y === EVENT_YEAR) {
+        if (m === 1 && d <= 8) active = ['1/8', '1/9', '1/10'];
+        else if (m === 1 && d === 9) active = ['1/9', '1/10'];
+        else if (m === 1 && d === 10) active = ['1/10'];
+      }
+      if (currentRole === 'admin' && CONCERT_DAYS.includes(currentSimDate) && !active.includes(currentSimDate)) {
+        active.push(currentSimDate);
+      }
+      return active;
+    }
+
+    function toFcmTopicName(dayStr, uid) {
+      return `d${String(dayStr).replace('/', '_')}__${String(uid).replace(/[^a-zA-Z0-9-_.~%]/g, '')}`;
+    }
+
+    async function ensureFcmTokenAndSync(showMsg = false) {
+      if (!isRemotePushConfigured()) return false;
+      if (!('Notification' in window) || Notification.permission !== 'granted') return false;
+      if (!('serviceWorker' in navigator) || !('PushManager' in window)) return false;
+      if (!firebaseApp || !window.FirebaseSDK || !FB().getMessaging) return false;
+      try {
+        initServiceWorkerForPush();
+        const reg = await getSwRegistration();
+        if (!reg) return false;
+        if (!firebaseMessaging) {
+          firebaseMessaging = FB().getMessaging(firebaseApp);
+        }
+        const token = await FB().getToken(firebaseMessaging, {
+          vapidKey: FCM_VAPID_KEY,
+          serviceWorkerRegistration: reg
+        });
+        if (!token) return false;
+        currentFcmToken = token;
+        fcmPushActive = true;
+        updateNotifPermButtonUI();
+        await syncFcmFavoriteTopics();
+        if (showMsg) {
+          showToast('已開啟背景推播！即使關掉網頁，最愛攤主狀態異動仍會即時通知您。');
+        }
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    async function syncFcmFavoriteTopics() {
+      if (!isRemotePushConfigured() || !currentFcmToken) return;
+      if (!('Notification' in window) || Notification.permission !== 'granted') return;
+      if (fcmSyncInFlight) {
+        fcmSyncPending = true;
+        return;
+      }
+      fcmSyncInFlight = true;
+      try {
+        const activeDays = getActiveConcertDays();
+        const desiredSet = new Set();
+        favoriteUids.forEach(uid => {
+          const v = VENDORS_LIST.find(x => x.uid === uid) || PUBLIC_LIVE_MAP[uid];
+          if (!v || v.isApproved === false) return;
+          const days = Array.isArray(v.expectedDays) && v.expectedDays.length > 0 ? v.expectedDays : CONCERT_DAYS;
+          days.forEach(day => {
+            if (activeDays.includes(day)) {
+              desiredSet.add(toFcmTopicName(day, uid));
+            }
+          });
+        });
+        const desired = Array.from(desiredSet);
+
+        const tokenKey = currentFcmToken.slice(0, 24);
+        let prev = [];
+        try {
+          const saved = JSON.parse(localStorage.getItem(FCM_SYNC_CACHE_KEY) || '{}');
+          if (saved && saved.tk === tokenKey && Array.isArray(saved.topics)) {
+            prev = saved.topics;
+          }
+        } catch (e) {}
+
+        const prevSet = new Set(prev);
+        const toAdd = desired.filter(t => !prevSet.has(t));
+        const toRemove = prev.filter(t => !desiredSet.has(t));
+        if (toAdd.length === 0 && toRemove.length === 0) return;
+
+        // 分批送往 Cloudflare Worker（每批最多 15 筆，確保不超過 Worker 免費版單次子請求上限）
+        const syncedSet = new Set(prev);
+        const BATCH = 15;
+        const ops = [
+          ...toAdd.map(t => ({ op: 'add', topic: t })),
+          ...toRemove.map(t => ({ op: 'remove', topic: t }))
+        ];
+        const baseUrl = PUSH_WORKER_URL.replace(/\/+$/, '');
+        for (let i = 0; i < ops.length; i += BATCH) {
+          const slice = ops.slice(i, i + BATCH);
+          const addChunk = slice.filter(x => x.op === 'add').map(x => x.topic);
+          const removeChunk = slice.filter(x => x.op === 'remove').map(x => x.topic);
+          const res = await fetch(`${baseUrl}/sync-topics`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: currentFcmToken, add: addChunk, remove: removeChunk })
+          });
+          if (!res.ok) break;
+          const data = await res.json().catch(() => ({}));
+          (data.added || []).forEach(t => syncedSet.add(t));
+          (data.removed || []).forEach(t => syncedSet.delete(t));
+        }
+
+        try {
+          localStorage.setItem(FCM_SYNC_CACHE_KEY, JSON.stringify({
+            tk: tokenKey,
+            topics: Array.from(syncedSet),
+            ts: Date.now()
+          }));
+        } catch (e) {}
+      } catch (e) {
+      } finally {
+        fcmSyncInFlight = false;
+        if (fcmSyncPending) {
+          fcmSyncPending = false;
+          syncFcmFavoriteTopics();
+        }
+      }
+    }
+
+    // 攤主本人或管理者代操作寫入成功後，附帶 Firebase ID Token 通知 Worker 發送／排程背景推播
+    async function notifyPushWorker(eventName, payload) {
+      if (!PUSH_WORKER_URL || DEMO_MODE || !firebaseAuth || !firebaseAuth.currentUser) return;
+      if (!CONCERT_DAYS.includes(payload.dayKey)) return;
+      try {
+        const idToken = await firebaseAuth.currentUser.getIdToken();
+        const baseUrl = PUSH_WORKER_URL.replace(/\/+$/, '');
+        await fetch(`${baseUrl}/notify`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`
+          },
+          body: JSON.stringify({ event: eventName, ...payload })
+        });
+      } catch (e) {}
+    }
+
     async function sendSystemNotification(title, bodyText, tagKey, onClickFn, data = {}) {
       if (!('Notification' in window) || Notification.permission !== 'granted') return;
-      const options = { body: bodyText, tag: tagKey, renotify: true, vibrate: [200, 100, 200], data };
+      const options = { body: bodyText, icon: './icon-192.png', badge: './icon-192.png', tag: tagKey, renotify: true, vibrate: [200, 100, 200], data };
 
       const reg = await getSwRegistration();
       if (reg && typeof reg.showNotification === 'function') {
@@ -1698,11 +1948,11 @@ function openOfficialSchedule() {
       const btn = document.getElementById('btnNotifPerm');
       if (!lbl || !btn) return;
       if (!('Notification' in window)) {
-        lbl.innerText = '網頁內建提醒已啟用';
+        lbl.innerText = isIosDevice() && !isStandalonePwa() ? '先加主畫面開推播' : '網頁內建提醒已啟用';
         return;
       }
       if (Notification.permission === 'granted') {
-        lbl.innerText = '系統推播已開啟';
+        lbl.innerText = fcmPushActive ? '背景推播已開啟' : '系統推播已開啟';
         btn.className = 'px-2 py-0.5 rounded-md bg-rose-50 border border-rose-200 text-rose-600 font-bold transition flex items-center space-x-1 whitespace-nowrap';
       } else if (Notification.permission === 'denied') {
         lbl.innerText = '使用網頁內置頂提醒';
@@ -1712,19 +1962,35 @@ function openOfficialSchedule() {
     }
 
     function requestNotifPermissionManual() {
+      if (isInAppBrowser()) {
+        showToast('LINE / IG / Threads 內建瀏覽器不支援背景推播，請改用 Safari（iPhone）或 Chrome（Android）開啟！');
+        return;
+      }
       if (!('Notification' in window)) {
-        showToast('您的瀏覽器將使用「網頁內置頂彈窗與提示音」進行擺攤與完畢提醒！');
+        if (isIosDevice() && !isStandalonePwa()) {
+          showToast('iPhone 請先用 Safari 點「分享 → 加入主畫面」安裝 🏠 App，再從桌面 🏠 開啟並點愛心收藏、開啟推播提醒！');
+        } else {
+          showToast('您的瀏覽器將使用「網頁內置頂彈窗與提示音」進行擺攤與完畢提醒！');
+        }
         return;
       }
       if (Notification.permission === 'granted') {
-        showToast('系統推播通知已經開啟！最愛攤位開攤前與發放完畢時都會通知您。');
+        if (isRemotePushConfigured() && !fcmPushActive) {
+          ensureFcmTokenAndSync(true);
+        } else {
+          syncFcmFavoriteTopics();
+          showToast(fcmPushActive
+            ? '背景推播已開啟！即使關掉網頁，最愛攤主異動時也會即時通知您。'
+            : '系統推播通知已經開啟！最愛攤位開攤前與發放完畢時都會通知您。');
+        }
         return;
       }
-      Notification.requestPermission().then(perm => {
+      Notification.requestPermission().then(async perm => {
         updateNotifPermButtonUI();
         if (perm === 'granted') {
           initServiceWorkerForPush();
-          showToast('已成功開啟系統推播提醒！');
+          const ok = await ensureFcmTokenAndSync(true);
+          if (!ok) showToast('已成功開啟系統推播提醒！');
         } else {
           showToast('未授權系統通知，將自動使用「網頁置頂強提醒彈窗」通知您！');
         }
@@ -1792,7 +2058,7 @@ function openOfficialSchedule() {
       jumpToVendorCard(item, alertType);
     }
 
-    function triggerFiveMinAlert(item, alertType = 'preparing') {
+    function triggerFiveMinAlert(item, alertType = 'preparing', skipSystemNotif = false) {
       playNotificationChime();
 
       const bar = document.getElementById('fiveMinAlertBar');
@@ -1820,6 +2086,12 @@ function openOfficialSchedule() {
         if (bellIcon) bellIcon.className = 'fa-solid fa-fire text-base animate-bounce';
         if (locTxt) locTxt.innerText = `🔥 已經開始發放「${item.items}」囉！地點：${item.locationText || '請見卡片說明'}`;
         if (jumpBtn) { jumpBtn.className = 'px-2.5 py-1 rounded-lg bg-white text-emerald-600 font-bold text-[11px] shadow-xs hover:bg-emerald-50 transition'; jumpBtn.innerText = '查看位置與照片'; }
+      } else if (alertType === 'location_update') {
+        if (inner) inner.className = 'rounded-2xl p-3.5 bg-gradient-to-r from-skyBlue-500 to-skyBlue-600 text-white shadow-2xl border border-white/40 flex items-start justify-between gap-3';
+        if (badgeLbl) { badgeLbl.className = 'text-[10px] font-black px-1.5 py-0.5 rounded bg-white text-skyBlue-600'; badgeLbl.innerText = '位置已更新'; }
+        if (bellIcon) bellIcon.className = 'fa-solid fa-location-dot text-base animate-bounce';
+        if (locTxt) locTxt.innerText = `📍 已更新發放位置：${item.locationText || '請見卡片說明'}`;
+        if (jumpBtn) { jumpBtn.className = 'px-2.5 py-1 rounded-lg bg-white text-skyBlue-600 font-bold text-[11px] shadow-xs hover:bg-skyBlue-50 transition'; jumpBtn.innerText = '查看最新位置'; }
       } else {
         if (inner) inner.className = 'rounded-2xl p-3.5 bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-2xl border border-white/40 flex items-start justify-between gap-3';
         if (badgeLbl) { badgeLbl.className = 'text-[10px] font-black px-1.5 py-0.5 rounded bg-white text-rose-600'; badgeLbl.innerText = '擺攤前提醒'; }
@@ -1846,12 +2118,15 @@ function openOfficialSchedule() {
         sysBody = `應援物：${item.items}\n發放位置：${item.locationText || '點擊查看詳情'}`;
       }
 
-      sendSystemNotification(
-        sysTitle, sysBody,
-        `kk-fav-${currentSimDate}-${item.uid}-${alertType}`,
-        () => jumpToVendorCard(item, alertType),
-        { uid: item.uid, alertType }
-      );
+      // 若已啟用 FCM 背景推播，系統通知統一由 FCM + Service Worker 負責，避免重複響兩次
+      if (!skipSystemNotif && !fcmPushActive) {
+        sendSystemNotification(
+          sysTitle, sysBody,
+          `kk-fav-${currentSimDate}-${item.uid}-${alertType}`,
+          () => jumpToVendorCard(item, alertType),
+          { uid: item.uid, alertType }
+        );
+      }
     }
 
     function dismissFiveMinAlert() {
@@ -1898,19 +2173,10 @@ function openOfficialSchedule() {
       consumePendingJump();
     }
 
-    /* ---------- 後端呼叫與雲端同步 ---------- */
-    async function callBackend(name, data) {
-      if (!backendReady || !cloudFunctions) throw new Error('雲端連線尚未就緒，請稍後再試');
-      const res = await FB().httpsCallable(cloudFunctions, name)(data || {});
-      return res.data;
-    }
+    /* ---------- 雲端初始化與錯誤訊息 ---------- */
     function backendErrMsg(e) {
       const m = (e && e.message) ? String(e.message) : '';
       return (m && !/^internal$/i.test(m)) ? m : '操作失敗，請稍後再試';
-    }
-    async function runBackend(name, data, okMsg) {
-      try { await callBackend(name, data); if (okMsg) showToast(okMsg); return true; }
-      catch (e) { showToast(backendErrMsg(e)); return false; }
     }
 
     function showBackendDown(msg) {
@@ -1931,11 +2197,13 @@ function openOfficialSchedule() {
           FB().initializeAppCheck(firebaseApp, { provider: new (FB().ReCaptchaV3Provider)(APP_CHECK_SITE_KEY), isTokenAutoRefreshEnabled: true });
         }
         firestoreDb = FB().getFirestore(firebaseApp);
-        cloudFunctions = FB().getFunctions(firebaseApp, 'asia-east1');
         firebaseAuth = FB().getAuth(firebaseApp);
         backendReady = true;
         listenToPublicVendors();
         listenToAuthClaims();
+        if ('Notification' in window && Notification.permission === 'granted') {
+          ensureFcmTokenAndSync(false);
+        }
       } catch (e) {
         showBackendDown('雲端初始化失敗');
       }
@@ -2085,6 +2353,7 @@ function openOfficialSchedule() {
       updateVendorUI();
       if (currentRole === 'admin') renderAdminVendorTable();
       checkFiveMinNotifications();
+      syncFcmFavoriteTopics();
     }
 
     function savePublicLiveCache(vendorsMap) {
@@ -3109,6 +3378,7 @@ function openOfficialSchedule() {
             endedMs: 0
           });
           await FB().setDoc(FB().doc(firestoreDb, 'market_public', 'live'), { vendors: { [uid]: resetFields } }, { merge: true });
+          notifyPushWorker('reset', { dayKey: currentSimDate, uid });
           if (PUBLIC_LIVE_MAP[uid]) Object.assign(PUBLIC_LIVE_MAP[uid], resetFields);
           savePhotoToSessionCache(uid, '');
           savePublicLiveCache(PUBLIC_LIVE_MAP);
@@ -3642,6 +3912,27 @@ function openOfficialSchedule() {
           await FB().setDoc(FB().doc(firestoreDb, 'market_public', 'live'), {
             vendors: { [currentVendor.uid]: updatedFields }
           }, { merge: true });
+          if (!isEditingExistingArrival) {
+            notifyPushWorker('arrival', {
+              dayKey: currentSimDate,
+              uid: currentVendor.uid,
+              nickname: currentVendor.nickname || '(未命名)',
+              items,
+              locationText,
+              startMs: updatedFields.startMs,
+              prepMin
+            });
+          } else {
+            notifyPushWorker('location_update', {
+              dayKey: currentSimDate,
+              uid: currentVendor.uid,
+              nickname: currentVendor.nickname || '(未命名)',
+              items,
+              locationText,
+              status: currentVendor.status,
+              startMs: currentVendor.startMs || 0
+            });
+          }
         } catch (e) {
           showToast('更新失敗：' + backendErrMsg(e));
           return;
@@ -3881,6 +4172,14 @@ function openOfficialSchedule() {
           await FB().setDoc(FB().doc(firestoreDb, 'market_public', 'live'), {
             vendors: { [currentVendor.uid]: patch }
           }, { merge: true });
+          notifyPushWorker('start_now', {
+            dayKey: currentSimDate,
+            uid: currentVendor.uid,
+            nickname: currentVendor.nickname || '(未命名)',
+            items: currentVendor.items || '應援周邊',
+            locationText: currentVendor.locationText || '',
+            startMs: now
+          });
         } catch (e) {
           showToast('操作失敗');
           return;
@@ -3905,6 +4204,14 @@ function openOfficialSchedule() {
       if (!DEMO_MODE && backendReady && currentVendor.uid) {
         try {
           await FB().setDoc(FB().doc(firestoreDb, 'market_public', 'live'), { vendors: { [currentVendor.uid]: patch } }, { merge: true });
+          notifyPushWorker('ended', {
+            dayKey: currentSimDate,
+            uid: currentVendor.uid,
+            nickname: currentVendor.nickname || '(未命名)',
+            items: currentVendor.items || '應援周邊',
+            locationText: currentVendor.locationText || '',
+            endedMs: now
+          });
         } catch (e) { showToast('操作失敗'); return; }
       }
       currentVendor.status = 'ended';
@@ -4189,6 +4496,7 @@ function openOfficialSchedule() {
       initSnow();
       initTheme();
       loadFavoritesFromCookie();
+      initPwaInstallUI();
       updateNotifPermButtonUI();
       initServiceWorkerForPush();
       syncDateSelect();
@@ -4207,11 +4515,26 @@ function openOfficialSchedule() {
         }
       });
 
-      // SW → 頁面：通知被點擊
+      // SW → 頁面：通知被點擊 或 前景收到 FCM 推播（顯示橫幅與去重，不額外拉取 Firestore）
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.addEventListener('message', (ev) => {
-          if (ev.data && ev.data.type === 'notif-click' && ev.data.uid) {
+          if (!ev.data) return;
+          if (ev.data.type === 'notif-click' && ev.data.uid) {
             pendingJump = { uid: ev.data.uid, alertType: ev.data.alertType };
+          } else if (ev.data.type === 'fcm-push-received' && ev.data.uid) {
+            const { uid, alertType, dayKey, body } = ev.data;
+            const dKey = dayKey || currentSimDate;
+            if (alertType === 'ended') notifiedSessions[`${dKey}_ended_${uid}`] = true;
+            else if (alertType === 'preparing' || alertType === 'started') notifiedSessions[`${dKey}_start_${uid}`] = true;
+            const v = VENDORS_LIST.find(x => x.uid === uid);
+            if (v && !document.hidden) {
+              const copy = { ...v };
+              if (alertType === 'location_update' && body) {
+                const m = String(body).match(/最新位置：(.+)/);
+                if (m) copy.locationText = m[1].trim();
+              }
+              triggerFiveMinAlert(copy, alertType || 'preparing', true);
+            }
           }
         });
       }
