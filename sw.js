@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kk-market-pwa-v2';
+const CACHE_NAME = 'kk-market-pwa-v3';
 const APP_SHELL = [
   './',
   './index.html',
@@ -49,8 +49,24 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // 靜態圖示、manifest、場館地圖：快取優先並背景更新
-  if (/\.(png|jpe?g|webp|svg|json|ico)$/i.test(url.pathname)) {
+  // manifest.json：網路優先，確保名稱或圖示更新後立刻生效
+  if (/manifest\.json$/i.test(url.pathname)) {
+    e.respondWith(
+      fetch(req)
+        .then((res) => {
+          if (res && res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then((c) => c.put('./manifest.json', copy)).catch(() => {});
+          }
+          return res;
+        })
+        .catch(() => caches.match('./manifest.json'))
+    );
+    return;
+  }
+
+  // 靜態圖示與場館地圖：快取優先並背景更新
+  if (/\.(png|jpe?g|webp|svg|ico)$/i.test(url.pathname)) {
     e.respondWith(
       caches.match(req).then((cached) => {
         const net = fetch(req).then((res) => {
