@@ -3129,18 +3129,57 @@ function openOfficialSchedule() {
       if (c) { c.innerText = `${min} 分`; c.className = 'text-xl sm:text-2xl font-mono font-black ' + (min >= 45 ? 'text-rose-500' : 'text-emerald-500'); }
       if (b) { b.className = 'bg-emerald-400 h-1.5 rounded-full transition-all duration-300'; b.style.width = Math.min(100, min / 45 * 100) + '%'; }
     }
+    function openSoldOutPromptModal() {
+      let modal = document.getElementById('soldOutPromptModal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'soldOutPromptModal';
+        modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm';
+        modal.innerHTML = `
+          <div class="glass-panel w-full max-w-sm rounded-3xl p-5 border-white shadow-2xl text-center">
+            <div class="w-12 h-12 mx-auto rounded-2xl bg-amber-50 border border-amber-200 text-amber-500 flex items-center justify-center text-xl mb-3">
+              <i class="fa-solid fa-box-open"></i>
+            </div>
+            <span class="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200">
+              發放 45 分鐘提醒
+            </span>
+            <h3 class="text-base font-black text-slate-800 mt-2 mb-1.5">
+              您已發放 45 分鐘，請問是否已發放完畢？
+            </h3>
+            <p class="text-xs text-slate-600 mb-4 leading-relaxed">
+              若已發完請點下方結束擺攤，系統將即時通知收藏您的最愛訪客，避免大家白跑一趟！
+            </p>
+            <div class="space-y-2">
+              <button type="button" onclick="confirmSoldOutFromModal()" class="w-full py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs shadow-md transition">
+                已發放完畢・結束擺攤
+              </button>
+              <button type="button" onclick="closeSoldOutPromptModal()" class="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition">
+                尚未發完，繼續擺攤
+              </button>
+            </div>
+          </div>`;
+        document.body.appendChild(modal);
+      }
+      modal.classList.remove('hidden');
+    }
+    function closeSoldOutPromptModal() {
+      const modal = document.getElementById('soldOutPromptModal');
+      if (modal) modal.classList.add('hidden');
+    }
+    function confirmSoldOutFromModal() {
+      closeSoldOutPromptModal();
+      executeSoldOut();
+    }
     function checkSoldOutPrompt() {
-  if (document.hidden) return; // 網頁在背景或鎖屏時先不觸發，等切回前景再問
-  const v = currentVendor;
-  if (currentRole !== 'vendor' || !v || !v.uid || v.status !== 'in_use' || !v.startMs) return;
-  if (Math.floor((Date.now() - v.startMs) / 60000) < 45) return;
-  const key = v.uid + '_' + v.startMs;
-  if (soldOutPrompted[key]) return;
-  soldOutPrompted[key] = true;
-  setTimeout(() => {
-    if (confirm('您已發放 45 分鐘，請確認是否已發放完畢？\n\n【確定】已發放完畢（自動結束擺攤）\n【取消】尚未發完，繼續擺攤')) executeSoldOut();
-  }, 100);
-}
+      if (document.hidden) return;
+      const v = currentVendor;
+      if (currentRole !== 'vendor' || !v || !v.uid || v.status !== 'in_use' || !v.startMs) return;
+      if (Math.floor((Date.now() - v.startMs) / 60000) < 45) return;
+      const key = v.uid + '_' + v.startMs;
+      if (soldOutPrompted[key]) return;
+      soldOutPrompted[key] = true;
+      openSoldOutPromptModal();
+    }
 
     function copyVendorEmailByUid(uid) {
       const v = VENDORS_LIST.find(x => x.uid === uid);
