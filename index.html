@@ -2,7 +2,7 @@
 <!-- =========================================================================
      Project: KNOCK！KNOCK！ 小門應援市集
      Author: From @onedoor_boice_0820
-     Version: V2026.11.20(PWAver)
+     Version: V2026.11.20(PWA-v3)
      Notice: 該網站由 @onedoor_boice_0820 維護，非官方正式應援團隊維護。
      ========================================================================= -->
 <html lang="zh-TW">
@@ -14,7 +14,7 @@
   <title>KNOCK！KNOCK！ 小門應援市集</title>
 
   <!-- PWA 設定與手繪風 🏠 圖示 -->
-  <link rel="manifest" href="./manifest.json">
+  <link rel="manifest" href="./manifest.json?v=3">
   <link rel="icon" type="image/png" href="./icon-192.png">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2004,8 +2004,10 @@ function openOfficialSchedule() {
         if (!res.ok || data.ok === false) {
           console.warn('[notifyPushWorker failed]', res.status, data);
           if (isTestBypassUser()) {
-            showToast(`背景推播回報異常：${data.fcmError || data.error || ('HTTP ' + res.status)}`);
+            setTimeout(() => showToast(`背景推播回報異常：${data.fcmError || data.error || ('HTTP ' + res.status)}`), 350);
           }
+        } else if (data.d1Error && isTestBypassUser()) {
+          setTimeout(() => showToast(`推播已發出，但排程 D1 異常：${data.d1Error}`), 350);
         }
       } catch (e) {
         console.warn('[notifyPushWorker exception]', e);
@@ -4131,8 +4133,8 @@ function openOfficialSchedule() {
         needReRender = true;
       }
 
-      // 分級自動同步：有收藏最愛 120 秒、純瀏覽 180 秒自動拉取一次單一聚合文件
-      if (!DEMO_MODE && backendReady && !document.hidden && (now - lastPublicFetchMs >= currentPollMs())) {
+      // 分級自動同步：有收藏最愛 120 秒、純瀏覽 180 秒自動拉取一次單一聚合文件（管理者已掛載即時 onSnapshot 不重複輪詢）
+      if (!DEMO_MODE && backendReady && !vendorsAll && !document.hidden && (now - lastPublicFetchMs >= currentPollMs())) {
         lastPublicFetchMs = now;
         fetchPublicMarketLive(true);
       }
@@ -4683,7 +4685,7 @@ function openOfficialSchedule() {
       document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {
           syncServerTime();
-          if (!DEMO_MODE && backendReady && (Date.now() - lastPublicFetchMs >= FOREGROUND_SYNC_MIN_MS)) {
+          if (!DEMO_MODE && backendReady && !vendorsAll && (Date.now() - lastPublicFetchMs >= FOREGROUND_SYNC_MIN_MS)) {
             fetchPublicMarketLive(true);
           }
         }
