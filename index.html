@@ -3130,16 +3130,17 @@ function openOfficialSchedule() {
       if (b) { b.className = 'bg-emerald-400 h-1.5 rounded-full transition-all duration-300'; b.style.width = Math.min(100, min / 45 * 100) + '%'; }
     }
     function checkSoldOutPrompt() {
-      const v = currentVendor;
-      if (currentRole !== 'vendor' || !v || !v.uid || v.status !== 'in_use' || !v.startMs) return;
-      if (Math.floor((Date.now() - v.startMs) / 60000) < 45) return;
-      const key = v.uid + '_' + v.startMs;
-      if (soldOutPrompted[key]) return;
-      soldOutPrompted[key] = true;
-      setTimeout(() => {
-        if (confirm('您已發放 45 分鐘，請確認是否已發放完畢？\n\n【確定】已發放完畢（自動結束擺攤）\n【取消】尚未發完，繼續擺攤')) executeSoldOut();
-      }, 100);
-    }
+  if (document.hidden) return; // 網頁在背景或鎖屏時先不觸發，等切回前景再問
+  const v = currentVendor;
+  if (currentRole !== 'vendor' || !v || !v.uid || v.status !== 'in_use' || !v.startMs) return;
+  if (Math.floor((Date.now() - v.startMs) / 60000) < 45) return;
+  const key = v.uid + '_' + v.startMs;
+  if (soldOutPrompted[key]) return;
+  soldOutPrompted[key] = true;
+  setTimeout(() => {
+    if (confirm('您已發放 45 分鐘，請確認是否已發放完畢？\n\n【確定】已發放完畢（自動結束擺攤）\n【取消】尚未發完，繼續擺攤')) executeSoldOut();
+  }, 100);
+}
 
     function copyVendorEmailByUid(uid) {
       const v = VENDORS_LIST.find(x => x.uid === uid);
