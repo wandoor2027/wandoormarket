@@ -334,7 +334,7 @@ body.night .hearth{opacity:1}
       </div>
 
       <!-- 四顆功能按鈕並列一排：左側（加到主畫面＋開啟推播提醒），右側（主題切換＋簡易模式） -->
-      <div class="flex flex-nowrap items-center justify-between gap-1 sm:gap-2 w-full">
+      <div class="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 w-full">
         <div class="flex flex-nowrap items-center gap-1 sm:gap-1.5 min-w-0">
           <button onclick="handleInstallPwaClick()" id="btnInstallPwa" class="hidden top-ctrl-btn bg-skyBlue-50 border border-skyBlue-200 text-skyBlue-600 hover:bg-skyBlue-100 shadow-2xs" title="加到主畫面，從桌面快速開啟">
             <span class="text-[11px] leading-none">🏠</span>
@@ -368,7 +368,7 @@ body.night .hearth{opacity:1}
           實際狀況請以現場為準。
         </span>
       </div>
-      <span class="text-[10px] sm:text-[11px] font-bold text-amber-800/90 whitespace-nowrap pl-5 sm:pl-0">
+      <span class="text-[10px] sm:text-[11px] font-bold text-amber-800/90 sm:whitespace-nowrap leading-relaxed pl-5 sm:pl-0">
         該網站由 @onedoor_boice_0820 維護，非官方正式應援團隊維護。
       </span>
     </div>
@@ -416,12 +416,12 @@ body.night .hearth{opacity:1}
           </div>
         </div>
 
-        <!-- 右上角：登入入口（日期選擇器僅在「管理者」身分登入時顯示，訪客與攤主不顯示） -->
-        <div class="flex items-center justify-end space-x-2 text-xs flex-shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-200/60">
+        <!-- 右上角：登入入口（日期選擇器僅在「管理者／測試帳號」身分顯示） -->
+        <div class="flex flex-wrap items-center justify-end gap-1.5 text-xs min-w-0 w-full sm:w-auto pt-1.5 sm:pt-0 border-t sm:border-t-0 border-slate-200/60">
           <!-- 管理者專屬日期切換器 -->
-          <div id="adminDateSelectorWrap" class="hidden items-center bg-rose-50/95 rounded-xl p-1 border border-rose-200 shadow-xs">
-            <span class="text-[10px] font-bold text-rose-600 px-1.5"><i class="fa-solid fa-calendar-check mr-1"></i><span id="dateSelectorLabel">管理檢視日</span></span>
-            <select id="simDateSelect" onchange="changeDate(this.value)" class="bg-white rounded-lg px-1.5 py-0.5 text-slate-800 font-bold focus:outline-none cursor-pointer text-xs border border-rose-100">
+          <div id="adminDateSelectorWrap" class="hidden items-center bg-rose-50/95 rounded-xl p-1 border border-rose-200 shadow-xs max-w-full flex-shrink-0">
+            <span class="text-[10px] font-bold text-rose-600 px-1.5 whitespace-nowrap flex-shrink-0"><i class="fa-solid fa-calendar-check mr-1"></i><span id="dateSelectorLabel">管理檢視日</span></span>
+            <select id="simDateSelect" onchange="changeDate(this.value)" class="bg-white rounded-lg px-1.5 py-0.5 text-slate-800 font-bold focus:outline-none cursor-pointer text-xs border border-rose-100 min-w-0">
               <option value="1/7">1/7 (非演唱會日)</option>
               <option value="1/8">1/8 (五) 19:00場</option>
               <option value="1/9">1/9 (六) 18:00場</option>
@@ -429,6 +429,25 @@ body.night .hearth{opacity:1}
               <option value="1/11">1/11 (非演唱會日)</option>
             </select>
           </div>
+
+          <!-- 登入狀態 -->
+          <div id="authEntryArea" class="min-w-0 max-w-full">
+            <button onclick="openAuthModal()" id="btnOpenLogin" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-skyBlue-500 hover:bg-skyBlue-600 text-white font-bold flex items-center space-x-1.5 shadow-sm shadow-skyBlue-500/20 transition whitespace-nowrap text-xs">
+              <i class="fa-solid fa-right-to-bracket text-xs"></i>
+              <span>管理者／攤主登入</span>
+            </button>
+
+            <div id="loggedInUserBox" class="hidden flex items-center space-x-1.5 bg-white/95 rounded-xl p-1 px-2.5 border border-slate-200 shadow-sm max-w-full sm:max-w-[240px]">
+              <div class="flex items-center space-x-1 min-w-0">
+                <i id="userRoleIcon" class="fa-solid fa-circle-user text-skyBlue-500 text-sm flex-shrink-0"></i>
+                <span id="userRoleLabel" class="font-bold text-slate-800 text-[11px] truncate">已登入</span>
+              </div>
+              <button onclick="handleLogout()" title="登出並退回訪客模式" class="text-slate-400 hover:text-rose-500 text-xs pl-1.5 border-l border-slate-200 flex-shrink-0">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+              </button>
+            </div>
+          </div>
+        </div>
 
           <!-- 登入狀態 -->
           <div id="authEntryArea">
@@ -806,15 +825,15 @@ body.night .hearth{opacity:1}
         </div>
 
         <div>
-          <div class="flex items-center justify-between mb-1">
-            <label class="block font-bold text-slate-700">
-              所在發放位置說明 <span class="text-rose-500">*</span> <span class="text-[10px] font-normal text-slate-400">(請描述地標或穿搭特徵)</span>
-            </label>
-            <button type="button" onclick="openVenueMap()" class="text-[11px] font-bold text-skyBlue-600 hover:text-skyBlue-700 flex items-center space-x-1 whitespace-nowrap">
-              <i class="fa-solid fa-map-location-dot"></i>
-              <span>場館地圖（人工對照僅供參考）</span>
-            </button>
-          </div>
+          <div class="flex flex-wrap items-center justify-between gap-1 mb-1">
+         <label class="block font-bold text-slate-700">
+           所在發放位置說明 <span class="text-rose-500">*</span> <span class="text-[10px] font-normal text-slate-400">(請描述地標或穿搭特徵)</span>
+         </label>
+         <button type="button" onclick="openVenueMap()" class="text-[11px] font-bold text-skyBlue-600 hover:text-skyBlue-700 flex items-center space-x-1 whitespace-nowrap">
+           <i class="fa-solid fa-map-location-dot"></i>
+           <span>場館參考地圖</span>
+         </button>
+       </div>
           <textarea id="arriveLocationText" rows="2" maxlength="80" placeholder="例如：Gate 2 階梯下方靠近花圃，穿白色外套、背藍色痛包" class="w-full bg-white rounded-xl p-2.5 border border-slate-200 text-slate-800 focus:outline-none focus:border-skyBlue-400 resize-none"></textarea>
         </div>
 
@@ -1013,7 +1032,7 @@ body.night .hearth{opacity:1}
   </div>
 
   <!-- 提示 Toast -->
-  <div id="toast" class="fixed top-14 sm:top-16 left-1/2 transform -translate-x-1/2 z-50 glass-card px-4 py-2.5 rounded-2xl text-xs font-bold text-slate-700 shadow-xl border border-skyBlue-200 pointer-events-none transition-all duration-300 opacity-0 -translate-y-2 max-w-[90vw] text-center">
+  <div id="toast" class="fixed top-14 sm:top-16 inset-x-4 mx-auto w-fit max-w-[min(92vw,28rem)] z-50 glass-card px-4 py-2.5 rounded-2xl text-xs font-bold leading-relaxed text-slate-700 shadow-xl border border-skyBlue-200 pointer-events-none transition-all duration-300 opacity-0 -translate-y-2 text-center break-words">
     訊息
   </div>
 
@@ -1607,7 +1626,7 @@ function openOfficialSchedule() {
       } else if (!isRegisteredForToday) {
         btn.disabled = true;
         btn.className = 'px-5 py-3 rounded-xl bg-slate-200 text-slate-400 font-bold text-xs sm:text-sm cursor-not-allowed inline-flex items-center space-x-2';
-        txt.innerText = '今日非事前登記的發放日期';
+        txt.innerText = '今日非登記出攤日';
         if (hint) {
           hint.className = 'text-[11px] text-amber-600 font-bold mt-2.5';
           const daysStr = vendorDays.length > 0 ? vendorDays.join('、') : '無';
@@ -1616,7 +1635,7 @@ function openOfficialSchedule() {
       } else if (inCutoff) {
         btn.disabled = true;
         btn.className = 'px-5 py-3 rounded-xl bg-slate-200 text-slate-500 font-bold text-xs sm:text-sm cursor-not-allowed inline-flex items-center space-x-2';
-        txt.innerText = '開唱前半小時不開放確認抵達填寫發放';
+        txt.innerText = '開唱前半小時已停止報位';
         if (hint) {
           hint.className = 'text-[11px] text-rose-500 font-bold mt-2.5';
           hint.innerText = '距離開唱僅剩半小時，已停止開放確認抵達與填寫發放位置，請抓緊時間準備入場。';
@@ -2041,7 +2060,7 @@ function openOfficialSchedule() {
       if (!lbl || !btn) return;
       const defaultCls = 'top-ctrl-btn bg-white/85 border border-slate-200 text-slate-600 hover:text-rose-500 shadow-2xs';
       if (!('Notification' in window)) {
-        lbl.innerText = isIosDevice() && !isStandalonePwa() ? '加主畫面開推播' : '網頁內建提醒';
+        lbl.innerText = isIosDevice() && !isStandalonePwa() ? '加主頁開推播' : '畫面提醒';
         btn.className = defaultCls;
         return;
       }
@@ -2049,7 +2068,7 @@ function openOfficialSchedule() {
         lbl.innerText = fcmPushActive ? '背景推播已開' : '系統推播已開';
         btn.className = 'top-ctrl-btn bg-rose-50 border border-rose-200 text-rose-600 shadow-2xs';
       } else if (Notification.permission === 'denied') {
-        lbl.innerText = '網頁內置頂提醒';
+        lbl.innerText = '畫面提醒';
         btn.className = defaultCls;
       } else {
         lbl.innerText = '開啟推播提醒';
@@ -3106,15 +3125,17 @@ function openOfficialSchedule() {
       dismissProductPostBanner();
       const bar = document.createElement('div');
       bar.id = 'productPostBanner';
-      bar.className = 'fixed left-1/2 transform -translate-x-1/2 z-[60] glass-card px-3 py-2.5 rounded-2xl shadow-xl border border-skyBlue-200 flex items-center space-x-2 max-w-[92vw]';
-      bar.style.bottom = 'calc(1.25rem + env(safe-area-inset-bottom, 0px))';
+      bar.className = 'fixed inset-x-3 mx-auto w-fit max-w-[calc(100vw-1.5rem)] z-[60] glass-card px-3.5 py-2.5 rounded-2xl shadow-xl border border-skyBlue-200 flex items-center justify-between gap-2.5';
+      bar.style.bottom = 'calc(4.75rem + env(safe-area-inset-bottom, 0px))';
       bar.innerHTML =
-        '<span class="text-xs font-bold text-slate-700">' + esc(msg) + '</span>' +
-        '<a href="' + esc(href) + '" target="_blank" rel="noopener noreferrer" ' +
-          'onclick="setTimeout(dismissProductPostBanner, 300)" ' +
-          'class="px-3 py-1.5 rounded-xl bg-skyBlue-500 hover:bg-skyBlue-600 text-white text-xs font-bold flex items-center space-x-1 flex-shrink-0">' +
-          '<span>前往應援物貼文</span><i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a>' +
-        '<button type="button" onclick="dismissProductPostBanner()" aria-label="關閉" class="text-slate-400 hover:text-slate-600 px-1 text-sm flex-shrink-0">✕</button>';
+        '<span class="text-xs font-bold text-slate-700 leading-snug min-w-0 break-words">' + esc(msg) + '</span>' +
+        '<div class="flex items-center gap-1.5 flex-shrink-0">' +
+          '<a href="' + esc(href) + '" target="_blank" rel="noopener noreferrer" ' +
+            'onclick="setTimeout(dismissProductPostBanner, 300)" ' +
+            'class="px-3 py-1.5 rounded-xl bg-skyBlue-500 hover:bg-skyBlue-600 text-white text-xs font-bold inline-flex items-center space-x-1 whitespace-nowrap">' +
+            '<span>前往應援物貼文</span><i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a>' +
+          '<button type="button" onclick="dismissProductPostBanner()" aria-label="關閉" class="text-slate-400 hover:text-slate-600 px-1 text-sm">✕</button>' +
+        '</div>';
       document.body.appendChild(bar);
       productPostBannerTimer = setTimeout(dismissProductPostBanner, 20000);
     }
@@ -4533,12 +4554,14 @@ function openOfficialSchedule() {
       showToast('正在重新連線並同步…');
     }
 
+    let toastTimer = null;
     function showToast(msg) {
       const t = document.getElementById('toast');
       if (!t) return;
       t.innerText = msg;
       t.classList.remove('opacity-0', '-translate-y-2');
-      setTimeout(() => t.classList.add('opacity-0', '-translate-y-2'), 2600);
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.add('opacity-0', '-translate-y-2'), 2600);
     }
 
     /* 六角雪花動畫 */
