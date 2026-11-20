@@ -3664,7 +3664,7 @@ function openOfficialSchedule() {
         } else if (v.status === 'in_use') {
           statusTag = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 font-bold flex items-center whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1 active-dot"></span>發放中</span>`;
           const elapsedMin = v.startMs ? Math.max(0, Math.floor((Date.now() - v.startMs) / 60000)) : 0;
-          const staleNote = elapsedMin > 40 ? `<span class="px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 text-[10px] font-medium whitespace-nowrap">（僅供參考）</span>` : '';
+          const staleNote = elapsedMin > 45 ? `<span class="px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 text-[10px] font-medium whitespace-nowrap">（僅供參考）</span>` : '';
           timeInfoHtml = `<span class="flex flex-wrap items-center gap-1"><span class="font-mono text-emerald-600 font-bold text-xs"><i class="fa-regular fa-clock mr-1"></i>${v.startMs ? `${esc(currentSimDate)} ${fmtHM(v.startMs)} 已開始發放 ${elapsedMin} 分` : '現場發放中'}</span>${staleNote}</span>`;
         } else if (v.status === 'preparing') {
           const remainSec = Math.max(0, Math.floor((v.startMs - Date.now()) / 1000));
