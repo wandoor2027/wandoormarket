@@ -420,7 +420,7 @@ body.night .hearth{opacity:1}
         <div class="flex items-center justify-end space-x-2 text-xs flex-shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-200/60">
           <!-- 管理者專屬日期切換器 -->
           <div id="adminDateSelectorWrap" class="hidden items-center bg-rose-50/95 rounded-xl p-1 border border-rose-200 shadow-xs">
-            <span class="text-[10px] font-bold text-rose-600 px-1.5"><i class="fa-solid fa-calendar-check mr-1"></i>管理檢視日</span>
+            <span class="text-[10px] font-bold text-rose-600 px-1.5"><i class="fa-solid fa-calendar-check mr-1"></i><span id="dateSelectorLabel">管理檢視日</span></span>
             <select id="simDateSelect" onchange="changeDate(this.value)" class="bg-white rounded-lg px-1.5 py-0.5 text-slate-800 font-bold focus:outline-none cursor-pointer text-xs border border-rose-100">
               <option value="1/7">1/7 (非演唱會日)</option>
               <option value="1/8">1/8 (五) 19:00場</option>
@@ -1252,6 +1252,8 @@ body.night .hearth{opacity:1}
     const FCM_SYNC_CACHE_KEY = 'kk_fcm_synced_topics_v1';
     const ALLOWED_POST_HOSTS = ['threads.net', 'threads.com', 'instagram.com', 'x.com', 'twitter.com'];
     const CONCERT_DAYS = ['1/8', '1/9', '1/10'];
+    // 非演唱會日測試繞過名單（僅管理者與以下測試帳號可在非活動日維持報位狀態、不被 3 分鐘同步重置）
+    const TEST_BYPASS_EMAILS = ['text@gmail.com'];
 
     const ADMIN_PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d\W_]{8,}$/;
 
@@ -1261,6 +1263,26 @@ body.night .hearth{opacity:1}
     let firebaseAuth = null;
     let currentFcmToken = '';
     let fcmPushActive = false;
+    let currentSignedInEmail = '';
+
+    function isTestBypassUser() {
+      if (currentRole === 'admin') return true;
+      const mail = String(
+        currentSignedInEmail ||
+        (firebaseAuth && firebaseAuth.currentUser && firebaseAuth.currentUser.email) ||
+        ''
+      ).trim().toLowerCase();
+      return Boolean(mail && TEST_BYPASS_EMAILS.includes(mail));
+    }
+    function getPushDayKeyForVendor(v) {
+      if (CONCERT_DAYS.includes(currentSimDate)) return currentSimDate;
+      if (isTestBypassUser()) {
+        const days = Array.isArray(v && v.expectedDays) ? v.expectedDays : [];
+        const firstConcert = days.find(d => CONCERT_DAYS.includes(d));
+        return firstConcert || '1/8';
+      }
+      return currentSimDate;
+    }
     let backendReady = false;
     let authBusy = false;
     let todayKey = null;
@@ -1556,7 +1578,10 @@ function openOfficialSchedule() {
     function isVendorRegisteredForToday(v = currentVendor) {
       if (!v || !v.uid) return false;
       const vendorDays = Array.isArray(v.expectedDays) ? v.expectedDays : [];
-      return vendorDays.includes(currentSimDate);
+      if (vendorDays.includes(currentSimDate)) return true;
+      // 非活動日測試期間，僅放行管理者與測試帳號 (text@gmail.com)
+      if (isTestBypassUser() && !CONCERT_DAYS.includes(deriveTodayKey())) return true;
+      return false;
     }
 
     function updateVendorArrivalButtonLock() {
@@ -1814,7 +1839,7 @@ function openOfficialSchedule() {
       return `d${String(dayStr).replace('/', '_')}__${String(uid).replace(/[^a-zA-Z0-9-_.~%]/g, '')}`;
     }
 
-    async function ensureFcmTokenAndSync(showMsg = false) {
+    async function ensureFcmTokenAndSync(showMsg = false, forceResync = false) {
       if (!isRemotePushConfigured()) return false;
       if (!('Notification' in window) || Notification.permission !== 'granted') return false;
       if (!('serviceWorker' in navigator) || !('PushManager' in window)) return false;
@@ -1832,24 +1857,44 @@ function openOfficialSchedule() {
         });
         if (!token) return false;
         currentFcmToken = token;
-        fcmPushActive = true;
-        updateNotifPermButtonUI();
-        await syncFcmFavoriteTopics();
-        if (showMsg) {
-          showToast('已開啟背景推播！即使關掉網頁，最愛攤主狀態異動仍會即時通知您。');
+
+        // 確認 Cloudflare Worker 與 /sync-topics 真的成功，才將 fcmPushActive 設為 true（避免假亮燈且吃掉備援通知）
+        const syncRes = await syncFcmFavoriteTopics(forceResync);
+        let workerOk = Boolean(syncRes && syncRes.ok);
+        if (syncRes && syncRes.skipped) {
+          try {
+            const baseUrl = PUSH_WORKER_URL.replace(/\/+$/, '');
+            const hRes = await fetch(`${baseUrl}/health`, { method: 'GET' });
+            const hData = await hRes.json().catch(() => ({}));
+            workerOk = Boolean(hRes.ok && hData && hData.ok);
+          } catch (he) {
+            workerOk = false;
+          }
         }
-        return true;
+
+        fcmPushActive = workerOk;
+        updateNotifPermButtonUI();
+        if (showMsg) {
+          if (workerOk) {
+            showToast('已開啟背景推播！即使關掉網頁，最愛攤主狀態異動仍會即時通知您。');
+          } else {
+            showToast('背景推播連線未通過，已暫保留前景系統通知（請確認 Worker 網域與訂閱設定）');
+          }
+        }
+        return workerOk;
       } catch (e) {
+        fcmPushActive = false;
+        updateNotifPermButtonUI();
         return false;
       }
     }
 
-    async function syncFcmFavoriteTopics() {
-      if (!isRemotePushConfigured() || !currentFcmToken) return;
-      if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    async function syncFcmFavoriteTopics(forceResync = false) {
+      if (!isRemotePushConfigured() || !currentFcmToken) return { ok: false, skipped: true };
+      if (!('Notification' in window) || Notification.permission !== 'granted') return { ok: false, skipped: true };
       if (fcmSyncInFlight) {
         fcmSyncPending = true;
-        return;
+        return { ok: fcmPushActive, skipped: true };
       }
       fcmSyncInFlight = true;
       try {
@@ -1869,17 +1914,21 @@ function openOfficialSchedule() {
 
         const tokenKey = currentFcmToken.slice(0, 24);
         let prev = [];
-        try {
-          const saved = JSON.parse(localStorage.getItem(FCM_SYNC_CACHE_KEY) || '{}');
-          if (saved && saved.tk === tokenKey && Array.isArray(saved.topics)) {
-            prev = saved.topics;
-          }
-        } catch (e) {}
+        if (!forceResync) {
+          try {
+            const saved = JSON.parse(localStorage.getItem(FCM_SYNC_CACHE_KEY) || '{}');
+            if (saved && saved.tk === tokenKey && Array.isArray(saved.topics)) {
+              prev = saved.topics;
+            }
+          } catch (e) {}
+        }
 
         const prevSet = new Set(prev);
         const toAdd = desired.filter(t => !prevSet.has(t));
         const toRemove = prev.filter(t => !desiredSet.has(t));
-        if (toAdd.length === 0 && toRemove.length === 0) return;
+        if (toAdd.length === 0 && toRemove.length === 0) {
+          return { ok: true, skipped: true };
+        }
 
         // 分批送往 Cloudflare Worker（每批最多 15 筆，確保不超過 Worker 免費版單次子請求上限）
         const syncedSet = new Set(prev);
@@ -1889,6 +1938,8 @@ function openOfficialSchedule() {
           ...toRemove.map(t => ({ op: 'remove', topic: t }))
         ];
         const baseUrl = PUSH_WORKER_URL.replace(/\/+$/, '');
+        let hadError = false;
+        let lastErr = '';
         for (let i = 0; i < ops.length; i += BATCH) {
           const slice = ops.slice(i, i + BATCH);
           const addChunk = slice.filter(x => x.op === 'add').map(x => x.topic);
@@ -1898,10 +1949,15 @@ function openOfficialSchedule() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ token: currentFcmToken, add: addChunk, remove: removeChunk })
           });
-          if (!res.ok) break;
           const data = await res.json().catch(() => ({}));
+          if (!res.ok || data.ok === false || (Array.isArray(data.failed) && data.failed.length > 0)) {
+            hadError = true;
+            lastErr = (data.errors && data.errors[0] && data.errors[0].detail) || data.error || `HTTP ${res.status}`;
+            console.warn('[sync-topics error]', lastErr, data);
+          }
           (data.added || []).forEach(t => syncedSet.add(t));
           (data.removed || []).forEach(t => syncedSet.delete(t));
+          if (!res.ok) break;
         }
 
         try {
@@ -1911,12 +1967,20 @@ function openOfficialSchedule() {
             ts: Date.now()
           }));
         } catch (e) {}
+
+        fcmPushActive = !hadError;
+        updateNotifPermButtonUI();
+        return { ok: !hadError, skipped: false, error: lastErr };
       } catch (e) {
+        console.warn('[sync-topics exception]', e);
+        fcmPushActive = false;
+        updateNotifPermButtonUI();
+        return { ok: false, skipped: false, error: e && e.message ? e.message : 'network' };
       } finally {
         fcmSyncInFlight = false;
         if (fcmSyncPending) {
           fcmSyncPending = false;
-          syncFcmFavoriteTopics();
+          syncFcmFavoriteTopics(false);
         }
       }
     }
@@ -1928,7 +1992,7 @@ function openOfficialSchedule() {
       try {
         const idToken = await firebaseAuth.currentUser.getIdToken();
         const baseUrl = PUSH_WORKER_URL.replace(/\/+$/, '');
-        await fetch(`${baseUrl}/notify`, {
+        const res = await fetch(`${baseUrl}/notify`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1936,7 +2000,19 @@ function openOfficialSchedule() {
           },
           body: JSON.stringify({ event: eventName, ...payload })
         });
-      } catch (e) {}
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.ok === false) {
+          console.warn('[notifyPushWorker failed]', res.status, data);
+          if (isTestBypassUser()) {
+            showToast(`背景推播回報異常：${data.fcmError || data.error || ('HTTP ' + res.status)}`);
+          }
+        }
+      } catch (e) {
+        console.warn('[notifyPushWorker exception]', e);
+        if (isTestBypassUser()) {
+          showToast('背景推播請求無法連線至 Worker（請檢查網域 CORS 或網路）');
+        }
+      }
     }
 
     async function sendSystemNotification(title, bodyText, tagKey, onClickFn, data = {}) {
@@ -1993,13 +2069,10 @@ function openOfficialSchedule() {
         return;
       }
       if (Notification.permission === 'granted') {
-        if (isRemotePushConfigured() && !fcmPushActive) {
-          ensureFcmTokenAndSync(true);
+        if (isRemotePushConfigured()) {
+          ensureFcmTokenAndSync(true, true);
         } else {
-          syncFcmFavoriteTopics();
-          showToast(fcmPushActive
-            ? '背景推播已開啟！即使關掉網頁，最愛攤主異動時也會即時通知您。'
-            : '系統推播通知已經開啟！最愛攤位開攤前與發放完畢時都會通知您。');
+          showToast('系統推播通知已經開啟！最愛攤位開攤前與發放完畢時都會通知您。');
         }
         return;
       }
@@ -2306,8 +2379,13 @@ function openOfficialSchedule() {
       const rawStartMs = msOf(v.start_at || v.startMs);
       const rawEndedMs = msOf(v.ended_at || v.endedMs);
       const lastActiveDate = deriveDateKeyFromMs(rawStartMs || rawEndedMs);
-
-      const isFromToday = (lastActiveDate === currentSimDate);
+      const realToday = deriveTodayKey();
+      // 非活動日測試保護：僅限管理員與測試帳號 (text@gmail.com) 切換未來場次測試時，不因 2~3 分鐘同步被洗回尚未到場
+      const isBypassNonConcert = isTestBypassUser()
+        && !CONCERT_DAYS.includes(realToday)
+        && Boolean(lastActiveDate)
+        && (lastActiveDate === realToday);
+      const isFromToday = (lastActiveDate === currentSimDate) || isBypassNonConcert;
       let effectiveStatus = isFromToday && ['upcoming', 'preparing', 'in_use', 'ended'].includes(v.status)
         ? v.status
         : 'upcoming';
@@ -2571,10 +2649,16 @@ function openOfficialSchedule() {
         teardownRoleListeners();
         currentAdminTier = 'none';
         currentAdminEmail = '';
+        currentSignedInEmail = '';
+        userPickedDate = false;
+        currentSimDate = deriveTodayKey();
+        syncDateSelect();
+        remapAllVendorsForDate();
         setAppRole('guest');
         return;
       }
 
+      currentSignedInEmail = (user.email || '').trim().toLowerCase();
       let networkErr = false;
 
       // 1. 管理者
@@ -2583,7 +2667,7 @@ function openOfficialSchedule() {
         if (adminSnap.exists()) {
           const admData = adminSnap.data();
           currentAdminTier = admData.role === 'super_admin' ? 'super_admin' : 'admin';
-          currentAdminEmail = (user.email || '').toLowerCase();
+          currentAdminEmail = currentSignedInEmail;
           setAppRole('admin', admData.name || (user.email ? maskEmail(user.email) : '管理者'));
           subscribeVendors(true);
           startAdminManagersListener();
@@ -2597,7 +2681,7 @@ function openOfficialSchedule() {
       // 2. 攤主
       if (user.email) {
         try {
-          const linkSnap = await FB().getDoc(FB().doc(firestoreDb, 'vendor_links', user.email.toLowerCase()));
+          const linkSnap = await FB().getDoc(FB().doc(firestoreDb, 'vendor_links', currentSignedInEmail));
           if (linkSnap.exists()) {
             const vid = linkSnap.data().vendorId;
             if (!PUBLIC_LIVE_MAP[vid]) {
@@ -2611,7 +2695,16 @@ function openOfficialSchedule() {
               }
             }
             if (baseData && baseData.isApproved !== false) {
+              // 測試帳號 (text@gmail.com) 於非演唱會日登入時，自動切換檢視日至其第一個預計場次以利測試
+              if (TEST_BYPASS_EMAILS.includes(currentSignedInEmail) && !CONCERT_DAYS.includes(currentSimDate)) {
+                const days = Array.isArray(baseData.expectedDays) ? baseData.expectedDays : [];
+                const targetDay = days.find(d => CONCERT_DAYS.includes(d)) || '1/8';
+                currentSimDate = targetDay;
+                userPickedDate = true;
+                syncDateSelect();
+              }
               currentVendor = mapVendorDoc(vid, baseData);
+              remapAllVendorsForDate();
               if (currentVendor.hasPhoto && !safeImgSrc(currentVendor.locationImg)) {
                 try {
                   const pSnap = await FB().getDoc(FB().doc(firestoreDb, 'vendor_photos', vid));
@@ -2639,6 +2732,7 @@ function openOfficialSchedule() {
       teardownRoleListeners();
       currentAdminTier = 'none';
       currentAdminEmail = '';
+      currentSignedInEmail = '';
       setAppRole('guest');
       if (intent === 'admin') showToast('此帳號不具備管理者權限');
       if (intent === 'vendor') openPendingModal({ nickname: '' });
@@ -2697,8 +2791,15 @@ function openOfficialSchedule() {
         if (roleIcon) roleIcon.className = 'fa-solid fa-store text-skyBlue-500 text-sm';
         if (roleLabel) roleLabel.innerText = `攤主：${displayName || currentVendor.nickname}`;
         if (adminDateWrap) {
-          adminDateWrap.classList.add('hidden');
-          adminDateWrap.classList.remove('flex');
+          if (isTestBypassUser() && !CONCERT_DAYS.includes(deriveTodayKey())) {
+            const dsLbl = document.getElementById('dateSelectorLabel');
+            if (dsLbl) dsLbl.innerText = '測試檢視日';
+            adminDateWrap.classList.remove('hidden');
+            adminDateWrap.classList.add('flex');
+          } else {
+            adminDateWrap.classList.add('hidden');
+            adminDateWrap.classList.remove('flex');
+          }
         }
         if (superPanel) superPanel.classList.add('hidden');
       } else if (role === 'admin') {
@@ -2718,6 +2819,8 @@ function openOfficialSchedule() {
             : 'text-[10px] font-black px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200';
         }
         if (adminDateWrap) {
+          const dsLbl = document.getElementById('dateSelectorLabel');
+          if (dsLbl) dsLbl.innerText = '管理檢視日';
           adminDateWrap.classList.remove('hidden');
           adminDateWrap.classList.add('flex');
         }
@@ -2866,6 +2969,7 @@ function openOfficialSchedule() {
           const admData = adminSnap.data();
           currentAdminTier = admData.role === 'super_admin' ? 'super_admin' : 'admin';
           currentAdminEmail = email;
+          currentSignedInEmail = email;
           if (passInput) passInput.value = '';
           closeAuthModal();
           setAppRole('admin', admData.name || maskEmail(email));
@@ -3150,6 +3254,11 @@ function openOfficialSchedule() {
       }
       currentAdminTier = 'none';
       currentAdminEmail = '';
+      currentSignedInEmail = '';
+      userPickedDate = false;
+      currentSimDate = deriveTodayKey();
+      syncDateSelect();
+      remapAllVendorsForDate();
       setAppRole('guest');
       selectTab('timeline');
       showToast('已登出，回到訪客瀏覽模式。');
@@ -3396,7 +3505,7 @@ function openOfficialSchedule() {
             endedMs: 0
           });
           await FB().setDoc(FB().doc(firestoreDb, 'market_public', 'live'), { vendors: { [uid]: resetFields } }, { merge: true });
-          notifyPushWorker('reset', { dayKey: currentSimDate, uid });
+          notifyPushWorker('reset', { dayKey: getPushDayKeyForVendor(v), uid });
           if (PUBLIC_LIVE_MAP[uid]) Object.assign(PUBLIC_LIVE_MAP[uid], resetFields);
           savePhotoToSessionCache(uid, '');
           savePublicLiveCache(PUBLIC_LIVE_MAP);
@@ -3721,7 +3830,7 @@ function openOfficialSchedule() {
     }
 
     function changeDate(d) {
-      if (currentRole !== 'admin') return;
+      if (currentRole !== 'admin' && !isTestBypassUser()) return;
       currentSimDate = d;
       userPickedDate = true;
       syncDateSelect();
@@ -3731,7 +3840,7 @@ function openOfficialSchedule() {
       if (currentRole === 'admin') renderAdminVendorTable();
       checkHalfHourShowtimeAlert();
       checkVipQueueAlert();
-      showToast(`管理檢視日已切換至：${d}`);
+      showToast(`${currentRole === 'admin' ? '管理' : '測試'}檢視日已切換至：${d}`);
     }
 
     /* ---------- 攤主操作台：抵達報位、圖片壓縮、準備倒數、手動結束 ---------- */
@@ -3930,9 +4039,10 @@ function openOfficialSchedule() {
           await FB().setDoc(FB().doc(firestoreDb, 'market_public', 'live'), {
             vendors: { [currentVendor.uid]: updatedFields }
           }, { merge: true });
+          const pushDayKey = getPushDayKeyForVendor(currentVendor);
           if (!isEditingExistingArrival) {
             notifyPushWorker('arrival', {
-              dayKey: currentSimDate,
+              dayKey: pushDayKey,
               uid: currentVendor.uid,
               nickname: currentVendor.nickname || '(未命名)',
               items,
@@ -3942,7 +4052,7 @@ function openOfficialSchedule() {
             });
           } else {
             notifyPushWorker('location_update', {
-              dayKey: currentSimDate,
+              dayKey: pushDayKey,
               uid: currentVendor.uid,
               nickname: currentVendor.nickname || '(未命名)',
               items,
@@ -4191,7 +4301,7 @@ function openOfficialSchedule() {
             vendors: { [currentVendor.uid]: patch }
           }, { merge: true });
           notifyPushWorker('start_now', {
-            dayKey: currentSimDate,
+            dayKey: getPushDayKeyForVendor(currentVendor),
             uid: currentVendor.uid,
             nickname: currentVendor.nickname || '(未命名)',
             items: currentVendor.items || '應援周邊',
@@ -4223,7 +4333,7 @@ function openOfficialSchedule() {
         try {
           await FB().setDoc(FB().doc(firestoreDb, 'market_public', 'live'), { vendors: { [currentVendor.uid]: patch } }, { merge: true });
           notifyPushWorker('ended', {
-            dayKey: currentSimDate,
+            dayKey: getPushDayKeyForVendor(currentVendor),
             uid: currentVendor.uid,
             nickname: currentVendor.nickname || '(未命名)',
             items: currentVendor.items || '應援周邊',
