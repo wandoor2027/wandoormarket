@@ -2542,7 +2542,6 @@ body.lite-mode #tab-venue #vm-legendToggle {
         footerEl.className = 'p-3 rounded-2xl bg-amber-50/90 border border-amber-200 text-amber-900 text-[11px] text-center leading-relaxed space-y-0.5';
         footerEl.innerHTML = `
           <p><strong>※ 目前為推估時間，僅供參考</strong>，實際活動時間請以官方公告為準。</p>
-          <p>※ 時間均採台灣時間（UTC+8）｜ From @onedoor_boice_0820</p>
         `;
         return;
       }
@@ -2553,7 +2552,6 @@ body.lite-mode #tab-venue #vm-legendToggle {
         : `<a href="${esc(officialUrl)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-skyBlue-500 hover:bg-skyBlue-600 text-white font-bold text-xs shadow-xs transition"><i class="fa-regular fa-calendar-check"></i><span>前往官方公告時程表</span><i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a>`;
       footerEl.innerHTML = `
         <div>${actionHtml}</div>
-        <p class="text-[10.5px] text-slate-500">※ 時間均採台灣時間（UTC+8）｜ From @onedoor_boice_0820</p>
       `;
     }
 
