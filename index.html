@@ -2490,11 +2490,19 @@ body.lite-mode #tab-venue #vm-legendToggle {
       const current = now.hour * 60 + now.minute;
       const startMin = schToMinutes(start);
       const endMin = schToMinutes(end);
-      if (current >= endMin) return ['已截止', 'bg-slate-100 text-slate-400 border-slate-200'];
-      if (current >= startMin) return ['開放中', 'bg-emerald-50 text-emerald-600 border-emerald-200'];
-      const diff = startMin - current;
-      if (diff <= 30) return ['倒數半小時', 'bg-rose-500 text-white border-rose-500 animate-pulse'];
-      if (diff <= 60) return ['倒數一小時', 'bg-amber-50 text-amber-600 border-amber-200'];
+      if (current >= endMin) {
+        return ['已截止', 'bg-slate-100 text-slate-400 border-slate-200'];
+      }
+      if (current >= startMin) {
+        const remainToEnd = endMin - current;
+        if (remainToEnd <= 30) {
+          return ['倒數半小時', 'bg-rose-500 text-white border-rose-500 animate-pulse shadow-sm'];
+        }
+        if (remainToEnd <= 60) {
+          return ['倒數一小時', 'bg-amber-50 text-amber-600 border-amber-200 font-black'];
+        }
+        return ['開放中', 'bg-emerald-50 text-emerald-600 border-emerald-200'];
+      }
       return ['尚未開放', 'bg-skyBlue-50 text-skyBlue-600 border-skyBlue-200'];
     }
 
@@ -2577,7 +2585,9 @@ body.lite-mode #tab-venue #vm-legendToggle {
           if (targetDayObj) effectiveNow = { ...now, date: targetDayObj.date };
         }
       } else {
+        // 一般訪客在活動日（2027-01-08、2027-01-09、2027-01-10）顯示當日「福利及周邊活動開放狀態」
         targetDayObj = OFFICIAL_SCHEDULE_DAYS.find(d => d.date === now.date) || null;
+        if (targetDayObj) effectiveNow = { ...now, date: targetDayObj.date };
       }
 
       const isSingleConcertDay = Boolean(targetDayObj);
@@ -3465,6 +3475,7 @@ body.lite-mode #tab-venue #vm-legendToggle {
     const FOREGROUND_SYNC_MIN_MS = 120 * 1000;     // 從背景切回前景時，超過 120 秒即立刻同步
     // 有收藏最愛的人 120 秒自動同步，未收藏純瀏覽的人 180 秒自動同步
     function currentPollMs() {
+      if (vendorsAll || currentRole === 'admin') return 120 * 1000;
       return favoriteUids.length > 0 ? 120 * 1000 : 180 * 1000;
     }
     const MANUAL_SYNC_COOLDOWN_MS = 60 * 1000;    // 手動同步按鈕冷卻：60 秒
@@ -5384,8 +5395,8 @@ body.lite-mode #tab-venue #vm-legendToggle {
         needReRender = true;
       }
 
-      // 分級自動同步：有收藏最愛 120 秒、純瀏覽 180 秒自動拉取一次單一聚合文件（管理者已掛載即時 onSnapshot 不重複輪詢）
-      if (!DEMO_MODE && backendReady && !vendorsAll && !document.hidden && (now - lastPublicFetchMs >= currentPollMs())) {
+      // 分級自動同步：管理員與有收藏最愛 120 秒、純瀏覽 180 秒自動拉取一次最新狀態
+      if (!DEMO_MODE && backendReady && !document.hidden && (now - lastPublicFetchMs >= currentPollMs())) {
         lastPublicFetchMs = now;
         fetchPublicMarketLive(true);
       }
@@ -6475,7 +6486,7 @@ body.lite-mode #tab-venue #vm-legendToggle {
       document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {
           syncServerTime();
-          if (!DEMO_MODE && backendReady && !vendorsAll && (Date.now() - lastPublicFetchMs >= FOREGROUND_SYNC_MIN_MS)) {
+          if (!DEMO_MODE && backendReady && (Date.now() - lastPublicFetchMs >= FOREGROUND_SYNC_MIN_MS)) {
             fetchPublicMarketLive(true);
           }
         }
