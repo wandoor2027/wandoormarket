@@ -2,11 +2,16 @@
 <!-- =========================================================================
      Project: KNOCK！KNOCK！ 小門應援市集
      Author: From @onedoor_boice_0820
-     Version: V2026.11.20(PWA-v3)
+     Version: V2026.11.23(PWA-v11)
      Notice: 該網站由 @onedoor_boice_0820 維護，非官方正式應援團隊維護。
      ========================================================================= -->
-<html lang="zh-TW">
+<html lang="zh-TW" data-author="From @onedoor_boice_0820">
 <head>
+  <!-- =========================================================================
+      【8964习近平，台湾是独立国家，台独万岁！TAIWAN NO.1！這台獨仔做的啦，從來沒有什麼政治歸政治追星歸追星，請不要妙蛙沃操，媽ㄉ再偷阿】
+
+
+       ========================================================================= -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="author" content="From @onedoor_boice_0820">
@@ -21,6 +26,16 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="🏠KNOCK!">
   <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+
+  <!-- Three.js Import Map (場館互動地圖 | From @onedoor_boice_0820) -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+    }
+  }
+  </script>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -181,7 +196,7 @@ body.night :is([class~="bg-slate-200"],[class*=" bg-slate-200/"],[class^="bg-sla
 body.night :is([class~="bg-skyBlue-50"],[class*=" bg-skyBlue-50/"],[class^="bg-skyBlue-50/"]){background-color:rgba(255,169,77,.12)}
 body.night :is([class~="bg-skyBlue-100"],[class*=" bg-skyBlue-100/"],[class^="bg-skyBlue-100/"]){background-color:rgba(255,169,77,.2)}
 body.night :is([class~="bg-rose-50"],[class*=" bg-rose-50/"],[class^="bg-rose-50/"],[class~="bg-rose-100"],[class*=" bg-rose-100/"],[class^="bg-rose-100/"]){background-color:rgba(255,110,80,.16)}
-body.night :is([class~="bg-amber-50"],[class*=" bg-amber-50/"],[class^="bg-amber-50/"],[class~="bg-amber-200"],[class*=" bg-amber-200/"],[class^="bg-amber-200/"]){background-color:rgba(255,170,60,.14)}
+body.night :is([class~="bg-amber-50"],[class*=" bg-amber-50/"],[class^="bg-amber-50/"],[class~="bg-amber-100"],[class*=" bg-amber-100/"],[class^="bg-amber-100/"],[class~="bg-amber-200"],[class*=" bg-amber-200/"],[class^="bg-amber-200/"]){background-color:rgba(255,170,60,.15)}
 body.night :is([class~="bg-emerald-50"],[class*=" bg-emerald-50/"],[class^="bg-emerald-50/"]){background-color:rgba(90,210,130,.14)}
 body.night :is([class*="bg-white/20"]){background-color:rgba(255,255,255,.2)}
 body.night :is([class~="bg-skyBlue-500"],[class~="bg-skyBlue-600"]){background:linear-gradient(135deg,#e8772a,#c4531a)}
@@ -251,6 +266,517 @@ body.night .hearth{opacity:1}
 .flame:nth-of-type(2){left:calc(50% - 18px);height:68px;width:36px;animation-duration:1.5s}
 .flame:nth-of-type(3){right:20%;height:46px;animation-duration:1.2s;animation-delay:.4s}
 @keyframes fk{0%{transform:scaleY(.85) skewX(-4deg)}100%{transform:scaleY(1.12) skewX(5deg)}}
+
+/* ===== 官方時程表彈窗 & 場館互動地圖（風格統一：日版雪藍 / 夜版壁爐暖冬 | From @onedoor_boice_0820） ===== */
+body.venue-active {
+  overflow: hidden !important;
+  touch-action: none;
+}
+
+/* 官方時程表高亮列 */
+.sch-row-active {
+  background: rgba(0, 160, 233, 0.10);
+  color: #0369a1;
+  font-weight: 700;
+}
+.sch-row-active td:first-child::before {
+  content: "● ";
+  color: #00A0E9;
+}
+body.night .sch-row-active {
+  background: rgba(255, 169, 77, 0.18);
+  color: #ffd8a8;
+}
+body.night .sch-row-active td:first-child::before {
+  color: #ffa94d;
+}
+
+
+/* 場館地圖完整畫面容器與 HUD（CSS 變數連動日夜主題） */
+#tab-venue {
+  --vm-accent: #00A0E9;
+  --vm-accent-hover: #0284c7;
+  --vm-accent-glow: rgba(0, 160, 233, 0.30);
+  --vm-ink: #1e293b;
+  --vm-sub: #64748b;
+  --vm-card: rgba(255, 255, 255, 0.90);
+  --vm-border: rgba(255, 255, 255, 0.94);
+  --vm-shadow: 0 10px 28px rgba(0, 160, 233, 0.12), 0 2px 6px rgba(15, 23, 42, 0.06);
+  --vm-close-bg: #f1f5f9;
+  --vm-disclaimer-bg: rgba(254, 243, 199, 0.95);
+  --vm-disclaimer-border: #fcd34d;
+  --vm-disclaimer-ink: #92400e;
+  background: linear-gradient(180deg, #b9e2fa 0%, #dcf2fd 45%, #f0f9ff 100%);
+  color: var(--vm-ink);
+}
+body.night #tab-venue {
+  --vm-accent: #e8772a;
+  --vm-accent-hover: #c4531a;
+  --vm-accent-glow: rgba(255, 130, 40, 0.38);
+  --vm-ink: #fbeedd;
+  --vm-sub: #c9a98a;
+  --vm-card: rgba(46, 27, 21, 0.88);
+  --vm-border: rgba(255, 190, 110, 0.28);
+  --vm-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+  --vm-close-bg: rgba(84, 54, 42, 0.85);
+  --vm-disclaimer-bg: rgba(255, 170, 60, 0.18);
+  --vm-disclaimer-border: rgba(255, 190, 110, 0.45);
+  --vm-disclaimer-ink: #ffd8a8;
+  background: linear-gradient(180deg, #0c1224 0%, #1a1424 50%, #2b1a16 100%);
+}
+body.lite-mode #tab-venue .vm-panel,
+body.lite-mode #tab-venue .vm-btn,
+body.lite-mode #tab-venue #vm-legendToggle {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* 從攤主抵達彈窗預覽場館地圖時，覆蓋於彈窗之上以保留填寫內容 */
+#tab-venue.vm-preview-mode {
+  z-index: 55 !important;
+}
+#vm-previewReturnBar {
+  position: absolute;
+  left: 50%;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 20;
+  display: none;
+  pointer-events: auto;
+}
+#tab-venue.vm-preview-mode #vm-previewReturnBar {
+  display: flex;
+}
+
+#vm-scene {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+}
+#vm-labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 3;
+}
+.vm-tag {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -100%);
+  pointer-events: auto;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--vm-card);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18);
+  border: 1.5px solid var(--vm-border);
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--vm-ink);
+  white-space: nowrap;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.vm-tag::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  transform: translateX(-50%);
+  border-width: 6px 5px 0 5px;
+  border-style: solid;
+  border-color: var(--vm-card) transparent transparent transparent;
+}
+.vm-tag:hover,
+.vm-tag.active {
+  transform: translate(-50%, -112%) scale(1.06);
+  box-shadow: 0 6px 18px var(--vm-accent-glow);
+  border-color: var(--vm-accent);
+  z-index: 8;
+}
+.vm-tag.hidden-tag {
+  display: none !important;
+}
+.vm-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+}
+
+/* 最重要指標：A7機捷 & A/B/黃/橙出入口 漂浮粗體文字 */
+.vm-landmark {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -100%);
+  pointer-events: auto;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+  z-index: 9;
+  border: 2px solid rgba(255, 255, 255, 0.96);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.28);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.vm-landmark::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  transform: translateX(-50%);
+  border-width: 7px 6px 0 6px;
+  border-style: solid;
+}
+.vm-landmark.lm-metro {
+  background: linear-gradient(135deg, #1d4ed8, #0284c7);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+.vm-landmark.lm-metro::after {
+  border-color: #0284c7 transparent transparent transparent;
+}
+.vm-landmark.lm-gate-a {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+.vm-landmark.lm-gate-a::after {
+  border-color: #d97706 transparent transparent transparent;
+}
+.vm-landmark.lm-gate-b {
+  background: linear-gradient(135deg, #ea580c, #dc2626);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+.vm-landmark.lm-gate-b::after {
+  border-color: #dc2626 transparent transparent transparent;
+}
+.vm-landmark:hover,
+.vm-landmark.active {
+  transform: translate(-50%, -112%) scale(1.07);
+  box-shadow: 0 8px 22px rgba(225, 29, 72, 0.36);
+  z-index: 11;
+}
+.vm-landmark.hidden-tag {
+  display: none !important;
+}
+
+/* 管理員編輯標籤模式（場外活動標籤與重要指標皆可拖移與修改） */
+#tab-venue.vm-editing .vm-tag,
+#tab-venue.vm-editing .vm-landmark {
+  cursor: grab;
+  outline: 2px dashed #f43f5e;
+  outline-offset: 2px;
+  touch-action: none;
+}
+#tab-venue.vm-editing .vm-tag.dragging,
+#tab-venue.vm-editing .vm-landmark.dragging {
+  cursor: grabbing;
+  z-index: 25 !important;
+  box-shadow: 0 10px 28px rgba(244, 63, 94, 0.45);
+}
+.vm-drag-grip {
+  display: none;
+  font-size: 10px;
+  opacity: 0.85;
+}
+#tab-venue.vm-editing .vm-drag-grip {
+  display: inline-block;
+}
+#vm-adminToolbar {
+  position: absolute;
+  left: 50%;
+  top: calc(env(safe-area-inset-top, 0px) + 76px);
+  transform: translateX(-50%);
+  z-index: 16;
+  display: none;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 10px;
+  max-width: calc(100vw - 24px);
+}
+#tab-venue.vm-editing #vm-adminToolbar {
+  display: flex;
+}
+#vm-dragCoordBadge {
+  position: absolute;
+  left: 50%;
+  bottom: calc(138px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 26;
+  pointer-events: none;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.88);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  font-family: Outfit, monospace;
+}
+@media (max-width: 640px) {
+  .vm-landmark {
+    font-size: 11.5px;
+    padding: 5px 10px;
+  }
+  #vm-adminToolbar {
+    top: calc(env(safe-area-inset-top, 0px) + 84px);
+  }
+}
+
+#vm-hud-top {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: calc(env(safe-area-inset-top, 0px) + 12px);
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+}
+.vm-panel {
+  pointer-events: auto;
+  background: var(--vm-card);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 16px;
+  box-shadow: var(--vm-shadow);
+  border: 1px solid var(--vm-border);
+}
+.vm-title-box {
+  padding: 9px 13px;
+  flex: 1 1 240px;
+  min-width: 0;
+}
+.vm-title-box h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 900;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  color: var(--vm-ink);
+}
+.vm-badge {
+  font-size: 10px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--vm-accent);
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.vm-disclaimer {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--vm-disclaimer-ink);
+  background: var(--vm-disclaimer-bg);
+  border: 1px solid var(--vm-disclaimer-border);
+  padding: 1.5px 7px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.vm-title-box p {
+  margin: 3px 0 0;
+  font-size: 11px;
+  color: var(--vm-sub);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vm-ctrl-col {
+  position: absolute;
+  right: 12px;
+  bottom: calc(82px + env(safe-area-inset-bottom, 0px));
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.vm-btn {
+  width: 48px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid var(--vm-border);
+  cursor: pointer;
+  background: var(--vm-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--vm-ink);
+  font-weight: 800;
+  font-size: 11px;
+  box-shadow: var(--vm-shadow);
+  display: grid;
+  place-items: center;
+  transition: transform 0.12s ease, background 0.15s ease, color 0.15s ease;
+}
+.vm-btn:active {
+  transform: scale(0.95);
+}
+.vm-btn.on {
+  background: var(--vm-accent);
+  border-color: var(--vm-accent);
+  color: #fff;
+}
+
+#vm-legendWrap {
+  position: absolute;
+  left: 0;
+  bottom: calc(82px + env(safe-area-inset-bottom, 0px));
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#vm-legendWrap.collapsed {
+  transform: translateX(calc(-100% + 32px));
+}
+#vm-legend {
+  pointer-events: auto;
+  padding: 9px 12px;
+  max-width: min(240px, calc(100vw - 108px));
+  font-size: 10.5px;
+  border-radius: 0 16px 16px 0;
+  border-left: 0;
+}
+#vm-legendToggle {
+  pointer-events: auto;
+  flex: 0 0 32px;
+  width: 32px;
+  padding: 10px 0;
+  border-radius: 0 12px 12px 0;
+  border: 1px solid var(--vm-border);
+  border-left: 0;
+  background: var(--vm-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--vm-shadow);
+  color: var(--vm-ink);
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  letter-spacing: 1px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+#vm-legendToggle:active {
+  transform: scale(0.96);
+}
+#vm-legendToggle .vm-leg-arrow {
+  writing-mode: horizontal-tb;
+  font-size: 10px;
+  color: var(--vm-accent);
+  transition: transform 0.25s ease;
+}
+#vm-legendWrap:not(.collapsed) #vm-legendToggle .vm-leg-arrow {
+  transform: rotate(180deg);
+}
+.vm-leg-title {
+  font-weight: 900;
+  margin-bottom: 4px;
+  font-size: 11px;
+  color: var(--vm-ink);
+}
+.vm-leg-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 3px 0;
+  color: var(--vm-sub);
+  font-weight: 700;
+}
+.vm-leg-swatch {
+  width: 11px;
+  height: 8px;
+  border-radius: 3px;
+  flex: none;
+}
+
+#vm-infoCard {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: calc(82px + env(safe-area-inset-bottom, 0px));
+  z-index: 15;
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 13px 15px;
+  display: none;
+}
+#vm-infoCard.show {
+  display: block;
+}
+#vm-infoCard h3 {
+  margin: 0 30px 6px 0;
+  font-size: 15px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--vm-ink);
+}
+#vm-infoCard p {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--vm-sub);
+}
+#vm-closeCard {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--vm-close-bg);
+  color: var(--vm-ink);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  #vm-legend {
+    max-width: min(204px, calc(100vw - 100px));
+    font-size: 10px;
+    padding: 8px 10px;
+  }
+  .vm-btn {
+    width: 44px;
+    height: 40px;
+    font-size: 10.5px;
+  }
+}
   </style>
 </head>
 <body class="font-sans antialiased pb-28 select-none text-slate-800" oncontextmenu="return false;">
@@ -364,7 +890,7 @@ body.night .hearth{opacity:1}
       <div class="flex items-start sm:items-center space-x-2">
         <i class="fa-solid fa-circle-info text-amber-600 text-sm flex-shrink-0 mt-0.5 sm:mt-0"></i>
         <span class="leading-relaxed">
-          <strong>此畫面僅供參考</strong>：現場無實體固定攤位，由創作者到場後自行找位置發放應援，<br>
+          <strong>此畫面僅供參考</strong>：<span id="stallModeNote">現場無實體固定攤位，由創作者到場後自行找位置發放應援，</span><br>
           實際狀況請以現場為準。
         </span>
       </div>
@@ -408,7 +934,7 @@ body.night .hearth{opacity:1}
               <span class="text-[9px] sm:text-[10px] font-black px-1.5 py-0.2 rounded-full bg-skyBlue-50 text-skyBlue-600 border border-skyBlue-200 whitespace-nowrap">
                 2027/1/8 - 1/10
               </span>
-              <span class="text-[10px] sm:text-[11px] text-slate-500 truncate">場外自由發放・即時位置回報</span>
+              <span id="headerSubtitle" class="text-[10px] sm:text-[11px] text-slate-500 truncate">場外自由發放・即時位置回報</span>
             </div>
             <h1 class="text-sm sm:text-base md:text-lg font-black text-slate-800 tracking-tight leading-tight truncate">
               KNOCK！KNOCK！ <span class="text-skyBlue-600 text-xs sm:text-sm font-bold">小門應援市集</span>
@@ -448,6 +974,7 @@ body.night .hearth{opacity:1}
             </div>
           </div>
         </div>
+      </div>
     </header>
 
     <!-- 離線提示橫幅 -->
@@ -481,10 +1008,6 @@ body.night .hearth{opacity:1}
             <button onclick="openOfficialSchedule()" id="btnOfficialSchedule" class="px-2.5 py-1 rounded-lg bg-white hover:bg-skyBlue-50 border border-skyBlue-200 text-skyBlue-600 font-bold text-xs shadow-2xs transition flex items-center space-x-1 whitespace-nowrap">
               <i class="fa-regular fa-calendar-check"></i>
               <span>官方時程表</span>
-            </button>
-            <button onclick="openVenueMap()" id="btnVenueMap" class="px-2.5 py-1 rounded-lg bg-white hover:bg-skyBlue-50 border border-skyBlue-200 text-skyBlue-600 font-bold text-xs shadow-2xs transition flex items-center space-x-1 whitespace-nowrap" title="場館人工對應地圖">
-              <i class="fa-solid fa-map-location-dot"></i>
-              <span>場館參考地圖 <span class="text-[10px] font-normal text-slate-400"></span></span>
             </button>
             <div class="text-xs px-2.5 py-1 rounded-lg bg-skyBlue-50 border border-skyBlue-200 text-skyBlue-600 font-bold whitespace-nowrap" id="timelineDateBadge">
               今日：判定中
@@ -524,6 +1047,25 @@ body.night .hearth{opacity:1}
     <!-- ===================================================================
          頁籤二：攤主現場發放操作台（僅限已登入之攤主或管理者存取）
          =================================================================== -->
+    <section id="tab-map" class="tab-content hidden">
+      <div class="glass-panel rounded-3xl p-3.5 sm:p-6 mb-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div>
+            <h2 class="text-sm sm:text-lg font-black text-slate-800 flex items-center"><i class="fa-solid fa-table-cells-large text-skyBlue-500 mr-2"></i>15 席攤位地圖（01～15）</h2>
+            <p class="text-[11px] sm:text-xs text-slate-500 mt-0.5">點擊席位查看創作者、應援物與下一棒排定</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 text-[10px] bg-white/80 px-2.5 py-1.5 rounded-full border border-slate-200">
+            <span class="flex items-center text-emerald-600 font-medium"><span class="w-2 h-2 rounded-full bg-emerald-500 mr-1 active-dot"></span>使用中</span>
+            <span class="flex items-center text-amber-600 font-medium"><span class="w-2 h-2 rounded-full bg-amber-400 mr-1"></span>已預約</span>
+            <span class="flex items-center text-slate-400 font-medium"><span class="w-2 h-2 rounded-full bg-slate-300 mr-1"></span>空閒</span>
+            <span class="flex items-center text-rose-500 font-medium"><span class="w-2 h-2 rounded-full bg-rose-400 mr-1"></span>管制</span>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2" id="stallMapGrid"></div>
+        <p class="mt-3 pt-2 border-t border-slate-200/80 text-[10px] text-slate-500">預約制：每位創作者每日 1 次額度，抵達並按「確認抵達」才扣除；逾時未抵達自動取消。</p>
+      </div>
+    </section>
+
     <section id="tab-vendor" class="tab-content hidden">
       <div class="glass-panel rounded-3xl p-3.5 sm:p-6 mb-4">
         <div class="flex flex-wrap items-center justify-between gap-2 pb-3 mb-4 border-b border-slate-200">
@@ -531,7 +1073,7 @@ body.night .hearth{opacity:1}
             <h2 class="text-sm sm:text-lg font-black text-slate-800 flex items-center">
               <i class="fa-solid fa-store text-skyBlue-500 mr-2"></i>攤主現場發放操作台
             </h2>
-            <p class="text-[11px] sm:text-xs text-slate-500 mt-0.5">
+            <p id="vendorTabSubtitle" class="text-[11px] sm:text-xs text-slate-500 mt-0.5">
               到場找好位置後點選「抵達」，填寫位置與準備時間（5~15分鐘），每日限用 1 次額度（開唱前半小時停止開放報位）
             </p>
           </div>
@@ -545,6 +1087,44 @@ body.night .hearth{opacity:1}
           <select id="adminVendorPicker" onchange="adminPickVendor(this.value)" class="flex-1 min-w-[160px] bg-white rounded-lg px-2 py-1.5 border border-rose-200 font-bold text-slate-800"></select>
         </div>
         <!-- 狀態 A：尚未抵達且今日尚有額度 -->
+        <div id="vendorMapPanels" class="hidden space-y-4 mb-4">
+          <div id="resvCard" class="glass-card rounded-2xl p-4 border-skyBlue-200 hidden">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center space-x-2"><span class="text-xs font-bold text-slate-600">目前席位</span><span id="resvStall" class="text-xs font-mono font-bold text-white bg-skyBlue-500 px-2 py-0.5 rounded">--</span></div>
+              <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200">已預約</span>
+            </div>
+            <div class="p-3 bg-white/90 rounded-xl mb-3 border border-slate-100 shadow-inner">
+              <div class="text-xs text-slate-500 flex justify-between gap-2"><span>時段：<strong id="resvSlot" class="font-mono text-slate-800">--</strong></span><span>應援物：<strong id="resvItems" class="text-slate-800">--</strong></span></div>
+              <div class="mt-2 flex items-baseline justify-between gap-2"><span class="text-xs font-medium text-slate-600" id="resvLabel"></span><span id="resvCountdown" class="text-xl sm:text-2xl font-mono font-black text-amber-500">--:--</span></div>
+              <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2 overflow-hidden"><div id="resvBar" class="bg-amber-400 h-1.5 rounded-full" style="width:100%"></div></div>
+              <p class="text-[10px] text-slate-500 mt-2"><i class="fa-solid fa-info-circle mr-1 text-skyBlue-500"></i>就座後請按「確認抵達」，才會開始計時並扣除今日額度；未抵達前取消不扣額度。</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button onclick="resvArriveClick()" class="py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-xs flex items-center justify-center space-x-1.5"><i class="fa-solid fa-location-dot"></i><span>確認，已抵達攤位</span></button>
+              <button onclick="resvCancelClick()" class="py-2.5 rounded-xl bg-rose-50 text-rose-600 border border-rose-200 font-bold text-xs flex items-center justify-center space-x-1.5"><i class="fa-solid fa-ban"></i><span>取消此筆預約</span></button>
+            </div>
+          </div>
+
+          <div id="resvNew" class="glass-card rounded-2xl p-4 border-slate-200 space-y-3 text-xs">
+            <h3 class="font-bold text-slate-800 flex items-center"><i class="fa-solid fa-calendar-plus text-skyBlue-500 mr-1.5"></i>預約攤位</h3>
+            <div class="p-2.5 rounded-xl bg-skyBlue-50/70 border border-skyBlue-100">
+              <div class="flex justify-between mb-1"><span class="text-slate-600">預計發放總件數：</span><strong id="resvCalcVal" class="text-skyBlue-600 font-mono">20 件</strong></div>
+              <input type="range" min="1" max="60" value="20" class="w-full accent-skyBlue-500" oninput="calcResvDuration(this.value)">
+              <div class="text-[10px] text-slate-500 mt-1">建議時長 floor(件數 × 1.5) 分鐘，會自動帶入下方拉桿</div>
+            </div>
+            <div><label class="block font-bold text-slate-700 mb-1">選擇攤位席次</label>
+              <select id="resvStallSelect" class="w-full bg-white p-2.5 rounded-xl border border-slate-200 font-mono font-bold text-slate-800"></select></div>
+            <div><label class="block font-bold text-slate-700 mb-1">本次應援物內容簡述 <span class="text-rose-500">*</span></label>
+              <input type="text" id="resvItemName" maxlength="30" placeholder="例如：手燈針織套、小卡套組" class="w-full bg-white p-2.5 rounded-xl border border-slate-200 text-slate-800"></div>
+            <div class="p-3 bg-white/95 rounded-xl border border-slate-200">
+              <div class="flex justify-between mb-1"><span class="font-bold text-slate-700">預計使用時長：</span><strong id="resvDurText" class="font-mono text-skyBlue-600 text-base">30 分鐘</strong></div>
+              <input type="range" id="resvDurSlider" min="10" max="60" step="5" value="30" class="w-full accent-skyBlue-500" oninput="document.getElementById('resvDurText').innerText=this.value+' 分鐘'">
+              <div class="flex justify-between text-[10px] text-slate-400 mt-1 font-mono"><span>最短 10 分鐘</span><span>最長 60 分鐘</span></div>
+            </div>
+            <button onclick="submitReservation()" class="w-full py-2.5 bg-skyBlue-500 hover:bg-skyBlue-600 text-white font-bold rounded-xl shadow-md flex items-center justify-center space-x-1.5"><i class="fa-solid fa-calendar-check"></i><span>確認送出預約</span></button>
+          </div>
+        </div>
+
         <div id="vendorIdlePanel" class="glass-card rounded-2xl p-5 text-center border-skyBlue-200 mb-4">
           <div class="w-12 h-12 mx-auto rounded-2xl bg-skyBlue-50 text-skyBlue-500 flex items-center justify-center text-xl mb-3 border border-skyBlue-100">
             <i class="fa-solid fa-location-dot"></i>
@@ -608,7 +1188,7 @@ body.night .hearth{opacity:1}
               <i class="fa-solid fa-play"></i>
               <span>準備完成・立即開始發放</span>
             </button>
-            <button onclick="openArrivalModal(true)" class="py-2.5 px-3 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs border border-slate-200 flex items-center justify-center space-x-1.5 transition">
+            <button id="btnEditArrivalLoc" onclick="openArrivalModal(true)" class="py-2.5 px-3 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs border border-slate-200 flex items-center justify-center space-x-1.5 transition">
               <i class="fa-solid fa-pen-to-square text-skyBlue-500"></i>
               <span>更新位置說明／照片</span>
             </button>
@@ -717,6 +1297,45 @@ body.night .hearth{opacity:1}
           </div>
         </div>
 
+        <div class="glass-card rounded-2xl p-3.5 sm:p-4 border-rose-200 space-y-2">
+          <div>
+            <h3 class="text-xs font-bold text-slate-800 flex items-center"><i class="fa-solid fa-map text-rose-500 mr-1.5"></i>實體攤位地圖模式（依日期個別設定）</h3>
+            <p class="text-[10px] sm:text-[11px] text-slate-500">各場次獨立開關，到該日自動套用；也可在前一場結束後再手動切換。切換會即時影響全部訪客與攤主。</p>
+          </div>
+          <div id="mapDayRows" class="space-y-1.5"></div>
+        </div>
+
+        <div id="adminMapOps" class="hidden glass-card rounded-2xl p-3.5 sm:p-4 border-slate-200 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 class="text-xs font-bold text-slate-800 flex items-center"><i class="fa-solid fa-table-cells text-skyBlue-500 mr-1.5"></i>15 席管制與代理操作台</h3>
+              <p class="text-[10px] text-slate-400">點任一席位可代點抵達／代釋出／代取消／管制暫停</p>
+            </div>
+            <button onclick="openWhiteboard()" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-900 font-bold text-xs flex items-center space-x-1 whitespace-nowrap"><i class="fa-solid fa-clipboard-list"></i><span>產出白板抄件</span></button>
+          </div>
+          <div class="p-2.5 bg-white/95 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div><strong class="text-slate-800">逾時處置：</strong><span class="text-slate-500 text-[11px]" id="timeoutModeDesc"></span></div>
+            <div class="flex items-center space-x-1 bg-slate-100 p-0.5 rounded-xl">
+              <button onclick="setTimeoutMode('pause')" id="tmoPause" class="px-2.5 py-1 rounded-lg whitespace-nowrap">暫停待確認</button>
+              <button onclick="setTimeoutMode('free')" id="tmoFree" class="px-2.5 py-1 rounded-lg whitespace-nowrap">直接回空閒</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2" id="adminStallGrid"></div>
+          <div id="adminStallBox" class="hidden p-3 rounded-2xl bg-skyBlue-50/70 border border-skyBlue-200 text-xs">
+            <div class="flex items-center justify-between mb-1.5">
+              <strong class="text-skyBlue-800">代理操作席位：<span id="adminStallId" class="font-mono text-sm text-slate-900">01</span></strong>
+              <button onclick="closeAdminStall()" class="text-slate-400"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p class="text-[11px] text-slate-600 mb-2" id="adminStallDesc"></p>
+            <div class="flex flex-wrap gap-2">
+              <button id="btnPxArrive" onclick="adminProxyArrive()" class="px-3 py-1.5 bg-emerald-500 text-white font-bold rounded-xl">代點確認抵達</button>
+              <button id="btnPxRelease" onclick="adminProxyRelease()" class="px-3 py-1.5 bg-skyBlue-500 text-white font-bold rounded-xl">代執行發放完畢釋出</button>
+              <button id="btnPxCancel" onclick="adminProxyCancel()" class="px-3 py-1.5 bg-rose-500 text-white font-bold rounded-xl">代取消／重置</button>
+              <button id="btnPxPause" onclick="adminProxyPause()" class="px-3 py-1.5 bg-amber-500 text-white font-bold rounded-xl">切換管制暫停</button>
+            </div>
+          </div>
+        </div>
+
         <!-- 事前資格審核名冊 -->
         <div class="glass-card rounded-2xl p-3.5 sm:p-4 border-slate-200">
           <div class="flex flex-wrap items-center justify-between gap-1 mb-3">
@@ -757,29 +1376,242 @@ body.night .hearth{opacity:1}
 
     <!-- 頁尾維護聲明 -->
     <footer class="mt-auto pt-4 pb-2 text-center text-[11px] text-slate-400 space-y-1">
-      <p class="font-bold text-slate-500">該網站由 @onedoor_boice_0820 維護，非官方正式應援團隊維護。</p>
+      <p class="font-bold text-slate-500">From @onedoor_boice_0820 ｜ 該網站由 @onedoor_boice_0820 維護，非官方正式應援團隊維護。</p>
       <p>此畫面僅供參考｜資料留存期限至 2027/01/17 將全數刪除</p>
       <p><button onclick="openFaqModal()" class="inline-flex items-center px-3 py-1 rounded-full bg-white/80 border border-slate-200 text-skyBlue-600 font-bold hover:bg-white transition"><i class="fa-regular fa-circle-question mr-1.5"></i>常見 Q&amp;A</button></p>
     </footer>
 
   </div>
 
-  <!-- 底部固定導覽列（依登入權限動態顯示對應按鈕） -->
-  <nav class="fixed bottom-3 left-0 right-0 z-40 max-w-[300px] xs:max-w-xs sm:max-w-sm mx-auto px-2 sm:px-4">
-    <div class="glass-panel rounded-2xl py-2 px-3 flex items-center justify-around shadow-lg border border-white/80">
-      <button onclick="selectTab('timeline')" id="nav-btn-timeline" class="nav-item flex flex-col items-center text-skyBlue-500 font-bold scale-105 transition">
+  <!-- ===================================================================
+       頁籤：場館地圖（林口體育館 3D 互動完整畫面 | 目前為示意圖，僅供參考）
+       From @onedoor_boice_0820
+       =================================================================== -->
+  <section id="tab-venue" class="tab-content hidden fixed inset-0 z-30 overflow-hidden" data-credit="From @onedoor_boice_0820">
+    <canvas id="vm-scene"></canvas>
+    <div id="vm-labels"></div>
+
+    <!-- 初始載入提示 -->
+    <div id="vm-loading" class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-skyBlue-50/90 backdrop-blur-sm text-skyBlue-700 text-xs font-bold gap-2">
+      <i class="fa-solid fa-compass fa-spin text-2xl text-skyBlue-500"></i>
+      <span>正在載入場館互動地圖…</span>
+    </div>
+
+    <!-- 頂部 HUD -->
+    <div id="vm-hud-top">
+      <div class="vm-panel vm-title-box">
+        <h2>
+          <span><i class="fa-solid fa-map-location-dot text-skyBlue-500 mr-1"></i>林口體育館 場外地圖</span>
+          <span class="vm-disclaimer">目前僅為預估示意</span>
+        </h2>
+        <p id="vm-modeSub">重要指標漂浮標示；場外活動攤位目前僅為預估示意，點擊標籤查看詳細說明</p>
+      </div>
+    </div>
+
+    <!-- 左側可收合圖例抽屜（預設收合，避免遮擋地圖畫面） -->
+    <div id="vm-legendWrap" class="collapsed">
+      <div class="vm-panel" id="vm-legend"></div>
+      <button type="button" id="vm-legendToggle" aria-expanded="false" aria-label="展開或收合圖例" title="展開／收合圖例">
+        <i class="fa-solid fa-chevron-right vm-leg-arrow"></i>
+        <span>圖例</span>
+      </button>
+    </div>
+
+    <!-- 管理員專屬：標籤拖移與修改工具列（僅管理員開啟編輯模式時顯示） -->
+    <div class="vm-panel" id="vm-adminToolbar">
+      <span class="text-[11px] font-black text-rose-600 px-1.5 whitespace-nowrap"><i class="fa-solid fa-arrows-up-down-left-right mr-1"></i>拖移標籤移位・點擊標籤改字</span>
+      <button type="button" id="vm-btnAddTag" class="px-2.5 py-1 rounded-lg bg-skyBlue-500 hover:bg-skyBlue-600 text-white font-bold text-[11px] whitespace-nowrap transition"><i class="fa-solid fa-plus mr-1"></i>新增標籤</button>
+      <button type="button" id="vm-btnSaveCfg" class="px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-[11px] whitespace-nowrap transition"><i class="fa-solid fa-cloud-arrow-up mr-1"></i>儲存發布</button>
+      <button type="button" id="vm-btnResetCfg" class="px-2 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 font-bold text-[11px] whitespace-nowrap transition">還原預設</button>
+      <button type="button" id="vm-btnExitEdit" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-[11px] whitespace-nowrap transition">退出編輯</button>
+    </div>
+
+    <!-- 拖移即時座標提示 -->
+    <div id="vm-dragCoordBadge" class="hidden">X: 0, Z: 0</div>
+
+    <!-- 右側快捷控制 -->
+    <div class="vm-ctrl-col">
+      <button type="button" class="vm-btn hidden" id="vm-btnAdminEdit" title="管理員編輯標籤位置與內容"><i class="fa-solid fa-pen-to-square"></i></button>
+      <button type="button" class="vm-btn" id="vm-btnTop" title="切換 2D 俯視／3D 視角">2D/3D</button>
+      <button type="button" class="vm-btn on" id="vm-btnTags" title="顯示／隱藏活動攤位標籤">攤位</button>
+      <button type="button" class="vm-btn" id="vm-btnReset" title="重設視角">重置</button>
+      <button type="button" class="vm-btn" id="vm-btnRef" title="地圖架構說明">說明</button>
+    </div>
+
+    <!-- 底部攤位資訊卡 -->
+    <div class="vm-panel" id="vm-infoCard">
+      <button type="button" id="vm-closeCard" aria-label="關閉">✕</button>
+      <h3 id="vm-cardTitle"></h3>
+      <p id="vm-cardDesc"></p>
+    </div>
+
+    <!-- 從攤主抵達彈窗開啟預覽時的返回按鈕（保留原填寫表單） -->
+    <div id="vm-previewReturnBar">
+      <button type="button" onclick="closeVenueMapPreview()" class="px-5 py-2.5 rounded-full bg-gradient-to-r from-skyBlue-500 to-skyBlue-600 hover:from-skyBlue-600 text-white font-black text-xs sm:text-sm shadow-xl border border-white/40 flex items-center space-x-2 whitespace-nowrap transition">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span>返回填寫發放位置（已保留填寫內容）</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- 彈窗：場館地圖架構說明（由場館地圖右側「說明」按鈕開啟） -->
+  <div id="vm-refModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm hidden">
+    <div class="glass-panel w-full max-w-md rounded-3xl p-5 border-white shadow-2xl relative max-h-[88vh] overflow-y-auto">
+      <button type="button" id="vm-closeRefX" class="absolute top-4 right-4 w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 text-xs">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div class="flex items-center space-x-2 mb-2">
+        <h3 class="text-base font-black text-slate-800 flex items-center">
+          <i class="fa-solid fa-map-location-dot text-skyBlue-500 mr-2"></i>場館場外地圖說明
+        </h3>
+        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">目前僅為預估示意</span>
+      </div>
+      <div class="text-xs text-slate-600 leading-relaxed space-y-2 mb-4">
+        <p>• <strong class="text-slate-800">常駐漂浮粗體指標</strong>：<strong>← A7 機捷方向</strong>、<strong>≪ A區／黃區出入口</strong>（右側・靠校園內部）、<strong>B區／橙區出入口 ≫</strong>（左側・靠聯外道路），即使隱藏活動攤位標籤仍會常駐提示。</p>
+        <p>• <strong class="text-slate-800">活動攤位標註（目前僅為預估示意）</strong>：包含官方周邊商品販售處、VIP／親簽海報福利兌換處、票務服務處、行李寄放處、ONEDOOR ZONE／應援拍照區、戶外官方手燈配對處與活動增設流動廁所；點擊各標籤可對焦查看說明，實際擺設位置與開放時段請以主辦單位與現場公告為準。</p>
+        <p>• <strong class="text-slate-800">固定校園地標與路網</strong>：文化一路、體大一路／二路／三路、振興路、校門、You Bike、停車場 P 區、噴水池、志清湖、榮耀光環、周圍場館及三處固定廁所均繪製於地圖表面。</p>
+        <p>• <strong class="text-slate-800">操作方式</strong>：單指拖曳旋轉、雙指縮放與平移；右側可切換 <code class="px-1 py-0.5 rounded bg-slate-100 text-skyBlue-600 font-mono">2D/3D</code> 視角、隱藏／顯示「攤位」或「重置」視角；左側「圖例」拉耳可隨時展開或收合。</p>
+        <p class="text-[11px] text-slate-400 pt-1 border-t border-slate-200/80">※ 場外活動攤位位置與內容目前僅為預估示意，僅供參考 ｜ From @onedoor_boice_0820</p>
+      </div>
+      <button type="button" id="vm-closeRef" class="w-full py-2.5 rounded-xl bg-skyBlue-500 hover:bg-skyBlue-600 text-white font-bold text-xs shadow-sm transition">
+        關閉說明
+      </button>
+    </div>
+  </div>
+
+
+  <!-- 彈窗：管理員編輯場館場外地圖標籤內容（From @onedoor_boice_0820） -->
+  <div id="vm-adminEditModal" class="fixed inset-0 z-[65] flex items-center justify-center p-4 bg-slate-900/55 backdrop-blur-sm hidden">
+    <div class="glass-panel w-full max-w-sm rounded-3xl p-5 border-white shadow-2xl relative">
+      <button type="button" id="vm-editCloseX" class="absolute top-4 right-4 w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 text-xs">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <h3 class="text-base font-black text-slate-800 mb-1 flex items-center">
+        <i class="fa-solid fa-pen-to-square text-rose-500 mr-2"></i><span id="vm-editModalTitle">編輯地圖標籤</span>
+      </h3>
+      <p class="text-[11px] text-slate-500 mb-3">修改後可繼續拖移其他標籤，全部調整完成後點擊上方「儲存發布」即同步全體訪客。</p>
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">標籤顯示名稱 <span class="text-rose-500">*</span></label>
+          <input type="text" id="vm-editName" maxlength="26" class="w-full bg-white rounded-xl p-2.5 border border-slate-200 text-slate-800 focus:outline-none focus:border-skyBlue-400">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">點擊後說明文字</label>
+          <textarea id="vm-editDesc" rows="3" maxlength="140" class="w-full bg-white rounded-xl p-2.5 border border-slate-200 text-slate-800 focus:outline-none focus:border-skyBlue-400 resize-none"></textarea>
+        </div>
+        <div id="vm-editColorWrap">
+          <label class="block font-bold text-slate-700 mb-1">標籤與攤位顏色</label>
+          <div class="flex items-center gap-2">
+            <input type="color" id="vm-editColor" value="#0ea5e9" class="w-9 h-9 rounded-lg border border-slate-200 cursor-pointer p-0.5 bg-white">
+            <div class="flex flex-wrap gap-1.5" id="vm-editSwatches">
+              <button type="button" data-c="#0ea5e9" class="w-6 h-6 rounded-full border-2 border-white shadow-xs" style="background:#0ea5e9"></button>
+              <button type="button" data-c="#8b5cf6" class="w-6 h-6 rounded-full border-2 border-white shadow-xs" style="background:#8b5cf6"></button>
+              <button type="button" data-c="#f59e0b" class="w-6 h-6 rounded-full border-2 border-white shadow-xs" style="background:#f59e0b"></button>
+              <button type="button" data-c="#ef4444" class="w-6 h-6 rounded-full border-2 border-white shadow-xs" style="background:#ef4444"></button>
+              <button type="button" data-c="#16a34a" class="w-6 h-6 rounded-full border-2 border-white shadow-xs" style="background:#16a34a"></button>
+              <button type="button" data-c="#0d9488" class="w-6 h-6 rounded-full border-2 border-white shadow-xs" style="background:#0d9488"></button>
+              <button type="button" data-c="#f97316" class="w-6 h-6 rounded-full border-2 border-white shadow-xs" style="background:#f97316"></button>
+              <button type="button" data-c="#ec4899" class="w-6 h-6 rounded-full border-2 border-white shadow-xs" style="background:#ec4899"></button>
+            </div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label id="vm-editXLabel" class="block font-bold text-slate-700 mb-1">X 座標（左負右正）</label>
+            <input type="number" step="0.5" id="vm-editX" class="w-full bg-white rounded-xl p-2 border border-slate-200 font-mono text-slate-800">
+          </div>
+          <div>
+            <label id="vm-editZLabel" class="block font-bold text-slate-700 mb-1">Z 座標（上負下正）</label>
+            <input type="number" step="0.5" id="vm-editZ" class="w-full bg-white rounded-xl p-2 border border-slate-200 font-mono text-slate-800">
+          </div>
+        </div>
+        <div class="flex items-center justify-between gap-2 pt-2">
+          <button type="button" id="vm-editDeleteBtn" class="px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-bold text-xs transition">
+            <i class="fa-regular fa-trash-can mr-1"></i>刪除此標籤
+          </button>
+          <div class="flex items-center gap-1.5 ml-auto">
+            <button type="button" id="vm-editCancelBtn" class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs transition">取消</button>
+            <button type="button" id="vm-editApplyBtn" class="px-4 py-2 rounded-xl bg-skyBlue-500 hover:bg-skyBlue-600 text-white font-bold text-xs shadow-sm transition">套用修改</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 彈窗：官方時程表（預留 OFFICIAL_SCHEDULE_URL 替換為官方公告連結 | From @onedoor_boice_0820） -->
+  <div id="officialScheduleModal" onclick="if(event.target===this) closeOfficialSchedule()" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/45 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200" data-credit="From @onedoor_boice_0820">
+    <div class="glass-panel w-full max-w-3xl rounded-3xl p-4 sm:p-6 border-white shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      <button type="button" onclick="closeOfficialSchedule()" aria-label="關閉時程表" class="sticky float-right top-0 z-10 w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 text-xs">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <!-- 管理員專屬：日期檢視切換列（一般訪客與攤主不顯示） -->
+      <div class="hidden flex-wrap items-center gap-1.5 mb-4 pr-9 text-[11px]" id="schDayFilterBar">
+        <span class="text-[10px] font-black px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-200 whitespace-nowrap"><i class="fa-solid fa-shield-halved mr-1"></i>管理員檢視</span>
+        <button type="button" data-sch-day="auto" onclick="setOfficialScheduleFilter('auto')" class="sch-day-btn px-2.5 py-1 rounded-full bg-skyBlue-500 text-white font-bold transition">自動</button>
+        <button type="button" data-sch-day="all" onclick="setOfficialScheduleFilter('all')" class="sch-day-btn px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-skyBlue-600 font-medium transition">非活動日 (三日)</button>
+        <button type="button" data-sch-day="2027-01-08" onclick="setOfficialScheduleFilter('2027-01-08')" class="sch-day-btn px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-skyBlue-600 font-medium transition">1/8 (五)</button>
+        <button type="button" data-sch-day="2027-01-09" onclick="setOfficialScheduleFilter('2027-01-09')" class="sch-day-btn px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-skyBlue-600 font-medium transition">1/9 (六)</button>
+        <button type="button" data-sch-day="2027-01-10" onclick="setOfficialScheduleFilter('2027-01-10')" class="sch-day-btn px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-skyBlue-600 font-medium transition">1/10 (日)</button>
+      </div>
+
+      <!-- 福利及周邊活動開放狀態（僅於演唱會三日 1/8、1/9、1/10 當天顯示） -->
+      <div id="schBenefitSection" class="mb-5 hidden">
+        <h4 class="text-xs sm:text-sm font-black text-slate-800 border-l-4 border-skyBlue-500 pl-2.5 mb-2.5 pr-9 flex items-center">
+          <i class="fa-solid fa-gift text-skyBlue-500 mr-1.5"></i>福利及周邊活動開放狀態
+        </h4>
+        <div id="schBenefitGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-2.5"></div>
+      </div>
+
+      <!-- 演唱會活動時程 -->
+      <div class="mb-4">
+        <h4 class="text-xs sm:text-sm font-black text-slate-800 border-l-4 border-skyBlue-500 pl-2.5 mb-2.5 pr-9 flex items-center">
+          <i class="fa-solid fa-list-check text-skyBlue-500 mr-1.5"></i>演唱會活動時程
+        </h4>
+        <div class="glass-card rounded-2xl overflow-hidden border border-slate-200">
+          <div class="overflow-x-auto">
+            <table id="schTable" class="w-full border-collapse text-xs min-w-[540px]">
+              <thead id="schTableHead"></thead>
+              <tbody id="schTableBody" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部說明／官方時程表連結預留區（填入上方常數 OFFICIAL_SCHEDULE_URL 後會自動切換為官方連結） -->
+      <div id="schFooterNotice" class="p-3 rounded-2xl bg-amber-50/90 border border-amber-200 text-amber-900 text-[11px] text-center leading-relaxed space-y-1">
+        <p><strong>※ 目前為推估時間，僅供參考</strong>，實際活動時間請以官方公告為準。</p>
+        <p>※ 時間均採台灣時間（UTC+8）｜ From @onedoor_boice_0820</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部固定導覽列（地圖版：攤位地圖、應援時序、場館地圖｜無攤位版：應援時序、場館地圖） -->
+  <nav class="fixed bottom-3 left-0 right-0 z-40 max-w-[360px] xs:max-w-sm sm:max-w-md mx-auto px-2 sm:px-4">
+    <div class="glass-panel rounded-2xl py-2 px-2.5 sm:px-3 flex items-center justify-around gap-1 shadow-lg border border-white/80">
+      <button onclick="selectTab('map')" id="nav-btn-map" class="nav-item hidden flex-col items-center text-slate-400 hover:text-slate-600 transition min-w-0 flex-1">
+        <i class="fa-solid fa-table-cells-large text-base sm:text-lg mb-0.5"></i>
+        <span class="text-[10px] whitespace-nowrap">攤位地圖</span>
+      </button>
+
+      <button onclick="selectTab('timeline')" id="nav-btn-timeline" class="nav-item flex flex-col items-center text-skyBlue-500 font-bold scale-105 transition min-w-0 flex-1">
         <i class="fa-solid fa-clock-rotate-left text-base sm:text-lg mb-0.5"></i>
-        <span class="text-[10px]">應援時序</span>
+        <span class="text-[10px] whitespace-nowrap">應援時序</span>
       </button>
 
-      <button onclick="selectTab('vendor')" id="nav-btn-vendor" class="nav-item hidden flex-col items-center text-slate-400 hover:text-slate-600 transition">
+      <button onclick="selectTab('venue')" id="nav-btn-venue" class="nav-item flex flex-col items-center text-slate-400 hover:text-slate-600 transition min-w-0 flex-1">
+        <i class="fa-solid fa-map-location-dot text-base sm:text-lg mb-0.5"></i>
+        <span class="text-[10px] whitespace-nowrap">場館地圖</span>
+      </button>
+
+      <button onclick="selectTab('vendor')" id="nav-btn-vendor" class="nav-item hidden flex-col items-center text-slate-400 hover:text-slate-600 transition min-w-0 flex-1">
         <i class="fa-solid fa-location-dot text-base sm:text-lg mb-0.5"></i>
-        <span class="text-[10px]">攤主操作</span>
+        <span class="text-[10px] whitespace-nowrap">攤主操作</span>
       </button>
 
-      <button onclick="selectTab('admin')" id="nav-btn-admin" class="nav-item hidden flex-col items-center text-slate-400 hover:text-slate-600 transition">
+      <button onclick="selectTab('admin')" id="nav-btn-admin" class="nav-item hidden flex-col items-center text-slate-400 hover:text-slate-600 transition min-w-0 flex-1">
         <i class="fa-solid fa-shield-halved text-base sm:text-lg mb-0.5"></i>
-        <span class="text-[10px]">管理者控台</span>
+        <span class="text-[10px] whitespace-nowrap">管理者控台</span>
       </button>
     </div>
   </nav>
@@ -809,7 +1641,7 @@ body.night .hearth{opacity:1}
          <label class="block font-bold text-slate-700">
            所在發放位置說明 <span class="text-rose-500">*</span> <span class="text-[10px] font-normal text-slate-400">(請描述地標或穿搭特徵)</span>
          </label>
-         <button type="button" onclick="openVenueMap()" class="text-[11px] font-bold text-skyBlue-600 hover:text-skyBlue-700 flex items-center space-x-1 whitespace-nowrap">
+         <button type="button" onclick="openVenueMapPreview()" class="text-[11px] font-bold text-skyBlue-600 hover:text-skyBlue-700 flex items-center space-x-1 whitespace-nowrap">
            <i class="fa-solid fa-map-location-dot"></i>
            <span>場館參考地圖</span>
          </button>
@@ -1007,6 +1839,22 @@ body.night .hearth{opacity:1}
 
       <div class="mt-4 pt-2.5 border-t border-slate-200/80 text-center text-[10px] text-slate-400">
         該網站由 @onedoor_boice_0820 維護，非官方正式應援團隊維護。
+      </div>
+    </div>
+  </div>
+
+  <div id="mapToggleModal" class="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden">
+    <div class="glass-panel w-full max-w-sm rounded-3xl p-5 border-white shadow-2xl">
+      <div class="text-[10px] font-black text-rose-600 mb-1" id="mapToggleStepLabel">第 1 / 2 道確認</div>
+      <h3 class="text-base font-black text-slate-800 mb-2" id="mapToggleTitle"></h3>
+      <p class="text-xs text-slate-600 leading-relaxed mb-3" id="mapToggleBody"></p>
+      <div id="mapToggleTypeWrap" class="hidden mb-3">
+        <label class="block text-[11px] font-bold text-slate-700 mb-1">請輸入「確認切換」四個字後才能送出：</label>
+        <input id="mapToggleInput" oninput="mapToggleCheckInput()" class="w-full bg-white rounded-xl p-2.5 border border-rose-200 text-xs" autocomplete="off">
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="closeMapToggle()" class="py-2.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">取消</button>
+        <button id="mapToggleNextBtn" onclick="mapToggleNext()" class="py-2.5 rounded-xl bg-rose-500 text-white text-xs font-bold">我了解，下一步</button>
       </div>
     </div>
   </div>
@@ -1394,7 +2242,8 @@ body.night .hearth{opacity:1}
     // 【1/1 改版填寫區 1】填入做好的場館地圖圖片路徑（例如 './venue_map.jpg'），未完成前留空字串 ''
     const VENUE_MAP_IMAGE_URL = './venue_map.jpg';
 
-    // 【1/1 改版填寫區 2】填入官方公告時程表連結（可填主辦 FB/IG/X 貼文 https 網址，或圖片路徑 './schedule.jpg'），未公布前留空字串 ''
+    // 【官方時程表連結替換區】待官方公布後填入貼文網址（https://...）或圖片路徑（'./schedule.jpg'）；
+    // 留空字串 '' 時彈窗最下方顯示「目前為推估時間，僅供參考」，填入後會自動替換為「官方時程表連結」按鈕並移除表頭「推估」字樣。
     const OFFICIAL_SCHEDULE_URL = '';
 
     // 應援團隊 IG 連結
@@ -1444,9 +2293,9 @@ body.night .hearth{opacity:1}
     };
 
     const ROLE_PERMISSIONS = {
-      guest: ['timeline'],
-      vendor: ['timeline', 'vendor'],
-      admin: ['timeline', 'vendor', 'admin']
+      guest: ['timeline', 'map', 'venue'],
+      vendor: ['timeline', 'map', 'venue', 'vendor'],
+      admin: ['timeline', 'map', 'venue', 'vendor', 'admin']
     };
 
     let activeTab = 'timeline';
@@ -1513,26 +2362,326 @@ body.night .hearth{opacity:1}
     /* ---------- 場館對應地圖、官方時程表與「搖滾區整隊結束前 15 分鐘」提醒 ---------- */
     const vipQueueAlertShownForDay = {};
 
+    /* 場館地圖：一般開啟切換至完整畫面頁籤；若由攤主抵達彈窗開啟則覆蓋預覽，不關閉彈窗也不遺失已填內容（From @onedoor_boice_0820） */
+    let venuePreviewActive = false;
     function openVenueMap() {
-      const url = String(VENUE_MAP_IMAGE_URL || '').trim();
-      if (!url) {
-        showToast('場館對應地圖（人工對照僅供參考）製作中，預計於 2027/1/1 更新公布！');
+      const arrivalEl = document.getElementById('arrivalModal');
+      if (arrivalEl && !arrivalEl.classList.contains('hidden')) {
+        openVenueMapPreview();
         return;
       }
-      openImageLightbox(url, '場館對應地圖（人工對照僅供參考）');
+      selectTab('venue');
+    }
+    function openVenueMapPreview() {
+      const venueEl = document.getElementById('tab-venue');
+      if (!venueEl) return;
+      venuePreviewActive = true;
+      venueEl.classList.remove('hidden');
+      venueEl.classList.add('vm-preview-mode');
+      document.body.classList.add('venue-active');
+      if (window.VenueMapApp) window.VenueMapApp.onShow();
+    }
+    function closeVenueMapPreview() {
+      if (!venuePreviewActive) return;
+      venuePreviewActive = false;
+      const venueEl = document.getElementById('tab-venue');
+      if (venueEl) {
+        venueEl.classList.remove('vm-preview-mode');
+        if (activeTab !== 'venue') {
+          venueEl.classList.add('hidden');
+          document.body.classList.remove('venue-active');
+          if (window.VenueMapApp) window.VenueMapApp.onHide();
+        }
+      }
     }
 
-function openOfficialSchedule() {
+    /* ---------- 官方時程表彈窗（目前為推估時程，僅供參考 | From @onedoor_boice_0820） ---------- */
+    const OFFICIAL_SCHEDULE_DAYS = [
+      {
+        date: '2027-01-08',
+        label: '2027.01.08（五）',
+        concert: '19:00',
+        benefits: [
+          ['VIP & 親簽海報福利兌換處', '13:00', '17:00'],
+          ['官方周邊商品販售', '13:00', '19:00'],
+          ['ONEDOOR ZONE', '13:00', '18:00']
+        ],
+        schedule: [
+          ['行李寄放處', '13:00', '23:00'],
+          ['票務服務處', '14:30', '19:30'],
+          ['VIP 搖滾區整隊開始', '15:00', '16:00'],
+          ['VIP 搖滾區 & 彩排預計入場', '16:00', '17:00'],
+          ['彩排福利開始 (Sound Check)', '17:00', null],
+          ['看台座位區預計入場', '17:30', null],
+          ['正式演出開始', '19:00', null]
+        ]
+      },
+      {
+        date: '2027-01-09',
+        label: '2027.01.09（六）',
+        concert: '18:00',
+        benefits: [
+          ['VIP & 親簽海報福利兌換處', '11:30', '16:00'],
+          ['官方周邊商品販售', '11:30', '18:00'],
+          ['ONEDOOR ZONE', '11:30', '17:00']
+        ],
+        schedule: [
+          ['行李寄放處', '11:30', '22:00'],
+          ['票務服務處', '13:00', '18:30'],
+          ['VIP 搖滾區整隊開始', '14:00', '15:00'],
+          ['VIP 搖滾區 & 彩排預計入場', '15:00', '16:00'],
+          ['彩排福利開始 (Sound Check)', '16:00', null],
+          ['看台座位區預計入場', '16:30', null],
+          ['正式演出開始', '18:00', null]
+        ]
+      },
+      {
+        date: '2027-01-10',
+        label: '2027.01.10（日）',
+        concert: '17:00',
+        benefits: [
+          ['VIP & 親簽海報福利兌換處', '10:30', '15:00'],
+          ['官方周邊商品販售', '10:30', '17:00'],
+          ['ONEDOOR ZONE', '10:30', '16:00']
+        ],
+        schedule: [
+          ['行李寄放處', '10:30', '21:00'],
+          ['票務服務處', '12:00', '17:30'],
+          ['VIP 搖滾區整隊開始', '13:00', '14:00'],
+          ['VIP 搖滾區 & 彩排預計入場', '14:00', '15:00'],
+          ['彩排福利開始 (Sound Check)', '15:00', null],
+          ['看台座位區預計入場', '15:30', null],
+          ['正式演出開始', '17:00', null]
+        ]
+      }
+    ];
+    let officialScheduleFilter = 'auto';
+
+    function getScheduleTaiwanNow() {
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Taipei',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hourCycle: 'h23'
+      }).formatToParts(new Date(Date.now()));
+      const p = {};
+      parts.forEach(x => { p[x.type] = x.value; });
+      return {
+        date: `${p.year}-${p.month}-${p.day}`,
+        hour: Number(p.hour),
+        minute: Number(p.minute),
+        second: Number(p.second),
+        time: `${p.hour}:${p.minute}`
+      };
+    }
+
+    function schToMinutes(timeStr) {
+      const [h, m] = timeStr.split(':').map(Number);
+      return h * 60 + m;
+    }
+
+    function getScheduleBenefitStatus(dayDate, start, end, now) {
+      if (now.date < dayDate) {
+        return ['尚未開放', 'bg-skyBlue-50 text-skyBlue-600 border-skyBlue-200'];
+      }
+      if (now.date > dayDate) {
+        return ['已截止', 'bg-slate-100 text-slate-400 border-slate-200'];
+      }
+      const current = now.hour * 60 + now.minute;
+      const startMin = schToMinutes(start);
+      const endMin = schToMinutes(end);
+      if (current >= endMin) return ['已截止', 'bg-slate-100 text-slate-400 border-slate-200'];
+      if (current >= startMin) return ['開放中', 'bg-emerald-50 text-emerald-600 border-emerald-200'];
+      const diff = startMin - current;
+      if (diff <= 30) return ['倒數半小時', 'bg-rose-500 text-white border-rose-500 animate-pulse'];
+      if (diff <= 60) return ['倒數一小時', 'bg-amber-50 text-amber-600 border-amber-200'];
+      return ['尚未開放', 'bg-skyBlue-50 text-skyBlue-600 border-skyBlue-200'];
+    }
+
+    const SIM_DAY_TO_ISO = { '1/8': '2027-01-08', '1/9': '2027-01-09', '1/10': '2027-01-10' };
+
+    function syncOfficialScheduleFilterUI() {
+      const bar = document.getElementById('schDayFilterBar');
+      const isAdmin = (currentRole === 'admin');
+      if (bar) {
+        bar.classList.toggle('hidden', !isAdmin);
+        bar.classList.toggle('flex', isAdmin);
+      }
+      if (!isAdmin) {
+        officialScheduleFilter = 'auto';
+      }
+      document.querySelectorAll('#schDayFilterBar .sch-day-btn').forEach(btn => {
+        const active = btn.dataset.schDay === officialScheduleFilter;
+        btn.className = active
+          ? 'sch-day-btn px-2.5 py-1 rounded-full bg-skyBlue-500 text-white font-bold transition'
+          : 'sch-day-btn px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-skyBlue-600 font-medium transition';
+      });
+    }
+
+    function setOfficialScheduleFilter(mode) {
+      if (currentRole !== 'admin') return;
+      officialScheduleFilter = mode;
+      syncOfficialScheduleFilterUI();
+      renderOfficialSchedule();
+    }
+
+    function openOfficialScheduleImage() {
       const url = String(OFFICIAL_SCHEDULE_URL || '').trim();
-      if (!url) {
-        showToast('官方時程表尚未公布，待主辦單位公告後更新！');
+      if (!url) return;
+      openImageLightbox(url, '官方公告時程表');
+    }
+
+    function renderOfficialScheduleFooter() {
+      const footerEl = document.getElementById('schFooterNotice');
+      if (!footerEl) return;
+      const officialUrl = String(OFFICIAL_SCHEDULE_URL || '').trim();
+      if (!officialUrl) {
+        footerEl.className = 'p-3 rounded-2xl bg-amber-50/90 border border-amber-200 text-amber-900 text-[11px] text-center leading-relaxed space-y-0.5';
+        footerEl.innerHTML = `
+          <p><strong>※ 目前為推估時間，僅供參考</strong>，實際活動時間請以官方公告為準。</p>
+          <p>※ 時間均採台灣時間（UTC+8）｜ From @onedoor_boice_0820</p>
+        `;
         return;
       }
-      if (/\.(png|jpe?g|webp|gif)(\?.*)?$/i.test(url)) {
-        openImageLightbox(url, '官方公告時程表');
-        return;
+      footerEl.className = 'p-3 rounded-2xl bg-skyBlue-50/90 border border-skyBlue-200 text-skyBlue-900 text-[11px] text-center leading-relaxed space-y-1.5';
+      const isImg = /\.(png|jpe?g|webp|gif)(\?.*)?$/i.test(officialUrl);
+      const actionHtml = isImg
+        ? `<button type="button" onclick="openOfficialScheduleImage()" class="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-skyBlue-500 hover:bg-skyBlue-600 text-white font-bold text-xs shadow-xs transition"><i class="fa-regular fa-image"></i><span>查看官方公告時程表</span></button>`
+        : `<a href="${esc(officialUrl)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-skyBlue-500 hover:bg-skyBlue-600 text-white font-bold text-xs shadow-xs transition"><i class="fa-regular fa-calendar-check"></i><span>前往官方公告時程表</span><i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a>`;
+      footerEl.innerHTML = `
+        <div>${actionHtml}</div>
+        <p class="text-[10.5px] text-slate-500">※ 時間均採台灣時間（UTC+8）｜ From @onedoor_boice_0820</p>
+      `;
+    }
+
+    function renderOfficialSchedule() {
+      const modal = document.getElementById('officialScheduleModal');
+      if (!modal || modal.classList.contains('hidden')) return;
+
+      syncOfficialScheduleFilterUI();
+
+      const now = getScheduleTaiwanNow();
+      const isAdmin = (currentRole === 'admin');
+      const hasOfficialUrl = Boolean(String(OFFICIAL_SCHEDULE_URL || '').trim());
+
+      // 判定實際要顯示的日期：一般使用者一律依台灣真實日期；僅管理員可切換日期檢視
+      let targetDayObj = null;
+      let effectiveNow = now;
+      if (isAdmin) {
+        if (officialScheduleFilter === 'all') {
+          targetDayObj = null;
+        } else if (officialScheduleFilter === 'auto') {
+          const simIso = SIM_DAY_TO_ISO[currentSimDate] || now.date;
+          targetDayObj = OFFICIAL_SCHEDULE_DAYS.find(d => d.date === simIso) || null;
+          if (targetDayObj) effectiveNow = { ...now, date: targetDayObj.date };
+        } else {
+          targetDayObj = OFFICIAL_SCHEDULE_DAYS.find(d => d.date === officialScheduleFilter) || null;
+          if (targetDayObj) effectiveNow = { ...now, date: targetDayObj.date };
+        }
+      } else {
+        targetDayObj = OFFICIAL_SCHEDULE_DAYS.find(d => d.date === now.date) || null;
       }
-      window.open(url, '_blank', 'noopener,noreferrer');
+
+      const isSingleConcertDay = Boolean(targetDayObj);
+      const visibleDays = isSingleConcertDay ? [targetDayObj] : OFFICIAL_SCHEDULE_DAYS;
+
+      // 非 1/8、1/9、1/10 時隱藏「福利及周邊活動開放狀態」；活動當天顯示當日狀態
+      const benefitSection = document.getElementById('schBenefitSection');
+      const benefitGrid = document.getElementById('schBenefitGrid');
+      if (benefitSection) {
+        benefitSection.classList.toggle('hidden', !isSingleConcertDay);
+      }
+      if (benefitGrid) {
+        if (!isSingleConcertDay) {
+          benefitGrid.innerHTML = '';
+        } else {
+          benefitGrid.innerHTML = targetDayObj.benefits.map(([name, start, end]) => {
+            const [statusText, statusCls] = getScheduleBenefitStatus(targetDayObj.date, start, end, effectiveNow);
+            return `
+              <div class="glass-card rounded-2xl p-3.5 border-slate-200 flex sm:flex-col items-center sm:items-center justify-between gap-2 text-left sm:text-center">
+                <div class="min-w-0 sm:w-full">
+                  <div class="font-bold text-xs text-slate-800 leading-snug">${esc(name)}</div>
+                  <div class="text-[11px] text-slate-400 mt-0.5">${esc(targetDayObj.label)}</div>
+                  <div class="text-xs font-mono font-bold text-skyBlue-700 mt-1">${esc(start)} – ${esc(end)}</div>
+                </div>
+                <span class="inline-block rounded-full px-2.5 py-1 text-[11px] font-bold border whitespace-nowrap flex-shrink-0 ${statusCls}">${esc(statusText)}</span>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+
+      // 演唱會活動時程表格（非活動日三天並列；活動當天顯示當日）
+      const head = document.getElementById('schTableHead');
+      const body = document.getElementById('schTableBody');
+      if (head && body) {
+        const tableEl = document.getElementById('schTable');
+        if (tableEl) {
+          tableEl.className = isSingleConcertDay
+            ? 'w-full border-collapse text-xs'
+            : 'w-full border-collapse text-xs min-w-[540px]';
+        }
+        const estPrefix = hasOfficialUrl ? '' : '推估';
+        head.innerHTML = `
+          <tr class="bg-skyBlue-50 text-skyBlue-800 border-b border-skyBlue-100">
+            <th class="py-2.5 px-3 text-left font-black min-w-[165px]">項目</th>
+            ${visibleDays.map(d => `<th class="py-2.5 px-2.5 text-center font-black whitespace-nowrap">${esc(d.label)}<br><span class="text-[10px] font-semibold text-skyBlue-600">${estPrefix}（${esc(d.concert)} 開演）</span></th>`).join('')}
+          </tr>
+        `;
+
+        const allItems = [
+          ['行李寄放處', 0],
+          ['票務服務處', 1],
+          ['VIP 搖滾區整隊開始', 2],
+          ['VIP 搖滾區 & 彩排預計入場', 3],
+          ['彩排福利開始 (Sound Check)', 4],
+          ['看台座位區預計入場', 5],
+          ['正式演出開始', 6]
+        ];
+
+        const currentMin = effectiveNow.hour * 60 + effectiveNow.minute;
+        body.innerHTML = allItems.map(([name, idx]) => {
+          let rowActive = false;
+          const cells = visibleDays.map(day => {
+            const [, start, end] = day.schedule[idx];
+            const display = end ? `${start} – ${end}` : start;
+            const startMin = schToMinutes(start);
+            const active = effectiveNow.date === day.date && (end
+              ? (currentMin >= startMin && currentMin < schToMinutes(end))
+              : (currentMin >= startMin && currentMin < startMin + 30));
+            if (active) rowActive = true;
+            return `<td class="py-2.5 px-2.5 text-center font-mono whitespace-nowrap">${esc(display)}${active ? '<span class="ml-1.5 px-1.5 py-0.5 rounded-full bg-rose-500 text-white text-[9px] font-black">NOW</span>' : ''}</td>`;
+          }).join('');
+
+          return `
+            <tr class="${rowActive ? 'sch-row-active' : 'hover:bg-slate-50/70 transition'}">
+              <td class="py-2.5 px-3 text-left font-bold text-slate-800">${esc(name)}</td>
+              ${cells}
+            </tr>
+          `;
+        }).join('');
+      }
+
+      renderOfficialScheduleFooter();
+    }
+
+    function openOfficialSchedule() {
+      const modal = document.getElementById('officialScheduleModal');
+      if (!modal) return;
+      modal.classList.remove('hidden');
+      renderOfficialSchedule();
+      setTimeout(() => modal.classList.remove('opacity-0'), 10);
+    }
+
+    function closeOfficialSchedule() {
+      const modal = document.getElementById('officialScheduleModal');
+      if (!modal) return;
+      modal.classList.add('opacity-0');
+      setTimeout(() => modal.classList.add('hidden'), 200);
     }
 
     function openSupportTeamIG() {
@@ -2236,8 +3385,22 @@ function openOfficialSchedule() {
         const endKey = `${currentSimDate}_ended_${v.uid}`;
 
         if (v.status === 'upcoming') {
-          delete notifiedSessions[startKey];
           delete notifiedSessions[endKey];
+          if (MAP_MODE && v.resv && v.resv.startMs && !notifiedSessions[startKey]) {
+            const effStart = resvEffStart(v);
+            const remainMs = effStart - now;
+            if (remainMs <= 5 * 60 * 1000 && remainMs > -60000) {
+              notifiedSessions[startKey] = true;
+              triggerFiveMinAlert({
+                ...v,
+                items: v.resv.items || v.items,
+                locationText: `${v.resv.stallId} 號攤位`,
+                startMs: effStart
+              }, 'preparing');
+            }
+          } else if (!MAP_MODE || !v.resv) {
+            delete notifiedSessions[startKey];
+          }
           return;
         }
 
@@ -2414,6 +3577,9 @@ function openOfficialSchedule() {
         isApproved: v.isApproved !== undefined ? !!v.isApproved : !!rawDoc.isApproved,
         status: effectiveStatus,
         locationText: isFromToday ? (v.locationText || '') : '',
+        stallId: isFromToday ? (v.stallId || '') : '',
+        endMs: isFromToday ? msOf(v.endMs) : 0,
+        resv: (v.resv && v.resv.dayKey === currentSimDate) ? v.resv : null,
         hasPhoto: hasPhotoFlag,
         photoVer,
         locationImg: isFromToday ? cachedImg : '',
@@ -2435,8 +3601,11 @@ function openOfficialSchedule() {
 
     function applyPublicLiveMapToUI(vendorsMap, tsMs) {
       PUBLIC_LIVE_MAP = vendorsMap || {};
-      if (!vendorsAll) {
-        VENDORS_LIST = Object.keys(PUBLIC_LIVE_MAP).map(uid => mapVendorDoc(uid, PUBLIC_LIVE_MAP[uid]));
+      if (!vendorsAll && currentRole !== 'admin') {
+        const liveUids = Object.keys(PUBLIC_LIVE_MAP);
+        if (liveUids.length > 0 || VENDORS_LIST.length === 0) {
+          VENDORS_LIST = liveUids.map(uid => mapVendorDoc(uid, PUBLIC_LIVE_MAP[uid]));
+        }
       } else {
         VENDORS_LIST = VENDORS_LIST.map(v => mapVendorDoc(v.uid, v._raw || v));
       }
@@ -2457,7 +3626,14 @@ function openOfficialSchedule() {
       const now = Date.now();
       lastPublicFetchMs = now;
       try {
-        localStorage.setItem(PUBLIC_LIVE_CACHE_KEY, JSON.stringify({ ts: now, vendors: vendorsMap || {} }));
+        localStorage.setItem(PUBLIC_LIVE_CACHE_KEY, JSON.stringify({
+          ts: now,
+          vendors: vendorsMap || {},
+          mapDays: MAP_DAYS,
+          timeoutMode: TIMEOUT_MODE,
+          stallCtl: STALL_CTL,
+          venueMapConfig: VENUE_MAP_CONFIG
+        }));
       } catch (e) {}
     }
 
@@ -2472,6 +3648,7 @@ function openOfficialSchedule() {
           if (raw) {
             const parsed = JSON.parse(raw);
             if (parsed && parsed.vendors && typeof parsed.vendors === 'object') {
+              applyMapModeFromDoc(parsed);
               applyPublicLiveMapToUI(parsed.vendors, parsed.ts);
               if (now >= (parsed.ts || 0) && now - (parsed.ts || 0) < PUBLIC_CACHE_TTL_MS) {
                 lastPublicFetchMs = parsed.ts;
@@ -2488,6 +3665,7 @@ function openOfficialSchedule() {
         isSyncError = false;
         setOfflineState(false);
         const vendorsMap = (snap.exists() && snap.data() && snap.data().vendors) ? snap.data().vendors : {};
+        applyMapModeFromDoc(snap.exists() ? snap.data() : null);
         savePublicLiveCache(vendorsMap);
         applyPublicLiveMapToUI(vendorsMap, Date.now());
       } catch (e) {
@@ -2565,6 +3743,7 @@ function openOfficialSchedule() {
         isSyncError = false;
         setOfflineState(false);
         const vendorsMap = (snap.exists() && snap.data() && snap.data().vendors) ? snap.data().vendors : {};
+        applyMapModeFromDoc(snap.exists() ? snap.data() : null);
         savePublicLiveCache(vendorsMap);
         applyPublicLiveMapToUI(vendorsMap, Date.now());
       }, () => {});
@@ -2831,6 +4010,12 @@ function openOfficialSchedule() {
         }
       }
 
+      if (typeof syncOfficialScheduleFilterUI === 'function') {
+        syncOfficialScheduleFilterUI();
+      }
+      if (window.VenueMapApp && typeof window.VenueMapApp.syncRole === 'function') {
+        window.VenueMapApp.syncRole();
+      }
       const allowedTabs = ROLE_PERMISSIONS[role] || ['timeline'];
       if (!allowedTabs.includes(activeTab)) {
         selectTab('timeline');
@@ -2840,6 +4025,15 @@ function openOfficialSchedule() {
     }
 
     function selectTab(tab) {
+      if (venuePreviewActive) {
+        venuePreviewActive = false;
+        const vEl = document.getElementById('tab-venue');
+        if (vEl) vEl.classList.remove('vm-preview-mode');
+      }
+      if (tab === 'map' && !MAP_MODE) {
+        showToast('目前為無攤位自由發放模式，未開啟攤位地圖');
+        tab = 'timeline';
+      }
       const allowedTabs = ROLE_PERMISSIONS[currentRole] || ['timeline'];
       if (!allowedTabs.includes(tab)) {
         showToast('權限不足，無法造訪該頁面');
@@ -2870,11 +4064,20 @@ function openOfficialSchedule() {
             renderAdminVendorTable();
             renderAdminManagersTable();
           }
+        } else if (tab === 'map') {
+          renderStallMap();
         } else if (tab === 'vendor') {
           updateVendorUI();
         } else if (tab === 'timeline') {
           renderTimeline();
         }
+      }
+
+      const isVenue = (tab === 'venue');
+      document.body.classList.toggle('venue-active', isVenue);
+      if (window.VenueMapApp) {
+        if (isVenue) window.VenueMapApp.onShow();
+        else window.VenueMapApp.onHide();
       }
 
       if (btn) {
@@ -3534,10 +4737,13 @@ function openOfficialSchedule() {
             quotaUsedToday: false,
             status: 'upcoming',
             locationText: '',
+            stallId: '',
             hasPhoto: false,
             photoVer: 0,
             startMs: 0,
-            endedMs: 0
+            endMs: 0,
+            endedMs: 0,
+            resv: null
           };
           await FB().updateDoc(FB().doc(firestoreDb, 'vendors_private', uid), {
             quotaUsedToday: false,
@@ -3565,6 +4771,9 @@ function openOfficialSchedule() {
       v.quotaUsed = false;
       v.status = 'upcoming';
       v.locationText = '';
+      v.stallId = '';
+      v.endMs = 0;
+      v.resv = null;
       v.hasPhoto = false;
       v.photoVer = 0;
       v.locationImg = '';
@@ -3674,8 +4883,14 @@ function openOfficialSchedule() {
           statusTag = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200 font-bold whitespace-nowrap"><i class="fa-solid fa-hourglass-half mr-1"></i>準備中 ${mm}:${ss}</span>`;
           timeInfoHtml = `<span class="font-mono text-amber-600 font-bold text-xs">預計 ${v.startMs ? fmtHM(v.startMs) : '即將'} 開始發放</span>`;
         } else if (v.status === 'upcoming') {
-          statusTag = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-skyBlue-50 text-skyBlue-600 border border-skyBlue-200 font-medium whitespace-nowrap">尚未到場</span>`;
-          timeInfoHtml = `<span class="text-slate-400 text-[11px]">待創作者抵達後公布位置與時間</span>`;
+          if (MAP_MODE && v.resv && v.resv.stallId) {
+            const eff = resvEffStart(v);
+            statusTag = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200 font-bold whitespace-nowrap">已預約 ${esc(v.resv.stallId)}</span>`;
+            timeInfoHtml = `<span class="font-mono text-amber-600 font-bold text-xs">預計 ${eff ? fmtHM(eff) : '即將'} 於 ${esc(v.resv.stallId)} 號攤開始</span>`;
+          } else {
+            statusTag = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-skyBlue-50 text-skyBlue-600 border border-skyBlue-200 font-medium whitespace-nowrap">尚未到場</span>`;
+            timeInfoHtml = `<span class="text-slate-400 text-[11px]">待創作者抵達後公布位置與時間</span>`;
+          }
         } else {
           statusTag = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200 font-medium whitespace-nowrap">已結束發放</span>`;
           timeInfoHtml = `<span class="font-mono text-slate-400 text-xs">${v.endedMs ? fmtHM(v.endedMs) + ' 已發放完畢' : '今日已發放完畢'}</span>`;
@@ -3877,6 +5092,7 @@ function openOfficialSchedule() {
       currentSimDate = d;
       userPickedDate = true;
       syncDateSelect();
+      syncMapMode();
       remapAllVendorsForDate();
       renderTimeline();
       updateVendorUI();
@@ -4403,6 +5619,9 @@ function openOfficialSchedule() {
       document.body.classList.toggle('night', isNightTheme);
       const m = document.querySelector('meta[name="theme-color"]');
       if (m) m.setAttribute('content', isNightTheme ? '#1a1424' : '#dcf2fd');
+      if (window.VenueMapApp && typeof window.VenueMapApp.syncTheme === 'function') {
+        window.VenueMapApp.syncTheme();
+      }
     }
     function toggleTheme() {
       const next = !document.body.classList.contains('night');
@@ -4666,6 +5885,539 @@ function openOfficialSchedule() {
       loop();
     }
 
+    /* =====================================================================
+       地圖版（實體攤位）模式：預約制 / 到期自動結束 / 逾時自動取消 / 代理操作 / 白板抄件
+       旗標與管制資料都存在 market_public/live（mapDays、timeoutMode、stallCtl）
+       後端排程由 Cloudflare Worker Cron 負責；以下 mapTick 為「開著網頁者」的備援
+       ===================================================================== */
+    let MAP_MODE = false, TIMEOUT_MODE = 'pause', STALL_CTL = {}, adminStallSel = null;
+    const ARRIVAL_GRACE_MIN = 5, PRE_ARRIVAL_MIN = 10, NEXT_WINDOW_MIN = 30;
+    const STALL_IDS = Array.from({ length: 15 }, (_, i) => String(i + 1).padStart(2, '0'));
+    const $id = id => document.getElementById(id);
+
+    let MAP_DAYS = {};
+    let VENUE_MAP_CONFIG = null;
+    try {
+      const savedVmCfg = localStorage.getItem('kk_venue_map_cfg_v1');
+      if (savedVmCfg) VENUE_MAP_CONFIG = JSON.parse(savedVmCfg);
+    } catch (e) {}
+
+    window.isVenueAdmin = () => currentRole === 'admin';
+    window.getVenueMapConfig = () => VENUE_MAP_CONFIG;
+    window.saveVenueMapConfig = async function(cfg) {
+      if (currentRole !== 'admin') {
+        showToast('僅管理者可儲存場館地圖修改');
+        return false;
+      }
+      if (!DEMO_MODE && backendReady) {
+        try {
+          await FB().setDoc(FB().doc(firestoreDb, 'market_public', 'live'), { venueMapConfig: cfg }, { merge: true });
+        } catch (e) {
+          showToast('儲存失敗：' + backendErrMsg(e));
+          return false;
+        }
+      }
+      VENUE_MAP_CONFIG = cfg;
+      try { localStorage.setItem('kk_venue_map_cfg_v1', JSON.stringify(cfg)); } catch (e) {}
+      savePublicLiveCache(PUBLIC_LIVE_MAP);
+      showToast('已儲存場館地圖設定並同步全體訪客！');
+      return true;
+    };
+
+    function initMapMode() {
+      try { MAP_DAYS = JSON.parse(localStorage.getItem('kk_map_days') || '{}') || {}; } catch (e) { MAP_DAYS = {}; }
+      MAP_MODE = MAP_DAYS[currentSimDate] === true;
+      applyMapModeUI();
+    }
+    function syncMapMode() {
+      const on = MAP_DAYS[currentSimDate] === true;
+      if (on !== MAP_MODE) { MAP_MODE = on; applyMapModeUI(); }
+    }
+    function applyMapModeFromDoc(d) {
+      MAP_DAYS = (d && d.mapDays && typeof d.mapDays === 'object') ? d.mapDays : {};
+      TIMEOUT_MODE = (d && d.timeoutMode === 'free') ? 'free' : 'pause';
+      STALL_CTL = (d && d.stallCtl && typeof d.stallCtl === 'object') ? d.stallCtl : {};
+      if (d && d.venueMapConfig && typeof d.venueMapConfig === 'object') {
+        VENUE_MAP_CONFIG = d.venueMapConfig;
+        try { localStorage.setItem('kk_venue_map_cfg_v1', JSON.stringify(VENUE_MAP_CONFIG)); } catch (e) {}
+        if (window.VenueMapApp && typeof window.VenueMapApp.applyConfig === 'function') {
+          window.VenueMapApp.applyConfig(VENUE_MAP_CONFIG);
+        }
+      }
+      try { localStorage.setItem('kk_map_days', JSON.stringify(MAP_DAYS)); } catch (e) {}
+      renderMapDayRows(); syncMapMode();
+    }
+    function renderMapDayRows() {
+      const box = $id('mapDayRows'); if (!box) return;
+      box.innerHTML = CONCERT_DAYS.map(d => {
+        const on = MAP_DAYS[d] === true, sch = SCHEDULE_CONFIG[d] || {};
+        return `<div class="flex items-center justify-between gap-2 p-2 rounded-xl bg-white/90 border border-slate-200 text-xs">
+          <div class="flex items-center space-x-2"><strong class="font-mono text-slate-800">${d}</strong><span class="text-[10px] text-slate-400">${esc(sch.showTime || '')} 開唱</span>
+          <span class="px-2 py-0.5 rounded-full border text-[10px] font-bold ${on ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200'}">${on ? '地圖版（有攤位）' : '自由發放（無攤位）'}</span></div>
+          <button data-day="${d}" onclick="openMapToggle(this.dataset.day)" class="px-2.5 py-1 rounded-lg bg-rose-500 hover:bg-rose-600 text-white font-bold text-[11px] whitespace-nowrap">切換</button></div>`;
+      }).join('');
+    }
+    function applyMapModeUI() {
+      const nav = $id('nav-btn-map');
+      if (nav) { nav.classList.toggle('hidden', !MAP_MODE); nav.classList.toggle('flex', MAP_MODE); }
+      const note = $id('stallModeNote');
+      if (note) note.textContent = MAP_MODE ? '本場次採實體攤位預約制，請依地圖席次前往領取應援，' : '現場無實體固定攤位，由創作者到場後自行找位置發放應援，';
+      const sub = $id('headerSubtitle');
+      if (sub) sub.textContent = MAP_MODE ? '實體 15 席攤位 (01~15)・即時預約動態' : '場外自由發放・即時位置回報';
+      const vSub = $id('vendorTabSubtitle');
+      if (vSub) {
+        vSub.textContent = MAP_MODE
+          ? '先預約空閒或即將交接席位，抵達就座後按「確認抵達」才扣除每日 1 次額度（開唱前半小時停止預約與報到）'
+          : '到場找好位置後點選「抵達」，填寫位置與準備時間（5~15分鐘），每日限用 1 次額度（開唱前半小時停止開放報位）';
+      }
+      const btnEdit = $id('btnEditArrivalLoc');
+      if (btnEdit) btnEdit.classList.toggle('hidden', MAP_MODE);
+      renderMapDayRows();
+      const ops = $id('adminMapOps'); if (ops) ops.classList.toggle('hidden', !MAP_MODE);
+      applyTimeoutUI();
+      if (!MAP_MODE && activeTab === 'map') selectTab('timeline');
+      renderStallMap(); updateVendorUI();
+    }
+
+    /* ---------- 席位狀態計算 ---------- */
+    const isUsing = v => v.status === 'in_use' || v.status === 'preparing';
+    function stallOccupant(id) { return VENDORS_LIST.find(v => v.isApproved && v.stallId === id && isUsing(v)); }
+    function stallResvs(id) {
+      return VENDORS_LIST.filter(v => v.isApproved && v.resv && v.resv.stallId === id && v.status === 'upcoming').sort((a, b) => a.resv.startMs - b.resv.startMs);
+    }
+    // 允許提早報到時間：若前一棒提早結束，可提早前往就座，但逾時取消基準仍以原訂 startMs 為準，避免誤殺下一棒
+    function resvEffStart(v) {
+      const r = v.resv; if (!r) return 0;
+      const p = r.after && VENDORS_LIST.find(x => x.uid === r.after);
+      if (p && p.stallId === r.stallId) {
+        if (p.status === 'in_use' && p.endMs) return p.endMs;
+        if (p.status === 'ended' && p.endedMs) return Math.min(r.startMs, p.endedMs);
+      }
+      return r.startMs;
+    }
+    function resvDeadlineMs(v) {
+      const r = v && v.resv;
+      if (!r || !r.startMs) return 0;
+      return r.startMs + ARRIVAL_GRACE_MIN * 60000;
+    }
+    function stallInfo(id) {
+      const occ = stallOccupant(id), rs = stallResvs(id);
+      const paused = !!STALL_CTL[id];
+      const head = occ ? null : (rs[0] || null), next = occ ? (rs[0] || null) : (rs[1] || null);
+      return { id, occ, head, next, paused, status: paused ? 'paused' : (occ ? 'in_use' : (head ? 'reserved' : 'available')) };
+    }
+    function stallSlot(s) {
+      if (s.occ && s.occ.endMs) return `${fmtHM(s.occ.startMs)} - ${fmtHM(s.occ.endMs)}`;
+      if (s.head) { const e = resvEffStart(s.head); return `${fmtHM(e)} - ${fmtHM(e + s.head.resv.durMin * 60000)}`; }
+      return '開放預約中';
+    }
+    const STALL_STYLE = {
+      in_use: ['使用中', 'bg-emerald-50 text-emerald-600 border-emerald-200', 'border-emerald-300 ring-1 ring-emerald-300/40'],
+      reserved: ['已預約', 'bg-amber-50 text-amber-600 border-amber-200', 'border-amber-300'],
+      paused: ['管制', 'bg-rose-50 text-rose-500 border-rose-200', 'border-rose-300'],
+      available: ['空閒', 'bg-slate-100 text-slate-500 border-slate-200', 'border-slate-200/90']
+    };
+
+    function renderStallMap() {
+      renderAdminStalls();
+      const grid = $id('stallMapGrid');
+      if (!grid || !MAP_MODE) return;
+      grid.innerHTML = STALL_IDS.map(id => {
+        const s = stallInfo(id), who = s.occ || s.head, [lbl, badgeCls, border] = STALL_STYLE[s.status];
+        const dot = s.status === 'in_use' ? 'bg-emerald-500 active-dot' : s.status === 'reserved' ? 'bg-amber-400' : s.status === 'paused' ? 'bg-rose-400' : 'bg-slate-300';
+        const body = who
+          ? `<h4 class="text-xs font-bold text-slate-800 line-clamp-1">${esc(s.occ ? s.occ.items : who.resv.items)}</h4><p class="text-[10px] text-slate-500 truncate"><i class="fa-solid fa-store mr-1 text-skyBlue-400"></i>${esc(who.nickname)}</p>`
+          : `<p class="text-[10px] text-slate-400">${s.paused ? '管制暫停中' : '開放預約中'}</p>`;
+        return `<div data-id="${id}" onclick="showStallModal(this.dataset.id)" class="glass-card rounded-2xl p-2.5 cursor-pointer min-h-[96px] flex flex-col justify-between ${border}">
+          <div><div class="flex items-center justify-between mb-1"><div class="flex items-center"><span class="w-2 h-2 rounded-full mr-1 ${dot}"></span><span class="text-[11px] font-mono font-bold text-skyBlue-600 bg-skyBlue-50 px-1 rounded">${id}</span></div>
+          <div class="flex items-center space-x-1">${s.next ? '<span class="text-[8px] bg-amber-100 text-amber-700 px-1 rounded font-mono">下一棒</span>' : ''}<span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${badgeCls}">${lbl}</span></div></div>${body}</div>
+          <div class="pt-1 mt-1 border-t border-slate-100 text-[10px] text-slate-400 font-mono truncate">${esc(stallSlot(s))}</div></div>`;
+      }).join('');
+    }
+
+    function showDynModal(id, html) {
+      let m = $id(id);
+      if (!m) { m = document.createElement('div'); m.id = id; m.className = 'fixed inset-0 z-[65] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm'; m.onclick = e => { if (e.target === m) m.classList.add('hidden'); }; document.body.appendChild(m); }
+      m.innerHTML = '<div class="glass-panel w-full max-w-sm rounded-3xl p-5 border-white shadow-2xl relative max-h-[88vh] overflow-y-auto">' + html + '</div>';
+      m.classList.remove('hidden');
+    }
+    function hideDynModal(id) { const m = $id(id); if (m) m.classList.add('hidden'); }
+
+    function showStallModal(id) {
+      const s = stallInfo(id), who = s.occ || s.head, [lbl, badgeCls] = STALL_STYLE[s.status];
+      const href = who ? safePostUrl(who.productPost) : null;
+      const nextTxt = s.next ? `${esc(s.next.nickname)}（${esc(s.next.resv.items)}）` : '';
+      showDynModal('stallModal', `
+        <button onclick="hideDynModal('stallModal')" class="absolute top-4 right-4 w-7 h-7 rounded-full bg-slate-100 text-slate-500 text-xs"><i class="fa-solid fa-xmark"></i></button>
+        <div class="flex items-center space-x-2 mb-2"><span class="text-xs font-mono font-bold bg-skyBlue-500 text-white px-2 py-0.5 rounded">${id}</span><span class="text-xs font-bold px-2 py-0.5 rounded-full border ${badgeCls}">${lbl}</span></div>
+        <h3 class="text-base font-bold text-slate-800 mb-0.5">${id} 號席位</h3>
+        <p class="text-xs text-slate-500 mb-3"><i class="fa-solid fa-store mr-1 text-skyBlue-500"></i>創作者：${who ? esc(who.nickname) : '尚未進駐'}</p>
+        <div class="p-3 bg-white/90 rounded-2xl mb-3 border border-slate-100 text-xs space-y-1.5">
+          <div class="flex justify-between"><span class="text-slate-500">時段：</span><span class="font-mono font-bold text-slate-700">${esc(stallSlot(s))}</span></div>
+          <div class="flex justify-between gap-2"><span class="text-slate-500">應援物：</span><span class="text-slate-700 font-medium text-right">${who ? esc(s.occ ? s.occ.items : who.resv.items) : '尚未登記'}</span></div>
+          ${nextTxt ? `<div class="pt-1.5 border-t border-slate-100 flex justify-between gap-2 text-amber-600"><span>下一棒排定：</span><span class="text-right">${nextTxt}</span></div>` : ''}
+        </div>
+        <div class="flex flex-wrap gap-2 justify-end">
+          ${href ? `<a href="${esc(href)}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 rounded-xl bg-skyBlue-50 text-skyBlue-600 border border-skyBlue-200 text-xs font-bold">應援物貼文 <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a>` : ''}
+          ${s.occ ? `<button data-uid="${esc(s.occ.uid)}" onclick="hideDynModal('stallModal');jumpToVendorCard(VENDORS_LIST.find(x=>x.uid===this.dataset.uid),'started')" class="px-2.5 py-1.5 rounded-xl bg-skyBlue-500 text-white text-xs font-bold">看時序卡片</button>` : ''}
+        </div>`);
+    }
+
+    /* ---------- 寫入 live 文件（單一攤位欄位合併） ---------- */
+    async function patchLive(uid, patch) {
+      const v = VENDORS_LIST.find(x => x.uid === uid); if (!v) return false;
+      const full = { nickname: v.nickname || '(未命名)', expectedDays: Array.isArray(v.expectedDays) ? v.expectedDays : ['1/8'], productPost: safePostUrl(v.productPost) || '', isApproved: true, ...patch };
+      if (!DEMO_MODE && backendReady) {
+        try { await FB().setDoc(FB().doc(firestoreDb, 'market_public', 'live'), { vendors: { [uid]: full } }, { merge: true }); }
+        catch (e) { showToast('操作失敗：' + backendErrMsg(e)); return false; }
+      }
+      Object.assign(v, patch);
+      if ('quotaUsedToday' in patch) v.quotaUsed = patch.quotaUsedToday;
+      [PUBLIC_LIVE_MAP[uid], v._raw].forEach(o => { if (o) Object.assign(o, patch); });
+      savePublicLiveCache(PUBLIC_LIVE_MAP);
+      renderTimeline(); updateVendorUI();
+      if (currentRole === 'admin') renderAdminVendorTable();
+      return true;
+    }
+    async function setStallPause(id, paused) {
+      if (!DEMO_MODE && backendReady) {
+        try { await FB().setDoc(FB().doc(firestoreDb, 'market_public', 'live'), { stallCtl: { [id]: paused } }, { merge: true }); }
+        catch (e) { return false; }
+      }
+      STALL_CTL[id] = paused; renderStallMap(); return true;
+    }
+
+    /* ---------- 預約 ---------- */
+    function cutoffMsToday() {
+      if (currentRole === 'admin') return 0;
+      const realToday = deriveTodayKey();
+      if (realToday && realToday !== currentSimDate) return 0;
+      const sch = SCHEDULE_CONFIG[currentSimDate]; if (!sch || sch.cutoffHour === null) return 0;
+      return Date.now() + ((sch.cutoffHour * 60 + sch.cutoffMin) - getTaipeiHM().totalMin) * 60000;
+    }
+    function reserveOptions() {
+      const now = Date.now(), out = [];
+      STALL_IDS.forEach(id => {
+        const s = stallInfo(id); if (s.paused) return;
+        if (!s.occ && !s.head) out.push({ id, startMs: now, after: '', label: `${id} 攤位（空閒・即刻開始）` });
+        else if (s.occ && !s.next && s.occ.endMs && s.occ.endMs - now <= NEXT_WINDOW_MIN * 60000)
+          out.push({ id, startMs: s.occ.endMs, after: s.occ.uid, label: `${id} 攤位（使用中・預約下一棒，約 ${fmtHM(s.occ.endMs)} 起）` });
+      });
+      return out;
+    }
+    function calcResvDuration(val) {
+      const t = $id('resvCalcVal'); if (t) t.innerText = `${val} 件`;
+      const dur = Math.min(60, Math.max(10, Math.floor(val * 1.5)));
+      const stepped = Math.min(60, Math.max(10, Math.round(dur / 5) * 5));
+      const sl = $id('resvDurSlider'); if (sl) { sl.value = stepped; $id('resvDurText').innerText = `${stepped} 分鐘`; }
+    }
+    function fillResvNew(v) {
+      const sel = $id('resvStallSelect'), btn = document.querySelector('#resvNew button[onclick="submitReservation()"]');
+      if (!sel) return;
+      const opts = reserveOptions();
+      const sig = opts.map(o => o.id + o.startMs).join('|');
+      if (sel.dataset.sig !== sig) {
+        const keep = sel.value;
+        sel.innerHTML = opts.length ? opts.map(o => `<option value="${o.id}">${esc(o.label)}</option>`).join('') : '<option value="">目前全場無可預約攤位</option>';
+        if (keep && opts.some(o => o.id === keep)) sel.value = keep;
+        sel.dataset.sig = sig;
+      }
+      const it = $id('resvItemName'); if (it && !it.value) it.value = v.items || '';
+      const canBook = isVendorRegisteredForToday(v) && (currentRole === 'admin' || !isWithinHalfHourBeforeShow()) && opts.length > 0;
+      if (btn) {
+        btn.disabled = !canBook;
+        btn.className = 'w-full py-2.5 font-bold rounded-xl shadow-md flex items-center justify-center space-x-1.5 ' +
+          (canBook ? 'bg-skyBlue-500 hover:bg-skyBlue-600 text-white cursor-pointer' : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none');
+      }
+    }
+    async function refreshLiveBeforeReserve() {
+      if (DEMO_MODE || !backendReady) return;
+      try {
+        const snap = await FB().getDoc(FB().doc(firestoreDb, 'market_public', 'live'));
+        if (snap.exists()) {
+          const d = snap.data() || {};
+          applyMapModeFromDoc(d);
+          if (d.vendors && typeof d.vendors === 'object') {
+            PUBLIC_LIVE_MAP = d.vendors;
+            VENDORS_LIST = Object.keys(PUBLIC_LIVE_MAP).map(uid => mapVendorDoc(uid, PUBLIC_LIVE_MAP[uid]));
+            if (currentVendor && currentVendor.uid) {
+              const me = VENDORS_LIST.find(x => x.uid === currentVendor.uid);
+              if (me) currentVendor = me;
+            }
+            savePublicLiveCache(PUBLIC_LIVE_MAP);
+          }
+        }
+      } catch (e) {}
+    }
+    async function submitReservation() {
+      const v = currentVendor;
+      if (!v || !v.uid) { showToast('請先選擇攤主'); return; }
+      if (!isVendorRegisteredForToday(v)) { showToast(`今日（${currentSimDate}）非登記之出攤日，無法預約`); return; }
+      if (currentRole !== 'admin' && isWithinHalfHourBeforeShow()) { showToast('距離開唱僅剩半小時，已停止開放預約'); return; }
+      await refreshLiveBeforeReserve();
+      if (v.resv || v.status !== 'upcoming' || v.quotaUsed) { showToast('你已有進行中的預約或今日額度已使用'); return; }
+      const opt = reserveOptions().find(o => o.id === ($id('resvStallSelect') || {}).value);
+      if (!opt) { showToast('此席位剛被預約或已管制，請重新選擇'); fillResvNew(v); return; }
+      const items = ($id('resvItemName').value || '').trim();
+      if (!items) { showToast('請填寫本次應援物內容簡述'); return; }
+      if (strLen(items) > 30) { showToast('應援物簡述限 30 字以內'); return; }
+      const durMin = parseInt($id('resvDurSlider').value, 10) || 30;
+      const cut = cutoffMsToday();
+      if (cut && opt.startMs >= cut) { showToast('此時段已超過停止報位時間'); return; }
+      const resv = { stallId: opt.id, startMs: opt.startMs, durMin, items, dayKey: currentSimDate, createdMs: Date.now(), after: opt.after };
+      if (await patchLive(v.uid, { resv })) showToast(`預約成功：${opt.id} 號攤，${fmtHM(opt.startMs)} 起 ${durMin} 分鐘。請於開始前 ${PRE_ARRIVAL_MIN} 分鐘起報到，開始後有 ${ARRIVAL_GRACE_MIN} 分鐘緩衝。`);
+    }
+    function resvArriveClick() { const v = currentVendor; if (v && v.uid) resvArrive(v.uid, false); }
+    async function resvArrive(uid, proxy) {
+      const v = VENDORS_LIST.find(x => x.uid === uid); if (!v || !v.resv) return;
+      const r = v.resv, now = Date.now(), eff = resvEffStart(v);
+      if (!proxy && currentRole !== 'admin' && isWithinHalfHourBeforeShow()) { showToast('距離開唱僅剩半小時，已停止開放確認抵達'); return; }
+      if (!proxy && now < eff - PRE_ARRIVAL_MIN * 60000) { showToast(`尚未到前往時間（${fmtHM(eff)} 開始，前 ${PRE_ARRIVAL_MIN} 分鐘起可報到）`); return; }
+      const occ = stallOccupant(r.stallId);
+      if (occ && occ.uid !== v.uid) { showToast('目前仍有攤主使用中，請待前一棒結束'); return; }
+      let end = now + r.durMin * 60000; const cut = cutoffMsToday();
+      if (cut && cut > now && end > cut) end = cut;
+      const loc = r.stallId + ' 號攤位';
+      const ok = await patchLive(uid, { status: 'in_use', startMs: now, endMs: end, endedMs: 0, items: r.items, locationText: loc, stallId: r.stallId, resv: null, quotaUsedToday: true });
+      if (ok) {
+        notifyPushWorker('start_now', { dayKey: getPushDayKeyForVendor(v), uid, nickname: v.nickname || '(未命名)', items: r.items, locationText: loc, startMs: now });
+        showToast('已確認抵達！狀態切換為【使用中】，正式扣除今日額度。');
+      }
+    }
+    async function resvCancelClick() {
+      const v = currentVendor; if (!v || !v.resv) return;
+      if (await resvCancel(v.uid, 'self')) showToast('預約已取消，今日預約資格已全額返還。');
+    }
+    async function resvCancel(uid, reason) {
+      const v = VENDORS_LIST.find(x => x.uid === uid); if (!v || !v.resv) return false;
+      const stallId = v.resv.stallId, patch = { resv: null };
+      if (reason === 'no_show') patch.noShowCount = (Number((v._raw || v).noShowCount) || 0) + 1;
+      const ok = await patchLive(uid, patch);
+      if (ok && reason === 'no_show' && TIMEOUT_MODE === 'pause') setStallPause(stallId, true);
+      return ok;
+    }
+
+    /* ---------- 倒數顯示與前端備援排程 ---------- */
+    function tickResvUI() {
+      const v = currentVendor; if (!MAP_MODE || !v || !v.resv) return;
+      const L = $id('resvLabel'), C = $id('resvCountdown'), B = $id('resvBar'); if (!L || !C || !B) return;
+      const eff = resvEffStart(v), deadline = resvDeadlineMs(v), now = Date.now(), PRE = PRE_ARRIVAL_MIN * 60000, G = ARRIVAL_GRACE_MIN * 60000;
+      let label, txt, cls, pct;
+      if (now < eff - PRE) { label = `預約 ${fmtHM(eff)} 開始（前 ${PRE_ARRIVAL_MIN} 分鐘起可報到）：`; txt = '--:--'; cls = 'text-slate-400'; pct = 100; }
+      else if (now < eff) { label = '前往攤位就定位倒數（距預約開始）：'; txt = mmss(eff - now); cls = 'text-amber-500'; pct = (eff - now) / PRE * 100; }
+      else { const rem = deadline - now; label = '遲到緩衝倒數（逾時自動取消並記 no_show）：'; txt = mmss(rem); cls = rem <= 60000 ? 'text-rose-500' : 'text-amber-500'; pct = rem / G * 100; }
+      L.innerText = label; C.innerText = txt; C.className = 'text-xl sm:text-2xl font-mono font-black ' + cls;
+      B.style.width = Math.max(0, Math.min(100, pct)) + '%';
+    }
+    const sweepLock = {}; let lastSweep = 0;
+    function lockRun(k, fn) { if (sweepLock[k] && Date.now() - sweepLock[k] < 60000) return; sweepLock[k] = Date.now(); fn(); }
+    function mapTick() {
+      tickResvUI();
+      const now = Date.now(); if (now - lastSweep < 8000) return; lastSweep = now;
+      const realToday = deriveTodayKey();
+      if (realToday && currentSimDate !== realToday && !isTestBypassUser()) return;
+      const mine = currentRole === 'admin' ? VENDORS_LIST : (currentRole === 'vendor' && currentVendor && currentVendor.uid ? [currentVendor] : []);
+      mine.forEach(v => {
+        if (!v.isApproved) return;
+        const dl = resvDeadlineMs(v);
+        if (v.resv && dl && now > dl) lockRun('ns_' + v.uid, () => { resvCancel(v.uid, 'no_show'); showToast(`【${v.nickname}】逾時未抵達，預約已自動取消`); });
+        else if (v.status === 'in_use' && v.endMs && now >= v.endMs) lockRun('end_' + v.uid + v.endMs, () => patchLive(v.uid, { status: 'ended', endedMs: v.endMs, quotaUsedToday: true }));
+      });
+    }
+
+    /* ---------- 攤主頁：預約面板 ---------- */
+    function renderMapVendorPanels() {
+      const wrap = $id('vendorMapPanels'), idle = $id('vendorIdlePanel'); if (!wrap) return;
+      const v = currentVendor;
+      const show = MAP_MODE && v && v.uid && v.status === 'upcoming' && !v.quotaUsed;
+      wrap.classList.toggle('hidden', !show);
+      if (show && idle) idle.classList.add('hidden');
+      if (!show) {
+        if (MAP_MODE && idle && currentRole === 'admin' && (!v || !v.uid)) idle.classList.add('hidden');
+        return;
+      }
+      const has = !!v.resv;
+      $id('resvCard').classList.toggle('hidden', !has);
+      $id('resvNew').classList.toggle('hidden', has);
+      if (has) {
+        const r = v.resv, eff = resvEffStart(v);
+        $id('resvStall').innerText = `${r.stallId} 號攤`;
+        $id('resvSlot').innerText = `${fmtHM(eff)} - ${fmtHM(eff + r.durMin * 60000)}`;
+        $id('resvItems').innerText = r.items;
+        tickResvUI();
+      } else fillResvNew(v);
+    }
+
+    /* ---------- 管理者：代理操作／管制／逾時模式／白板 ---------- */
+    function renderAdminStalls() {
+      const g = $id('adminStallGrid'); if (!g || !MAP_MODE || currentRole !== 'admin') return;
+      g.innerHTML = STALL_IDS.map(id => {
+        const s = stallInfo(id), who = s.occ || s.head, [lbl, , border] = STALL_STYLE[s.status];
+        return `<div data-id="${id}" onclick="openAdminStall(this.dataset.id)" class="p-2 rounded-xl text-xs font-mono border cursor-pointer bg-white hover:shadow-md ${border}">
+          <div class="flex items-center justify-between mb-0.5"><span class="font-bold">${id}</span><span class="text-[9px] px-1 rounded bg-black/5">${lbl}</span></div>
+          <div class="text-[10px] truncate text-slate-500">${who ? esc(who.nickname) : '—'}</div></div>`;
+      }).join('');
+      if (adminStallSel) openAdminStall(adminStallSel);
+    }
+    function openAdminStall(id) {
+      adminStallSel = id; const s = stallInfo(id), box = $id('adminStallBox'); if (!box) return;
+      box.classList.remove('hidden'); $id('adminStallId').innerText = id;
+      const who = s.occ || s.head;
+      $id('adminStallDesc').innerHTML = `狀態：<strong>${STALL_STYLE[s.status][0]}</strong> ｜ 創作者：<strong>${who ? esc(who.nickname) : '—'}</strong> ｜ 時段：<strong>${esc(stallSlot(s))}</strong>`;
+      const set = (bid, on, cls) => { const b = $id(bid); b.disabled = !on; b.className = 'px-3 py-1.5 font-bold rounded-xl ' + (on ? cls + ' text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'); };
+      set('btnPxArrive', !!s.head, 'bg-emerald-500'); set('btnPxRelease', !!s.occ, 'bg-skyBlue-500'); set('btnPxCancel', !!(s.occ || s.head), 'bg-rose-500');
+      $id('btnPxPause').innerText = s.paused ? '解除管制（恢復開放）' : '強制管制（暫停）';
+    }
+    function closeAdminStall() { adminStallSel = null; const b = $id('adminStallBox'); if (b) b.classList.add('hidden'); }
+    function adminProxyArrive() { const s = stallInfo(adminStallSel); if (s.head) resvArrive(s.head.uid, true); }
+    async function adminProxyRelease() {
+      const s = stallInfo(adminStallSel); if (!s.occ || !confirm(`確認代 ${s.id} 執行「發放完畢釋出」？`)) return;
+      const now = Date.now();
+      if (await patchLive(s.occ.uid, { status: 'ended', endedMs: now, quotaUsedToday: true })) {
+        notifyPushWorker('ended', { dayKey: getPushDayKeyForVendor(s.occ), uid: s.occ.uid, nickname: s.occ.nickname, items: s.occ.items, locationText: s.occ.locationText || '', endedMs: now });
+        showToast(`已代 ${s.id} 釋出`);
+      }
+    }
+    async function adminProxyCancel() {
+      const s = stallInfo(adminStallSel); if (!s.occ && !s.head) return;
+      if (!confirm(`確認強制取消／重置 ${s.id} 的${s.occ ? '使用中狀態（將返還額度）' : '預約'}？`)) return;
+      if (s.occ) await patchLive(s.occ.uid, { status: 'upcoming', startMs: 0, endMs: 0, endedMs: 0, locationText: '', stallId: '', quotaUsedToday: false });
+      else await resvCancel(s.head.uid, 'admin');
+      showToast(`已強制取消 ${s.id}`);
+    }
+    async function adminProxyPause() {
+      const s = stallInfo(adminStallSel); if (!s.id) return;
+      if (await setStallPause(s.id, !s.paused)) showToast(s.paused ? `已解除 ${s.id} 管制` : `已將 ${s.id} 設為管制暫停`);
+    }
+    function applyTimeoutUI() {
+      const p = $id('tmoPause'), f = $id('tmoFree'), d = $id('timeoutModeDesc'); if (!p || !f) return;
+      const on = 'px-2.5 py-1 rounded-lg whitespace-nowrap bg-white text-skyBlue-600 font-bold shadow-xs', off = 'px-2.5 py-1 rounded-lg whitespace-nowrap text-slate-500';
+      p.className = TIMEOUT_MODE === 'pause' ? on : off; f.className = TIMEOUT_MODE === 'free' ? on : off;
+      if (d) d.innerText = TIMEOUT_MODE === 'pause' ? `${ARRIVAL_GRACE_MIN} 分鐘未抵達時，預約取消並將攤位暫停待確認` : `${ARRIVAL_GRACE_MIN} 分鐘未抵達時，預約取消並直接回空閒`;
+    }
+    async function setTimeoutMode(m) {
+      if (currentRole !== 'admin') return;
+      if (!DEMO_MODE && backendReady) {
+        try { await FB().setDoc(FB().doc(firestoreDb, 'market_public', 'live'), { timeoutMode: m }, { merge: true }); }
+        catch (e) { showToast('切換失敗：' + backendErrMsg(e)); return; }
+      }
+      TIMEOUT_MODE = m; applyTimeoutUI(); showToast(m === 'pause' ? '逾時處置：暫停待確認' : '逾時處置：直接回空閒');
+    }
+    function openWhiteboard() {
+      const infos = STALL_IDS.map(stallInfo);
+      const using = infos.filter(s => s.occ), resv = infos.filter(s => !s.occ && s.head), paused = infos.filter(s => s.paused);
+      let t = `【KNOCK！KNOCK！ 小門應援市集 服務台即時白板】\n最後核對時間：${lastUpdateLabel || fmtHMS(Date.now())}\n日期：${currentSimDate}\n--------------------------------------------------\n`;
+      t += `🟢 現場擺攤中 (${using.length} 攤):\n` + (using.length ? using.map(s => `・${s.id} (${s.occ.nickname} - ${s.occ.items}，至 ${s.occ.endMs ? fmtHM(s.occ.endMs) : '--'})\n`).join('') : '・目前無攤位擺攤中\n');
+      t += `\n🟡 已預約・即將開攤 (${resv.length} 攤):\n` + (resv.length ? resv.map(s => `・${s.id} (${s.head.nickname} - ${s.head.resv.items}，${fmtHM(resvEffStart(s.head))} 起)\n`).join('') : '・目前無排定預約\n');
+      const nexts = infos.filter(s => s.occ && s.next);
+      if (nexts.length) t += `\n⏭ 下一棒排定 (${nexts.length} 攤):\n` + nexts.map(s => `・${s.id} → ${s.next.nickname} (${s.next.resv.items})\n`).join('');
+      if (paused.length) t += `\n🔴 管制暫停 (${paused.length} 攤):\n` + paused.map(s => `・${s.id} 管制暫停中\n`).join('');
+      t += `--------------------------------------------------\n※ 現場若遇連線問題，一切進場與攤位順序以本白板為準！`;
+      showDynModal('wbModal', `
+        <button onclick="hideDynModal('wbModal')" class="absolute top-4 right-4 w-7 h-7 rounded-full bg-slate-100 text-slate-500 text-xs"><i class="fa-solid fa-xmark"></i></button>
+        <h3 class="text-base font-bold text-slate-800 mb-1"><i class="fa-solid fa-clipboard-list text-skyBlue-500 mr-2"></i>服務台實體白板抄件</h3>
+        <p class="text-xs text-slate-500 mb-3">若遇現場斷網，可一鍵複製以下純文字進行抄錄：</p>
+        <textarea id="wbText" readonly class="w-full h-52 bg-white font-mono text-xs text-slate-700 p-3 rounded-xl border border-slate-200 mb-3"></textarea>
+        <div class="flex justify-end"><button onclick="copyTextToClipboard($id('wbText').value);showToast('已複製白板文字')" class="px-3.5 py-2 rounded-xl bg-skyBlue-500 text-white font-bold text-xs"><i class="fa-regular fa-copy mr-1"></i>複製白板文字</button></div>`);
+      $id('wbText').value = t;
+    }
+
+    /* ---------- 釋出前清空確認（攤主，地圖版） ---------- */
+    function openCleanModal() {
+      showDynModal('cleanModal', `
+        <h3 class="text-base font-bold text-skyBlue-600 mb-1"><i class="fa-solid fa-circle-check mr-2"></i>確認清空與發放完畢釋出</h3>
+        <p class="text-xs text-slate-500 mb-3">請確認桌面已完全清空，系統將立即釋出攤位（若有下一棒則直接交接）：</p>
+        <div class="space-y-2 mb-4 text-xs">
+          ${['應援周邊已全部收拾裝箱', '個人隨身垃圾已全數帶走', '桌面已清空並擦拭整潔'].map(t => `<label class="flex items-center space-x-2 p-2.5 rounded-xl bg-white border border-slate-200 cursor-pointer"><input type="checkbox" class="cc w-4 h-4 accent-skyBlue-500" onchange="cleanCheck()"><span class="text-slate-700">${t}</span></label>`).join('')}
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="hideDynModal('cleanModal')" class="py-2.5 rounded-xl bg-slate-100 text-slate-600 text-xs font-medium">取消</button>
+          <button id="cleanOk" disabled onclick="hideDynModal('cleanModal');executeSoldOut(true)" class="py-2.5 rounded-xl bg-skyBlue-500 text-white font-bold text-xs opacity-50 cursor-not-allowed">確認釋出</button>
+        </div>`);
+    }
+    function cleanCheck() {
+      const all = Array.from(document.querySelectorAll('#cleanModal .cc')).every(c => c.checked), b = $id('cleanOk');
+      b.disabled = !all; b.className = 'py-2.5 rounded-xl bg-skyBlue-500 text-white font-bold text-xs ' + (all ? '' : 'opacity-50 cursor-not-allowed');
+    }
+
+    /* ---------- 兩道確認切換地圖模式 ---------- */
+    let mapToggleStep = 0, mapToggleTarget = false, mapToggleDay = '';
+    function openMapToggle(day) {
+      if (currentRole !== 'admin') { showToast('僅管理者可切換'); return; }
+      mapToggleDay = day; mapToggleTarget = MAP_DAYS[day] !== true; mapToggleStep = 1; renderMapToggleStep(); $id('mapToggleModal').classList.remove('hidden');
+    }
+    function closeMapToggle() { mapToggleStep = 0; $id('mapToggleModal').classList.add('hidden'); }
+    function renderMapToggleStep() {
+      const active = mapToggleDay === currentSimDate ? VENDORS_LIST.filter(v => isUsing(v) || v.resv).length : 0;
+      const toName = `【${mapToggleDay} ${mapToggleTarget ? '地圖版（實體攤位・預約制）' : '自由發放版（無攤位）'}】`;
+      const btn = $id('mapToggleNextBtn');
+      $id('mapToggleStepLabel').textContent = `第 ${mapToggleStep} / 2 道確認`;
+      if (mapToggleStep === 1) {
+        $id('mapToggleTitle').textContent = `要將 ${mapToggleDay} 場次切換為${mapToggleTarget ? '地圖版' : '自由發放版'}嗎？`;
+        $id('mapToggleBody').innerHTML = `只影響 <strong>${mapToggleDay}</strong> 場次，其他日期不變；該日畫面會<strong>即時同步給全部訪客與攤主</strong>。` +
+          (active > 0 ? `<br><span class="text-rose-600 font-bold">⚠ 目前有 ${active} 位攤主正在準備／發放中或已有預約，切換可能造成混亂。</span>` : '') +
+          (mapToggleTarget ? '<br>切換後攤主改為預約席次；已在發放中的攤主不會自動分配攤位。' : '<br>切換後該日地圖頁籤隱藏，既有預約不會生效，攤主恢復自由填寫位置。');
+        $id('mapToggleTypeWrap').classList.add('hidden');
+        btn.textContent = '我了解，下一步'; btn.disabled = false; btn.className = 'py-2.5 rounded-xl bg-rose-500 text-white text-xs font-bold';
+      } else {
+        $id('mapToggleTitle').textContent = '最後確認：真的要切換嗎？';
+        $id('mapToggleBody').textContent = `即將套用${toName}，送出後立即生效。`;
+        $id('mapToggleTypeWrap').classList.remove('hidden'); $id('mapToggleInput').value = ''; btn.textContent = '確認並套用'; mapToggleCheckInput();
+      }
+    }
+    function mapToggleCheckInput() {
+      const ok = $id('mapToggleInput').value.trim() === '確認切換', btn = $id('mapToggleNextBtn');
+      btn.disabled = !ok; btn.className = 'py-2.5 rounded-xl bg-rose-500 text-white text-xs font-bold' + (ok ? '' : ' opacity-40 cursor-not-allowed');
+    }
+    async function mapToggleNext() {
+      if (mapToggleStep === 1) { mapToggleStep = 2; renderMapToggleStep(); return; }
+      if (mapToggleStep !== 2 || currentRole !== 'admin' || $id('mapToggleInput').value.trim() !== '確認切換') return;
+      const day = mapToggleDay, target = mapToggleTarget;
+      if (!DEMO_MODE && backendReady) {
+        try { await FB().setDoc(FB().doc(firestoreDb, 'market_public', 'live'), { mapDays: { [day]: target } }, { merge: true }); }
+        catch (e) { showToast('切換失敗：' + backendErrMsg(e)); return; }
+      }
+      MAP_DAYS[day] = target; try { localStorage.setItem('kk_map_days', JSON.stringify(MAP_DAYS)); } catch (e) {}
+      savePublicLiveCache(PUBLIC_LIVE_MAP);
+      closeMapToggle();
+      if (currentSimDate !== day && (currentRole === 'admin' || isTestBypassUser())) {
+        currentSimDate = day;
+        userPickedDate = true;
+        syncDateSelect();
+      }
+      renderMapDayRows();
+      syncMapMode();
+      remapAllVendorsForDate();
+      renderTimeline();
+      updateVendorUI();
+      if (currentRole === 'admin') renderAdminVendorTable();
+      showToast(`${day} 場次已切換為${target ? '地圖版（實體攤位）' : '自由發放版'}`);
+    }
+
+    /* ---------- 掛鉤既有函式（不改動原邏輯） ---------- */
+    const _renderTimelineOrig = renderTimeline;
+    renderTimeline = function () { _renderTimelineOrig(); renderStallMap(); };
+    const _updateVendorUIOrig = updateVendorUI;
+    updateVendorUI = function () { _updateVendorUIOrig(); renderMapVendorPanels(); };
+    const _tickSystemOrig = tickSystem;
+    tickSystem = function () { _tickSystemOrig(); syncMapMode(); if (MAP_MODE) mapTick(); renderOfficialSchedule(); };
+    const _executeSoldOutOrig = executeSoldOut;
+    executeSoldOut = function (force) {
+      if (MAP_MODE && force !== true && currentRole === 'vendor') { openCleanModal(); return; }
+      return _executeSoldOutOrig();
+    };
+    const _elapsedOrig = updateVendorElapsedUI;
+    updateVendorElapsedUI = function () {
+      const v = currentVendor;
+      if (!(MAP_MODE && v && v.status === 'in_use' && v.endMs)) return _elapsedOrig();
+      const remain = v.endMs - Date.now(), c = $id('vendorCountdown'), l = $id('vCountdownLabel'), b = $id('vendorProgressBar');
+      if (l) l.innerText = '剩餘擺攤時間：';
+      if (c) { c.innerText = mmss(remain); c.className = 'text-xl sm:text-2xl font-mono font-black ' + (remain <= 300000 ? 'text-rose-500' : 'text-emerald-500'); }
+      if (b) { b.className = 'bg-emerald-400 h-1.5 rounded-full transition-all duration-300'; b.style.width = Math.max(0, Math.min(100, remain / Math.max(1, v.endMs - v.startMs) * 100)) + '%'; }
+    };
+    const _soldPromptOrig = checkSoldOutPrompt;
+    checkSoldOutPrompt = function () { if (MAP_MODE) return; _soldPromptOrig(); };
+
     /* ---------- 初始化掛載 ---------- */
     document.addEventListener('DOMContentLoaded', function() {
       syncServerTime();
@@ -4677,6 +6429,7 @@ function openOfficialSchedule() {
       initServiceWorkerForPush();
       syncDateSelect();
       initFirebaseLive();
+      initMapMode();
       setAppRole('guest');
       renderTimeline();
       updateVendorUI();
@@ -4740,6 +6493,1025 @@ function openOfficialSchedule() {
       }, 1000);
       setInterval(syncServerTime, 120 * 1000);
     });
+  </script>
+
+  <!-- 林口體育館 3D 場外互動地圖模組（漂浮粗體指標 ＋ 管理員拖移編輯 | From @onedoor_boice_0820） -->
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const DEFAULT_OUTDOOR_BOOTHS = [
+      {
+        id: 'merch',
+        name: '官方周邊商品販售處',
+        color: '#0ea5e9',
+        pos: [90, 14],
+        size: [11, 4.5, 7],
+        desc: '官方周邊商品現場販售與排隊動線區，實際品項、位置與開放時段以主辦單位公告為準。（目前僅為預估示意）'
+      },
+      {
+        id: 'benefits',
+        name: 'VIP／親簽海報福利兌換處',
+        color: '#8b5cf6',
+        pos: [35, -36],
+        size: [10, 4.2, 6.5],
+        desc: 'VIP 通行證、彩排福利、親簽海報與歡送資格核對及兌換帳篷，請於截止前完成兌換。（目前僅為預估示意）'
+      },
+      {
+        id: 'ticketing',
+        name: '票務服務處',
+        color: '#6366f1',
+        pos: [84, 46],
+        size: [8.5, 4, 6],
+        desc: '現場票務問題處理、身障席驗證及遺失票券協助窗口。（目前僅為預估示意）'
+      },
+      {
+        id: 'luggage',
+        name: '行李寄放處',
+        color: '#16a34a',
+        pos: [54, 76],
+        size: [9, 4, 6],
+        desc: '大型背包、行李箱與違禁物品暫時寄放區，散場後亦開放領取。（目前僅為預估示意）'
+      },
+      {
+        id: 'fanzone',
+        name: 'ONEDOOR ZONE／應援拍照區',
+        color: '#f59e0b',
+        pos: [12, 82],
+        size: [13, 4.6, 7],
+        desc: 'ONEDOOR ZONE、主題打卡背板（Photobooth）、粉絲應援區與品牌互動巴士展示區。（目前僅為預估示意）'
+      },
+      {
+        id: 'light_out',
+        name: '戶外官方手燈配對處',
+        color: '#ef4444',
+        pos: [-18, 18],
+        size: [7.5, 3.8, 6],
+        desc: '進場前官方應援手燈藍牙／中控訊號檢測與電池更換服務點。（目前僅為預估示意）'
+      },
+      {
+        id: 'temp_wc',
+        name: '活動增設流動廁所',
+        color: '#14b8a6',
+        pos: [-2, -32],
+        size: [8, 3.4, 5.5],
+        desc: '演出當日視人潮於北側廣場增設之臨時流動廁所區。（目前僅為預估示意）'
+      }
+    ];
+
+    // 最重要的漂浮粗體指標（常駐顯示，管理員亦可拖移與修改文字）
+    const DEFAULT_LANDMARKS = [
+      {
+        id: 'lm_a7',
+        mode: 'outdoor',
+        style: 'lm-metro',
+        icon: 'fa-solid fa-train-subway',
+        name: '← A7 機捷方向',
+        pos: [-112, 112],
+        y: 13,
+        desc: '沿文化一路往左下步行約 10–15 分鐘即可抵達桃園機場捷運 A7 體育大學站。'
+      },
+      {
+        id: 'lm_out_a',
+        mode: 'outdoor',
+        style: 'lm-gate-a',
+        icon: 'fa-solid fa-door-open',
+        name: '≪ A區／黃區出入口',
+        pos: [82, -16],
+        y: 14,
+        desc: '位於體育館東側（右側・靠校園內部方向），前往 VIP A 與黃區看台請由此進場。'
+      },
+      {
+        id: 'lm_out_b',
+        mode: 'outdoor',
+        style: 'lm-gate-b',
+        icon: 'fa-solid fa-door-open',
+        name: 'B區／橙區出入口 ≫',
+        pos: [-14, 46],
+        y: 14,
+        desc: '位於體育館西側（左側・靠聯外道路與噴水池方向），前往 VIP B 與橙區看台請由此進場。'
+      }
+    ];
+
+    const cloneList = (arr) => JSON.parse(JSON.stringify(arr));
+    let activeOutdoorBooths = cloneList(DEFAULT_OUTDOOR_BOOTHS);
+    let activeLandmarks = cloneList(DEFAULT_LANDMARKS);
+
+    const ARENA_X = 35;
+    const ARENA_Z = 20;
+
+    let initialized = false;
+    let isRunning = false;
+    let rafId = 0;
+    let editMode = false;
+    let isDirty = false;
+    let editingRecord = null;
+    let drag3DState = null;
+
+    let renderer, scene, camera, controls, hemiLight, dirLight;
+    let outdoorFixedGroup, outdoorBoothGroup, arenaGroup;
+    let isTopView = false;
+    let showTags = true;
+    let camAnim = null;
+
+    const outdoorTagItems = [];
+    const projV = new THREE.Vector3();
+    const raycaster = new THREE.Raycaster();
+    const dragNdc = new THREE.Vector2();
+    const dragHitPt = new THREE.Vector3();
+    const groundPlaneOutdoor = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+
+    const VIEW_PRESETS = {
+      outdoor3D: { pos: new THREE.Vector3(0, 215, 185), target: new THREE.Vector3(0, 0, 10) },
+      outdoor2D: { pos: new THREE.Vector3(0, 315, 10.1), target: new THREE.Vector3(0, 0, 10) }
+    };
+
+    function flyTo(pos, target, duration = 650) {
+      camAnim = {
+        startPos: camera.position.clone(),
+        endPos: pos.clone(),
+        startTarget: controls.target.clone(),
+        endTarget: target.clone(),
+        startTime: performance.now(),
+        duration
+      };
+    }
+
+    function syncSceneSkyTheme() {
+      if (!initialized || !scene) return;
+      const isNight = document.body.classList.contains('night');
+      const bgHex = isNight ? 0x1a1d2b : 0xeaf6fd;
+      scene.background.setHex(bgHex);
+      scene.fog.color.setHex(bgHex);
+      if (hemiLight) hemiLight.intensity = isNight ? 1.08 : 1.25;
+      if (dirLight) dirLight.color.setHex(isNight ? 0xffe4c4 : 0xfffcf2);
+    }
+
+    function syncRoleUI() {
+      const isAdmin = Boolean(window.isVenueAdmin && window.isVenueAdmin());
+      const btnEdit = document.getElementById('vm-btnAdminEdit');
+      if (btnEdit) btnEdit.classList.toggle('hidden', !isAdmin);
+      if (!isAdmin && editMode) setEditMode(false);
+    }
+
+    function setEditMode(on) {
+      const isAdmin = Boolean(window.isVenueAdmin && window.isVenueAdmin());
+      if (on && !isAdmin) return;
+      editMode = !!on;
+      const sec = document.getElementById('tab-venue');
+      const btnEdit = document.getElementById('vm-btnAdminEdit');
+      if (sec) sec.classList.toggle('vm-editing', editMode);
+      if (btnEdit) btnEdit.classList.toggle('on', editMode);
+      if (editMode) {
+        showTags = true;
+        const btnTags = document.getElementById('vm-btnTags');
+        if (btnTags) btnTags.classList.add('on');
+        const infoCard = document.getElementById('vm-infoCard');
+        if (infoCard) infoCard.classList.remove('show');
+        refreshTagVisibility();
+      } else {
+        const badge = document.getElementById('vm-dragCoordBadge');
+        if (badge) badge.classList.add('hidden');
+      }
+    }
+
+    function refreshTagVisibility() {
+      outdoorTagItems.forEach(({ el, isLandmark }) => {
+        const shouldShow = (isLandmark || showTags || editMode);
+        el.classList.toggle('hidden-tag', !shouldShow);
+      });
+    }
+
+    function openAdminTagEditModal(rec) {
+      editingRecord = rec;
+      const modal = document.getElementById('vm-adminEditModal');
+      if (!modal) return;
+      const titleEl = document.getElementById('vm-editModalTitle');
+      const nameEl = document.getElementById('vm-editName');
+      const descEl = document.getElementById('vm-editDesc');
+      const colorWrap = document.getElementById('vm-editColorWrap');
+      const colorEl = document.getElementById('vm-editColor');
+      const xLbl = document.getElementById('vm-editXLabel');
+      const zLbl = document.getElementById('vm-editZLabel');
+      const xEl = document.getElementById('vm-editX');
+      const zEl = document.getElementById('vm-editZ');
+      const delBtn = document.getElementById('vm-editDeleteBtn');
+
+      if (titleEl) {
+        titleEl.textContent = rec.isLandmark ? '編輯重要指標標籤' : '編輯場外攤位標籤';
+      }
+      if (nameEl) nameEl.value = rec.data.name || '';
+      if (descEl) descEl.value = rec.data.desc || '';
+      if (colorWrap) colorWrap.classList.toggle('hidden', !!rec.isLandmark);
+      if (colorEl && rec.data.color) colorEl.value = rec.data.color;
+      if (xLbl) xLbl.textContent = 'X 座標（左負右正）';
+      if (zLbl) zLbl.textContent = 'Z 座標（上負下正）';
+      if (xEl) xEl.value = Math.round(rec.anchor.x);
+      if (zEl) zEl.value = Math.round(rec.anchor.z);
+      if (delBtn) delBtn.classList.toggle('hidden', !!rec.isLandmark);
+      modal.classList.remove('hidden');
+    }
+
+    function closeAdminTagEditModal() {
+      editingRecord = null;
+      const modal = document.getElementById('vm-adminEditModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function showTagInfoCard(rec, el) {
+      const infoCard = document.getElementById('vm-infoCard');
+      const cardTitle = document.getElementById('vm-cardTitle');
+      const cardDesc = document.getElementById('vm-cardDesc');
+      document.querySelectorAll('.vm-tag, .vm-landmark').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      if (rec.isLandmark) {
+        const iconCls = rec.data.icon || 'fa-solid fa-location-arrow';
+        cardTitle.innerHTML = `<i class="${iconCls} text-skyBlue-500"></i><span>${rec.data.name}</span>`;
+      } else {
+        cardTitle.innerHTML = `<span class="vm-dot" style="background:${rec.data.color};width:11px;height:11px;"></span>${rec.data.name}`;
+      }
+      cardDesc.textContent = rec.data.desc || '';
+      infoCard.classList.add('show');
+      const lw = document.getElementById('vm-legendWrap');
+      const lt = document.getElementById('vm-legendToggle');
+      if (lw) lw.classList.add('collapsed');
+      if (lt) lt.setAttribute('aria-expanded', 'false');
+    }
+
+    function buildOutdoorBoothsAndTags() {
+      if (!initialized) return;
+      const labelsEl = document.getElementById('vm-labels');
+      if (labelsEl) labelsEl.innerHTML = '';
+      outdoorTagItems.length = 0;
+      if (outdoorBoothGroup) {
+        while (outdoorBoothGroup.children.length > 0) {
+          outdoorBoothGroup.remove(outdoorBoothGroup.children[0]);
+        }
+      }
+      if (!labelsEl) return;
+
+      function attach3DTag(el, rec) {
+        el.addEventListener('pointerdown', (ev) => {
+          if (!editMode) return;
+          ev.stopPropagation();
+          ev.preventDefault();
+          try { el.setPointerCapture(ev.pointerId); } catch (e) {}
+          controls.enabled = false;
+          camAnim = null;
+          el.classList.add('dragging');
+          drag3DState = { rec, startX: ev.clientX, startY: ev.clientY, moved: false };
+          const badge = document.getElementById('vm-dragCoordBadge');
+          if (badge) {
+            badge.textContent = `${rec.data.name}｜X: ${Math.round(rec.anchor.x)}, Z: ${Math.round(rec.anchor.z)}`;
+            badge.classList.remove('hidden');
+          }
+        });
+
+        el.addEventListener('click', () => {
+          if (editMode) {
+            if (el.dataset.justDragged === '1') { el.dataset.justDragged = ''; return; }
+            openAdminTagEditModal(rec);
+            return;
+          }
+          showTagInfoCard(rec, el);
+          const target = new THREE.Vector3(rec.anchor.x, 2, rec.anchor.z);
+          flyTo(target.clone().add(new THREE.Vector3(0, 82, 74)), target, 550);
+        });
+      }
+
+      activeOutdoorBooths.forEach((b) => {
+        const [x, z] = b.pos;
+        const [w, h, d] = b.size || [9, 4.2, 6];
+        const booth = new THREE.Group();
+        const body = new THREE.Mesh(
+          new THREE.BoxGeometry(w, h * 0.72, d),
+          new THREE.MeshStandardMaterial({ color: b.color || '#0ea5e9', roughness: 0.45 })
+        );
+        body.position.y = h * 0.36;
+        body.castShadow = true;
+        body.receiveShadow = true;
+        const canopy = new THREE.Mesh(
+          new THREE.ConeGeometry(Math.max(w, d) * 0.76, h * 0.55, 4),
+          new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 })
+        );
+        canopy.rotation.y = Math.PI / 4;
+        canopy.position.y = h * 0.92;
+        canopy.castShadow = true;
+        booth.add(body, canopy);
+        booth.position.set(x, 0.45, z);
+        outdoorBoothGroup.add(booth);
+
+        const el = document.createElement('button');
+        el.type = 'button';
+        el.className = 'vm-tag';
+        el.innerHTML = `<i class="fa-solid fa-grip-vertical vm-drag-grip"></i><span class="vm-dot" style="background:${b.color}"></span><span>${b.name}</span>`;
+        labelsEl.appendChild(el);
+
+        const rec = { el, isLandmark: false, data: b, boothMesh: booth, anchor: new THREE.Vector3(x, h + 3.2, z) };
+        attach3DTag(el, rec);
+        outdoorTagItems.push(rec);
+      });
+
+      activeLandmarks.forEach((lm) => {
+        const [wx, wz] = lm.pos || [0, 0];
+        const el = document.createElement('button');
+        el.type = 'button';
+        el.className = `vm-landmark ${lm.style || 'lm-metro'}`;
+        el.innerHTML = `<i class="fa-solid fa-grip-vertical vm-drag-grip"></i><i class="${lm.icon || 'fa-solid fa-location-arrow'} text-xs"></i><span>${lm.name}</span>`;
+        labelsEl.appendChild(el);
+
+        const rec = { el, isLandmark: true, data: lm, boothMesh: null, anchor: new THREE.Vector3(wx, lm.y || 14, wz) };
+        attach3DTag(el, rec);
+        outdoorTagItems.push(rec);
+      });
+
+      refreshTagVisibility();
+    }
+
+    function applyConfig(cfg) {
+      if (!cfg || typeof cfg !== 'object') return;
+      if (editMode && isDirty) return;
+      if (Array.isArray(cfg.outdoor) && cfg.outdoor.length > 0) activeOutdoorBooths = cloneList(cfg.outdoor);
+      if (Array.isArray(cfg.landmarks) && cfg.landmarks.length > 0) {
+        const outdoorOnly = cloneList(cfg.landmarks).filter(l => !l.mode || l.mode === 'outdoor');
+        if (outdoorOnly.length > 0) activeLandmarks = outdoorOnly;
+      }
+      if (initialized) buildOutdoorBoothsAndTags();
+    }
+
+    function initVenueMap() {
+      if (initialized) return;
+      const canvas = document.getElementById('vm-scene');
+      const labelsEl = document.getElementById('vm-labels');
+      if (!canvas || !labelsEl) return;
+
+      if (window.getVenueMapConfig && window.getVenueMapConfig()) {
+        applyConfig(window.getVenueMapConfig());
+      }
+
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0xeaf6fd);
+      scene.fog = new THREE.FogExp2(0xeaf6fd, 0.00085);
+
+      camera = new THREE.PerspectiveCamera(44, window.innerWidth / window.innerHeight, 0.5, 1600);
+      controls = new OrbitControls(camera, canvas);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.07;
+      controls.maxPolarAngle = Math.PI * 0.47;
+      controls.minDistance = 28;
+      controls.maxDistance = 460;
+
+      camera.position.copy(VIEW_PRESETS.outdoor3D.pos);
+      controls.target.copy(VIEW_PRESETS.outdoor3D.target);
+      controls.addEventListener('start', () => { camAnim = null; });
+
+      hemiLight = new THREE.HemisphereLight(0xffffff, 0xcbd5c8, 1.25);
+      scene.add(hemiLight);
+      dirLight = new THREE.DirectionalLight(0xfffcf2, 1.3);
+      dirLight.position.set(110, 190, 95);
+      dirLight.castShadow = true;
+      dirLight.shadow.mapSize.set(2048, 2048);
+      dirLight.shadow.camera.near = 10;
+      dirLight.shadow.camera.far = 560;
+      const sd = 195;
+      dirLight.shadow.camera.left = -sd;
+      dirLight.shadow.camera.right = sd;
+      dirLight.shadow.camera.top = sd;
+      dirLight.shadow.camera.bottom = -sd;
+      scene.add(dirLight);
+
+      outdoorFixedGroup = new THREE.Group();
+      outdoorBoothGroup = new THREE.Group();
+      arenaGroup = new THREE.Group();
+      arenaGroup.position.set(ARENA_X, 0, ARENA_Z);
+
+      scene.add(outdoorFixedGroup);
+      scene.add(outdoorBoothGroup);
+      scene.add(arenaGroup);
+
+      const maxAniso = renderer.capabilities.getMaxAnisotropy();
+
+      function createCanvasTexture(drawFn, width = 512, height = 160) {
+        const c = document.createElement('canvas');
+        c.width = width;
+        c.height = height;
+        const ctx = c.getContext('2d');
+        drawFn(ctx, width, height);
+        const tex = new THREE.CanvasTexture(c);
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.anisotropy = maxAniso;
+        tex.needsUpdate = true;
+        return tex;
+      }
+
+      function addGroundText(parent, text, x, z, opts = {}) {
+        const {
+          y = 0.72, w = 34, h = 11, rot = 0, fontSize = 54,
+          color = '#334155', stroke = 'rgba(255,255,255,0.92)', strokeWidth = 10,
+          bg = null, border = null, radius = 22, canvasW = 512, canvasH = 160
+        } = opts;
+        const tex = createCanvasTexture((ctx, cw, ch) => {
+          if (bg) {
+            ctx.fillStyle = bg;
+            ctx.beginPath();
+            ctx.roundRect(10, 10, cw - 20, ch - 20, radius);
+            ctx.fill();
+            if (border) { ctx.strokeStyle = border; ctx.lineWidth = 8; ctx.stroke(); }
+          }
+          ctx.font = `900 ${fontSize}px "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          if (stroke) {
+            ctx.lineJoin = 'round';
+            ctx.lineWidth = strokeWidth;
+            ctx.strokeStyle = stroke;
+            ctx.strokeText(text, cw / 2, ch / 2 + 2);
+          }
+          ctx.fillStyle = color;
+          ctx.fillText(text, cw / 2, ch / 2 + 2);
+        }, canvasW, canvasH);
+        const mesh = new THREE.Mesh(
+          new THREE.PlaneGeometry(w, h),
+          new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 })
+        );
+        mesh.rotation.order = 'YXZ';
+        mesh.rotation.x = -Math.PI / 2;
+        mesh.rotation.y = rot;
+        mesh.position.set(x, y, z);
+        parent.add(mesh);
+        return mesh;
+      }
+
+      function addGroundCircleBadge(parent, label, x, z, opts = {}) {
+        const { y = 0.82, size = 12, bg = '#1e3a8a', color = '#ffffff', ring = '#ffffff', rot = 0 } = opts;
+        const tex = createCanvasTexture((ctx, cw, ch) => {
+          const cx = cw / 2, cy = ch / 2, r = cw * 0.42;
+          ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+          ctx.fillStyle = bg; ctx.fill();
+          ctx.lineWidth = 14; ctx.strokeStyle = ring; ctx.stroke();
+          ctx.fillStyle = color;
+          ctx.font = '900 120px "PingFang TC", "Noto Sans TC", sans-serif';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(label, cx, cy + 5);
+        }, 256, 256);
+        const mesh = new THREE.Mesh(
+          new THREE.PlaneGeometry(size, size),
+          new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3 })
+        );
+        mesh.rotation.order = 'YXZ';
+        mesh.rotation.x = -Math.PI / 2;
+        mesh.rotation.y = rot;
+        mesh.position.set(x, y, z);
+        parent.add(mesh);
+        return mesh;
+      }
+
+      function addFixedWcIcon(parent, x, z, highlight = false) {
+        const tex = createCanvasTexture((ctx, cw, ch) => {
+          if (highlight) {
+            ctx.fillStyle = '#fde047'; ctx.strokeStyle = '#92400e'; ctx.lineWidth = 10;
+            ctx.beginPath(); ctx.roundRect(8, 8, cw - 16, ch - 16, 20); ctx.fill(); ctx.stroke();
+          }
+          const pad = highlight ? 30 : 14;
+          ctx.fillStyle = '#1d5d9b';
+          ctx.beginPath(); ctx.roundRect(pad, pad, cw - pad * 2, ch - pad * 2, 16); ctx.fill();
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 8; ctx.stroke();
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 78px "Noto Sans TC", sans-serif';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('WC', cw / 2, ch / 2 - 14);
+          ctx.font = '800 34px "Noto Sans TC", sans-serif';
+          ctx.fillText('廁所', cw / 2, ch / 2 + 44);
+        }, 256, 256);
+        const size = highlight ? 15 : 11.5;
+        const mesh = new THREE.Mesh(
+          new THREE.PlaneGeometry(size, size),
+          new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3 })
+        );
+        mesh.rotation.x = -Math.PI / 2;
+        mesh.position.set(x, 0.85, z);
+        parent.add(mesh);
+        const base = new THREE.Mesh(
+          new THREE.BoxGeometry(size * 0.92, 0.6, size * 0.92),
+          new THREE.MeshStandardMaterial({ color: highlight ? 0xfacc15 : 0x1d5d9b, roughness: 0.6 })
+        );
+        base.position.set(x, 0.35, z);
+        base.receiveShadow = true;
+        parent.add(base);
+      }
+
+      function addFlatRoad(parent, points, width = 11, color = 0xebeff4, y = 0.42, borderColor = 0xd5dce6) {
+        const curve = new THREE.CatmullRomCurve3(points.map(([x, z]) => new THREE.Vector3(x, y, z)));
+        const segs = Math.max(24, points.length * 14);
+        function buildRibbon(w, yPos, col) {
+          const positions = [], indices = [], half = w * 0.5;
+          for (let i = 0; i <= segs; i++) {
+            const t = i / segs, p = curve.getPoint(t), tan = curve.getTangent(t).normalize();
+            const nx = -tan.z, nz = tan.x;
+            positions.push(p.x + nx * half, yPos, p.z + nz * half);
+            positions.push(p.x - nx * half, yPos, p.z - nz * half);
+            if (i < segs) { const a = i * 2, b = a + 1, c = a + 2, d = a + 3; indices.push(a, b, c, b, d, c); }
+          }
+          const geo = new THREE.BufferGeometry();
+          geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+          geo.setIndex(indices); geo.computeVertexNormals();
+          const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: col, roughness: 0.9, side: THREE.DoubleSide }));
+          m.receiveShadow = true;
+          parent.add(m);
+        }
+        if (borderColor) buildRibbon(width + 1.6, y - 0.04, borderColor);
+        buildRibbon(width, y, color);
+      }
+
+      function createWorldPolygon(pts, depth, color, y = 0, roughness = 0.82) {
+        const shape = new THREE.Shape();
+        pts.forEach(([x, z], idx) => { if (idx === 0) shape.moveTo(x, -z); else shape.lineTo(x, -z); });
+        shape.closePath();
+        const geo = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false });
+        const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color, roughness }));
+        mesh.rotation.x = -Math.PI / 2;
+        mesh.position.y = y;
+        mesh.castShadow = depth > 1;
+        mesh.receiveShadow = true;
+        return mesh;
+      }
+
+      // 1. 場外 3D 固定校園底圖
+      const grass = new THREE.Mesh(
+        new THREE.PlaneGeometry(760, 760),
+        new THREE.MeshStandardMaterial({ color: 0xaed581, roughness: 0.96 })
+      );
+      grass.rotation.x = -Math.PI / 2;
+      grass.receiveShadow = true;
+      outdoorFixedGroup.add(grass);
+
+      outdoorFixedGroup.add(createWorldPolygon([
+        [-190, 155], [-108, 60], [-18, 128], [130, 128], [190, 102], [190, 210], [-190, 210]
+      ], 0.12, 0xe8ece8, 0.02, 0.95));
+
+      const arenaPlaza = new THREE.Mesh(
+        new THREE.CylinderGeometry(58, 59, 0.48, 56),
+        new THREE.MeshStandardMaterial({ color: 0xe7ebf0, roughness: 0.88 })
+      );
+      arenaPlaza.position.set(ARENA_X, 0.24, ARENA_Z);
+      arenaPlaza.receiveShadow = true;
+      outdoorFixedGroup.add(arenaPlaza);
+
+      outdoorFixedGroup.add(createWorldPolygon([
+        [76, -10], [98, -12], [96, 66], [62, 76], [54, 48]
+      ], 0.44, 0xe7ebf0, 0.02, 0.88));
+
+      addFlatRoad(outdoorFixedGroup, [[-165, 148], [-134, 96], [-110, 52]], 15, 0xf1f5f9, 0.44);
+      addFlatRoad(outdoorFixedGroup, [[-110, 52], [-122, 10], [-122, -32], [-106, -78], [-82, -106], [-56, -120]], 11.5, 0xf1f5f9, 0.44);
+      addFlatRoad(outdoorFixedGroup, [[-82, -106], [-32, -90], [26, -86], [92, -88], [148, -114], [180, -126]], 11, 0xf1f5f9, 0.44);
+      addFlatRoad(outdoorFixedGroup, [[-110, 52], [-64, 53], [-38, 60], [-16, 86], [26, 105], [76, 106], [126, 94], [175, 76]], 11, 0xf1f5f9, 0.44);
+      addFlatRoad(outdoorFixedGroup, [[-116, 68], [-82, 86], [-18, 122], [68, 126], [134, 122], [182, 100]], 12, 0xf1f5f9, 0.42);
+      addFlatRoad(outdoorFixedGroup, [[16, -86], [42, -52], [82, -26], [94, 24], [84, 72], [66, 105]], 7.5, 0xedf1f6, 0.40);
+      addFlatRoad(outdoorFixedGroup, [[110, -88], [94, -56], [102, -38]], 7.5, 0xedf1f6, 0.40);
+
+      addGroundText(outdoorFixedGroup, '文化一路', -134, 106, { rot: 1.04, w: 38, h: 11, fontSize: 56, color: '#0f172a' });
+      addGroundText(outdoorFixedGroup, '← A7機捷', -105, 114, { rot: 0.72, w: 36, h: 10, fontSize: 48, color: '#1e293b' });
+      addGroundText(outdoorFixedGroup, '體大一路', -122, -16, { rot: Math.PI / 2, w: 32, h: 9.5, fontSize: 46, color: '#475569' });
+      addGroundText(outdoorFixedGroup, '體大三路', 22, -86, { rot: 0.02, w: 34, h: 9.5, fontSize: 46, color: '#475569' });
+      addGroundText(outdoorFixedGroup, '體大二路', -66, 51, { rot: -0.05, w: 32, h: 9, fontSize: 44, color: '#475569' });
+      addGroundText(outdoorFixedGroup, '體大二路', 34, 104, { rot: 0.02, w: 32, h: 9, fontSize: 44, color: '#475569' });
+      addGroundText(outdoorFixedGroup, '振興路', 142, 124, { rot: 0, w: 34, h: 11, fontSize: 58, color: '#0f172a' });
+
+      const gateHouse = new THREE.Mesh(
+        new THREE.BoxGeometry(11, 5.5, 14),
+        new THREE.MeshStandardMaterial({ color: 0xef8a6c, roughness: 0.65 })
+      );
+      gateHouse.position.set(-124, 2.75, 50);
+      gateHouse.castShadow = true;
+      gateHouse.receiveShadow = true;
+      outdoorFixedGroup.add(gateHouse);
+
+      addGroundCircleBadge(outdoorFixedGroup, 'A', -138, 50, { bg: '#4f86b5', size: 11, rot: Math.PI / 2 });
+      addGroundText(outdoorFixedGroup, '校門', -108, 52, { rot: Math.PI / 2, w: 22, h: 9, fontSize: 56, color: '#be185d' });
+      addGroundText(outdoorFixedGroup, 'You Bike', -92, 51, { rot: Math.PI / 2, w: 26, h: 8, fontSize: 42, color: '#0f172a' });
+
+      outdoorFixedGroup.add(createWorldPolygon([
+        [-90, -76], [16, -54], [12, -32], [-8, -12], [-16, 12], [-22, 34], [-106, 20], [-112, -26]
+      ], 0.45, 0xdbe2ea, 0.04, 0.88));
+
+      const laneGroup = new THREE.Group();
+      laneGroup.position.set(-54, 0.56, -22);
+      laneGroup.rotation.y = -0.34;
+      const islandMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.7 });
+      const stripeMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.8 });
+      [
+        { z: -32, len: 86 }, { z: -18, len: 92 }, { z: -4, len: 86 },
+        { z: 10, len: 76 }, { z: 24, len: 70 }, { z: 38, len: 68 }
+      ].forEach(({ z, len }) => {
+        const island = new THREE.Mesh(new THREE.BoxGeometry(len, 0.16, 1.5), islandMat);
+        island.position.set(-4, 0, z);
+        laneGroup.add(island);
+        [-len / 2, len / 2].forEach(ex => {
+          const cap = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1.5, 0.18, 12), stripeMat);
+          cap.position.set(-4 + ex, 0, z);
+          laneGroup.add(cap);
+        });
+      });
+      outdoorFixedGroup.add(laneGroup);
+
+      addGroundCircleBadge(outdoorFixedGroup, 'P', -60, -18, { bg: '#1e3a8a', size: 14, y: 0.88, rot: Math.PI / 2 });
+      addGroundText(outdoorFixedGroup, '停車場 P 區', -60, -3, { y: 0.84, w: 30, h: 8.5, fontSize: 40, color: '#1e3a8a' });
+
+      const fountainRim = new THREE.Mesh(
+        new THREE.CylinderGeometry(13.5, 14.5, 1.0, 36),
+        new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.6 })
+      );
+      fountainRim.position.set(-24, 0.5, 56);
+      fountainRim.receiveShadow = true;
+      outdoorFixedGroup.add(fountainRim);
+
+      const fountainWater = new THREE.Mesh(
+        new THREE.CylinderGeometry(12, 12, 1.15, 36),
+        new THREE.MeshStandardMaterial({ color: 0x0ea5e9, roughness: 0.2, metalness: 0.1 })
+      );
+      fountainWater.position.set(-24, 0.58, 56);
+      outdoorFixedGroup.add(fountainWater);
+      addGroundText(outdoorFixedGroup, '噴水池', -24, 56, { y: 1.25, rot: Math.PI / 2, w: 18, h: 7.5, fontSize: 46, color: '#ffffff', stroke: '#0369a1', strokeWidth: 8 });
+
+      outdoorFixedGroup.add(createWorldPolygon([
+        [-96, -145], [-26, -145], [-20, -112], [-42, -98], [-74, -104], [-94, -124]
+      ], 0.35, 0x7dd3fc, 0.05, 0.25));
+      addGroundText(outdoorFixedGroup, '志清湖', -58, -124, { y: 0.6, w: 28, h: 9, fontSize: 46, color: '#0369a1' });
+
+      const ringSculp = new THREE.Mesh(
+        new THREE.TorusGeometry(4.2, 1.15, 14, 28),
+        new THREE.MeshStandardMaterial({ color: 0xd4a346, roughness: 0.35, metalness: 0.65 })
+      );
+      ringSculp.position.set(-78, 5.2, -108);
+      ringSculp.rotation.y = 0.5;
+      ringSculp.castShadow = true;
+      outdoorFixedGroup.add(ringSculp);
+      addGroundText(outdoorFixedGroup, '榮耀光環', -64, -106, { rot: Math.PI / 2, y: 0.72, w: 24, h: 7.5, fontSize: 42, color: '#475569' });
+
+      const bldgMat = new THREE.MeshStandardMaterial({ color: 0xf4a482, roughness: 0.62 });
+      const bldgRoofMat = new THREE.MeshStandardMaterial({ color: 0xf7b99d, roughness: 0.55 });
+      function addCampusBuilding(x, z, w, h, d, rotY, labelText, badgeChar) {
+        const g = new THREE.Group();
+        const body = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), [bldgMat, bldgMat, bldgRoofMat, bldgMat, bldgMat, bldgMat]);
+        body.position.y = h / 2;
+        body.castShadow = true;
+        body.receiveShadow = true;
+        g.add(body);
+        g.position.set(x, 0.2, z);
+        g.rotation.y = rotY;
+        outdoorFixedGroup.add(g);
+        if (badgeChar) addGroundCircleBadge(g, badgeChar, 0, 0, { y: h + 0.15, size: 12, bg: '#2b7bb9', rot: Math.PI / 2 });
+        if (labelText) addGroundText(g, labelText, 0, d * 0.26, { y: h + 0.15, w: Math.min(w * 0.9, 34), h: 9, fontSize: 38, color: '#7c2d12', stroke: 'rgba(255,245,238,0.9)' });
+      }
+      addCampusBuilding(-144, -112, 22, 12, 26, -0.25, '', '');
+      addCampusBuilding(-148, -74, 24, 13, 28, 0.05, '', '');
+      addCampusBuilding(128, -22, 42, 16, 62, 0.54, '周邊場館', '9');
+      addCampusBuilding(134, 64, 52, 17, 74, -0.08, '教學／綜合館', '8');
+
+      addFixedWcIcon(outdoorFixedGroup, 54, -56, false);
+      addFixedWcIcon(outdoorFixedGroup, -36, 36, false);
+      addFixedWcIcon(outdoorFixedGroup, 88, 78, true);
+
+      addGroundText(outdoorFixedGroup, '≪ A、黃區入口', 82, -16, { y: 0.85, rot: 0.25, w: 38, h: 10.5, fontSize: 48, color: '#dc2626', stroke: '#ffffff', strokeWidth: 12 });
+      addGroundText(outdoorFixedGroup, 'B、橙區入口 ≫', -14, 46, { y: 0.85, rot: 0.35, w: 38, h: 10.5, fontSize: 48, color: '#dc2626', stroke: '#ffffff', strokeWidth: 12 });
+
+      const trunkGeo = new THREE.CylinderGeometry(0.6, 0.85, 3.4, 7);
+      const trunkMat = new THREE.MeshStandardMaterial({ color: 0x7c4a21, roughness: 0.9 });
+      const crownGeo = new THREE.DodecahedronGeometry(3.8, 1);
+      const crownMat = new THREE.MeshStandardMaterial({ color: 0x4caf50, roughness: 0.82 });
+      [
+        [-116, -104], [-126, -92], [-124, -48], [-110, -86],
+        [-16, -106], [42, -70], [62, -68], [108, -74], [122, -88],
+        [104, -52], [116, 108], [94, 114], [-60, 80], [-74, 68]
+      ].forEach(([tx, tz]) => {
+        const tg = new THREE.Group();
+        const tr = new THREE.Mesh(trunkGeo, trunkMat); tr.position.y = 1.7; tr.castShadow = true;
+        const cr = new THREE.Mesh(crownGeo, crownMat); cr.position.y = 5.4; cr.castShadow = true;
+        tg.add(tr, cr);
+        tg.position.set(tx, 0.3, tz);
+        outdoorFixedGroup.add(tg);
+      });
+
+      // 林口體育館本體外觀（僅作場外地圖建築主體標示）
+      const outerBase = new THREE.Mesh(
+        new THREE.CylinderGeometry(45.5, 47, 11, 56),
+        new THREE.MeshStandardMaterial({ color: 0x3f4756, roughness: 0.6, metalness: 0.12 })
+      );
+      outerBase.position.y = 5.5;
+      outerBase.castShadow = true;
+      outerBase.receiveShadow = true;
+      arenaGroup.add(outerBase);
+
+      const arenaOuterRim = new THREE.Mesh(
+        new THREE.TorusGeometry(45.5, 2.1, 12, 64),
+        new THREE.MeshStandardMaterial({ color: 0xdbe2ec, roughness: 0.45, metalness: 0.15 })
+      );
+      arenaOuterRim.rotation.x = Math.PI / 2;
+      arenaOuterRim.position.y = 11.2;
+      arenaGroup.add(arenaOuterRim);
+
+      const arenaRoof = new THREE.Mesh(
+        new THREE.CylinderGeometry(41.5, 44.5, 2.6, 56),
+        new THREE.MeshStandardMaterial({ color: 0x4b5565, roughness: 0.55, metalness: 0.15 })
+      );
+      arenaRoof.position.y = 11.4;
+      arenaRoof.castShadow = true;
+      arenaRoof.receiveShadow = true;
+      arenaGroup.add(arenaRoof);
+
+      const roofCap = new THREE.Mesh(
+        new THREE.CylinderGeometry(32, 39, 1.8, 56),
+        new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.5, metalness: 0.1 })
+      );
+      roofCap.position.y = 13.4;
+      roofCap.receiveShadow = true;
+      arenaGroup.add(roofCap);
+
+      addGroundText(arenaGroup, '林口體育館', 0, 0, { y: 14.55, w: 40, h: 12, fontSize: 58, color: '#0f172a', stroke: '#ffffff', strokeWidth: 10 });
+
+      // 初始化動態攤位模型與漂浮粗體指標
+      initialized = true;
+      buildOutdoorBoothsAndTags();
+
+      // 場外 3D 標籤拖移事件（支援滑鼠與觸控）
+      window.addEventListener('pointermove', (ev) => {
+        if (!drag3DState || !editMode) return;
+        const dx = ev.clientX - drag3DState.startX;
+        const dy = ev.clientY - drag3DState.startY;
+        if (!drag3DState.moved && Math.hypot(dx, dy) > 5) drag3DState.moved = true;
+        if (!drag3DState.moved) return;
+
+        const rect = canvas.getBoundingClientRect();
+        dragNdc.x = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
+        dragNdc.y = -((ev.clientY - rect.top) / rect.height) * 2 + 1;
+        raycaster.setFromCamera(dragNdc, camera);
+        if (raycaster.ray.intersectPlane(groundPlaneOutdoor, dragHitPt)) {
+          const rec = drag3DState.rec;
+          const wx = Math.max(-180, Math.min(180, dragHitPt.x));
+          const wz = Math.max(-150, Math.min(160, dragHitPt.z));
+          rec.anchor.x = wx;
+          rec.anchor.z = wz;
+          rec.data.pos = [Math.round(wx * 10) / 10, Math.round(wz * 10) / 10];
+          if (rec.boothMesh) { rec.boothMesh.position.x = wx; rec.boothMesh.position.z = wz; }
+          const badge = document.getElementById('vm-dragCoordBadge');
+          if (badge) badge.textContent = `${rec.data.name}｜X: ${Math.round(wx)}, Z: ${Math.round(wz)}`;
+          isDirty = true;
+        }
+      });
+
+      const endDrag = () => {
+        if (!drag3DState) return;
+        const { rec, moved } = drag3DState;
+        rec.el.classList.remove('dragging');
+        if (moved) rec.el.dataset.justDragged = '1';
+        drag3DState = null;
+        controls.enabled = true;
+        const badge = document.getElementById('vm-dragCoordBadge');
+        if (badge) badge.classList.add('hidden');
+      };
+      window.addEventListener('pointerup', endDrag);
+      window.addEventListener('pointercancel', endDrag);
+
+      // 圖例與右側控制按鈕
+      const legendEl = document.getElementById('vm-legend');
+      const infoCard = document.getElementById('vm-infoCard');
+      const btnTop = document.getElementById('vm-btnTop');
+      const btnTags = document.getElementById('vm-btnTags');
+
+      if (legendEl) {
+        legendEl.innerHTML = `
+          <div class="vm-leg-title">場外活動攤位圖例（目前僅為預估示意）</div>
+          <div class="vm-leg-row"><span class="vm-leg-swatch" style="background:#1d4ed8"></span>A7 機捷方向（左下文化一路）</div>
+          <div class="vm-leg-row"><span class="vm-leg-swatch" style="background:#ea580c"></span>B／橙區入口（左）｜A／黃區（右）</div>
+          <div class="vm-leg-row"><span class="vm-leg-swatch" style="background:#0ea5e9"></span>官方周邊商品販售處</div>
+          <div class="vm-leg-row"><span class="vm-leg-swatch" style="background:#8b5cf6"></span>VIP／親簽海報福利兌換・票務</div>
+          <div class="vm-leg-row"><span class="vm-leg-swatch" style="background:#f59e0b"></span>ONEDOOR ZONE／應援拍照區</div>
+          <div class="vm-leg-row"><span class="vm-leg-swatch" style="background:#ef4444"></span>戶外官方手燈配對處</div>
+          <div class="vm-leg-row"><span class="vm-leg-swatch" style="background:#16a34a"></span>行李寄放處／增設流動廁所</div>
+        `;
+      }
+
+      if (btnTop) {
+        btnTop.addEventListener('click', (e) => {
+          isTopView = !isTopView;
+          e.currentTarget.classList.toggle('on', isTopView);
+          const preset = isTopView ? VIEW_PRESETS.outdoor2D : VIEW_PRESETS.outdoor3D;
+          flyTo(preset.pos, preset.target, 600);
+        });
+      }
+
+      if (btnTags) {
+        btnTags.addEventListener('click', (e) => {
+          showTags = !showTags;
+          e.currentTarget.classList.toggle('on', showTags);
+          refreshTagVisibility();
+        });
+      }
+
+      document.getElementById('vm-btnReset').addEventListener('click', () => {
+        isTopView = false;
+        if (btnTop) btnTop.classList.remove('on');
+        infoCard.classList.remove('show');
+        document.querySelectorAll('.vm-tag, .vm-landmark').forEach(t => t.classList.remove('active'));
+        flyTo(VIEW_PRESETS.outdoor3D.pos, VIEW_PRESETS.outdoor3D.target, 600);
+      });
+
+      document.getElementById('vm-closeCard').addEventListener('click', () => {
+        infoCard.classList.remove('show');
+        document.querySelectorAll('.vm-tag, .vm-landmark').forEach(t => t.classList.remove('active'));
+      });
+
+      // 管理員編輯按鈕與工具列
+      const btnAdminEdit = document.getElementById('vm-btnAdminEdit');
+      if (btnAdminEdit) btnAdminEdit.addEventListener('click', () => setEditMode(!editMode));
+
+      const btnAddTag = document.getElementById('vm-btnAddTag');
+      if (btnAddTag) {
+        btnAddTag.addEventListener('click', () => {
+          if (!editMode) return;
+          const uid = 'custom_' + Date.now().toString(36);
+          const item = { id: uid, name: '新場外攤位', color: '#0ea5e9', pos: [35, 76], size: [9, 4, 6], desc: '請點擊標籤填寫詳細說明。（目前僅為預估示意）' };
+          activeOutdoorBooths.push(item);
+          isDirty = true;
+          buildOutdoorBoothsAndTags();
+          const rec = outdoorTagItems.find(x => x.data.id === uid);
+          if (rec) openAdminTagEditModal(rec);
+        });
+      }
+
+      const btnSaveCfg = document.getElementById('vm-btnSaveCfg');
+      if (btnSaveCfg) {
+        btnSaveCfg.addEventListener('click', async () => {
+          if (!window.saveVenueMapConfig) return;
+          const payload = {
+            outdoor: cloneList(activeOutdoorBooths),
+            landmarks: cloneList(activeLandmarks),
+            updatedAt: Date.now()
+          };
+          const ok = await window.saveVenueMapConfig(payload);
+          if (ok) isDirty = false;
+        });
+      }
+
+      const btnResetCfg = document.getElementById('vm-btnResetCfg');
+      if (btnResetCfg) {
+        btnResetCfg.addEventListener('click', () => {
+          if (!confirm('確定要將【場外地圖標籤】還原為預設值嗎？（還原後請記得按「儲存發布」）')) return;
+          activeOutdoorBooths = cloneList(DEFAULT_OUTDOOR_BOOTHS);
+          activeLandmarks = cloneList(DEFAULT_LANDMARKS);
+          buildOutdoorBoothsAndTags();
+          isDirty = true;
+        });
+      }
+
+      const btnExitEdit = document.getElementById('vm-btnExitEdit');
+      if (btnExitEdit) {
+        btnExitEdit.addEventListener('click', () => {
+          if (isDirty && !confirm('尚有未按「儲存發布」的修改，確定要退出編輯模式嗎？')) return;
+          setEditMode(false);
+        });
+      }
+
+      // 編輯彈窗事件
+      document.querySelectorAll('#vm-editSwatches button').forEach(sw => {
+        sw.addEventListener('click', () => {
+          const c = sw.dataset.c;
+          const colorEl = document.getElementById('vm-editColor');
+          if (colorEl && c) colorEl.value = c;
+        });
+      });
+      document.getElementById('vm-editCloseX').addEventListener('click', closeAdminTagEditModal);
+      document.getElementById('vm-editCancelBtn').addEventListener('click', closeAdminTagEditModal);
+      document.getElementById('vm-adminEditModal').addEventListener('click', (e) => {
+        if (e.target.id === 'vm-adminEditModal') closeAdminTagEditModal();
+      });
+      document.getElementById('vm-editApplyBtn').addEventListener('click', () => {
+        if (!editingRecord) return;
+        const name = (document.getElementById('vm-editName').value || '').trim();
+        if (!name) { alert('請填寫標籤顯示名稱'); return; }
+        const desc = (document.getElementById('vm-editDesc').value || '').trim();
+        const color = document.getElementById('vm-editColor').value || '#0ea5e9';
+        const nx = parseFloat(document.getElementById('vm-editX').value);
+        const nz = parseFloat(document.getElementById('vm-editZ').value);
+
+        editingRecord.data.name = name;
+        editingRecord.data.desc = desc;
+        if (!editingRecord.isLandmark) editingRecord.data.color = color;
+        if (!Number.isNaN(nx) && !Number.isNaN(nz)) {
+          editingRecord.data.pos = [Math.max(-180, Math.min(180, nx)), Math.max(-150, Math.min(160, nz))];
+        }
+        isDirty = true;
+        closeAdminTagEditModal();
+        buildOutdoorBoothsAndTags();
+      });
+      document.getElementById('vm-editDeleteBtn').addEventListener('click', () => {
+        if (!editingRecord || editingRecord.isLandmark) return;
+        if (!confirm(`確定要刪除標籤「${editingRecord.data.name}」嗎？`)) return;
+        activeOutdoorBooths = activeOutdoorBooths.filter(x => x.id !== editingRecord.data.id);
+        buildOutdoorBoothsAndTags();
+        isDirty = true;
+        closeAdminTagEditModal();
+      });
+
+      const legendWrap = document.getElementById('vm-legendWrap');
+      const legendToggle = document.getElementById('vm-legendToggle');
+      if (legendWrap && legendToggle) {
+        legendToggle.addEventListener('click', () => {
+          const willCollapse = !legendWrap.classList.contains('collapsed');
+          legendWrap.classList.toggle('collapsed', willCollapse);
+          legendToggle.setAttribute('aria-expanded', String(!willCollapse));
+          if (!willCollapse && window.innerWidth < 640) {
+            infoCard.classList.remove('show');
+            document.querySelectorAll('.vm-tag, .vm-landmark').forEach(t => t.classList.remove('active'));
+          }
+        });
+      }
+
+      const refModal = document.getElementById('vm-refModal');
+      const closeRef = () => refModal.classList.add('hidden');
+      document.getElementById('vm-btnRef').addEventListener('click', () => refModal.classList.remove('hidden'));
+      document.getElementById('vm-closeRef').addEventListener('click', closeRef);
+      document.getElementById('vm-closeRefX').addEventListener('click', closeRef);
+      refModal.addEventListener('click', (e) => { if (e.target === refModal) closeRef(); });
+
+      window.addEventListener('resize', handleResize);
+
+      syncRoleUI();
+      syncSceneSkyTheme();
+      const loadingEl = document.getElementById('vm-loading');
+      if (loadingEl) loadingEl.classList.add('hidden');
+    }
+
+    function handleResize() {
+      if (!initialized || !renderer || !camera) return;
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function updateOutdoorLabels() {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      for (const item of outdoorTagItems) {
+        if (!item.isLandmark && !showTags && !editMode) continue;
+        projV.copy(item.anchor).project(camera);
+        const inFront = projV.z < 1 && projV.z > -1;
+        item.el.style.display = inFront ? 'flex' : 'none';
+        if (inFront) {
+          const sx = (projV.x * 0.5 + 0.5) * w;
+          const sy = (-projV.y * 0.5 + 0.5) * h;
+          item.el.style.transform = `translate(-50%, -100%) translate3d(${sx.toFixed(1)}px, ${sy.toFixed(1)}px, 0)`;
+        }
+      }
+    }
+
+    function animate(now) {
+      if (!isRunning) return;
+      rafId = requestAnimationFrame(animate);
+      if (camAnim) {
+        const t = Math.min(1, (now - camAnim.startTime) / camAnim.duration);
+        const ease = 1 - Math.pow(1 - t, 3);
+        camera.position.lerpVectors(camAnim.startPos, camAnim.endPos, ease);
+        controls.target.lerpVectors(camAnim.startTarget, camAnim.endTarget, ease);
+        if (t >= 1) camAnim = null;
+      }
+      controls.update();
+      renderer.render(scene, camera);
+      updateOutdoorLabels();
+    }
+
+    function onShow() {
+      if (!initialized) initVenueMap();
+      syncRoleUI();
+      handleResize();
+      syncSceneSkyTheme();
+      if (!isRunning) {
+        isRunning = true;
+        rafId = requestAnimationFrame(animate);
+      }
+    }
+
+    function onHide() {
+      if (editMode && !isDirty) setEditMode(false);
+      isRunning = false;
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = 0;
+      }
+    }
+
+    window.VenueMapApp = { onShow, onHide, syncTheme: syncSceneSkyTheme, syncRole: syncRoleUI, applyConfig };
+    const venueSec = document.getElementById('tab-venue');
+    if (venueSec && !venueSec.classList.contains('hidden')) {
+      onShow();
+    }
   </script>
 </body>
 </html>
