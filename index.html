@@ -1464,9 +1464,9 @@ body.lite-mode #tab-venue #vm-legendToggle {
         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">目前僅為預估示意</span>
       </div>
       <div class="text-xs text-slate-600 leading-relaxed space-y-2 mb-4">
-        <p>• <strong class="text-slate-800">常駐漂浮粗體指標</strong>：<strong>← A7 機捷方向</strong>、<strong>≪ A區／黃區出入口</strong>（右側・靠校園內部）、<strong>B區／橙區出入口 ≫</strong>（左側・靠聯外道路），即使隱藏活動攤位標籤仍會常駐提示。</p>
-        <p>• <strong class="text-slate-800">活動攤位標註（目前僅為預估示意）</strong>：包含官方周邊商品販售處、VIP／親簽海報福利兌換處、票務服務處、行李寄放處、ONEDOOR ZONE／應援拍照區、戶外官方手燈配對處與活動增設流動廁所；點擊各標籤可對焦查看說明，實際擺設位置與開放時段請以主辦單位與現場公告為準。</p>
-        <p>• <strong class="text-slate-800">固定校園地標與路網</strong>：文化一路、體大一路／二路／三路、振興路、校門、You Bike、停車場 P 區、噴水池、志清湖、榮耀光環、周圍場館及三處固定廁所均繪製於地圖表面。</p>
+        <p>• <strong class="text-slate-800">常駐漂浮粗體指標</strong>：<strong>← A7 機捷方向</strong>（文化一路校門入口）、<strong>≪ A區／黃區出入口</strong>（東側・靠校園內部）、<strong>B區／橙區出入口 ≫</strong>（西側・靠噴水池圓環側），即使隱藏活動攤位標籤仍會常駐提示。</p>
+        <p>• <strong class="text-slate-800">完整車道、校門、噴水池圓環與體育館出入口</strong>：繪製文化一路、振興路聯外幹道、國立體育大學<strong>校門</strong>、體大一路／二路／三路環場車道、<strong>噴水池圓環</strong>（含環形多車道、斑馬線、下車處黃線路緣與人行步道），以及體育館<strong>大門</strong>門廊。</p>
+        <p>• <strong class="text-slate-800">活動攤位標註（目前僅為預估示意）</strong>：包含官方周邊商品販售處、VIP／親簽海報福利兌換處、票務服務處、行李寄放處、ONEDOOR ZONE／應援拍照區、戶外官方手燈配對處與活動增設流動廁所；點擊各標籤可對焦查看說明。</p>
         <p>• <strong class="text-slate-800">操作方式</strong>：單指拖曳旋轉、雙指縮放與平移；右側可切換 <code class="px-1 py-0.5 rounded bg-slate-100 text-skyBlue-600 font-mono">2D/3D</code> 視角、隱藏／顯示「攤位」或「重置」視角；左側「圖例」拉耳可隨時展開或收合。</p>
         <p class="text-[11px] text-slate-400 pt-1 border-t border-slate-200/80">※ 場外活動攤位位置與內容目前僅為預估示意，僅供參考 ｜ From @onedoor_boice_0820</p>
       </div>
@@ -6500,7 +6500,7 @@ body.lite-mode #tab-venue #vm-legendToggle {
     });
   </script>
 
-  <!-- 林口體育館 3D 場外互動地圖模組（漂浮粗體指標 ＋ 管理員拖移編輯 | From @onedoor_boice_0820） -->
+  <!-- 林口體育館 3D 場外互動地圖模組（校門、噴水池圓環車道與體育館大門／東側／北側入口 | From @onedoor_boice_0820） -->
   <script type="module">
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -6550,7 +6550,7 @@ body.lite-mode #tab-venue #vm-legendToggle {
         id: 'light_out',
         name: '戶外官方手燈配對處',
         color: '#ef4444',
-        pos: [-18, 18],
+        pos: [-2, 16],
         size: [7.5, 3.8, 6],
         desc: '進場前官方應援手燈藍牙／中控訊號檢測與電池更換服務點。（目前僅為預估示意）'
       },
@@ -6572,7 +6572,7 @@ body.lite-mode #tab-venue #vm-legendToggle {
         style: 'lm-metro',
         icon: 'fa-solid fa-train-subway',
         name: '← A7 機捷方向',
-        pos: [-112, 112],
+        pos: [-114, 114],
         y: 13,
         desc: '沿文化一路往左下步行約 10–15 分鐘即可抵達桃園機場捷運 A7 體育大學站。'
       },
@@ -6592,9 +6592,9 @@ body.lite-mode #tab-venue #vm-legendToggle {
         style: 'lm-gate-b',
         icon: 'fa-solid fa-door-open',
         name: 'B區／橙區出入口 ≫',
-        pos: [-14, 46],
+        pos: [-14, 34],
         y: 14,
-        desc: '位於體育館西側（左側・靠聯外道路與噴水池方向），前往 VIP B 與橙區看台請由此進場。'
+        desc: '位於體育館西側（左側・靠噴水池圓環與大門階梯方向），前往 VIP B 與橙區看台請由此進場。'
       }
     ];
 
@@ -6954,6 +6954,60 @@ body.lite-mode #tab-venue #vm-legendToggle {
         return mesh;
       }
 
+      // 帶「入」黃圓徽章的地標膠囊牌（參考示意圖樣式：大門 / 東側入口 / 北側入口 / 下車處 / 噴水池圓環）
+      function addMapPillSign(parent, text, x, z, opts = {}) {
+        const {
+          y = 1.05, w = 26, h = 6.8, rot = 0,
+          badgeText = '入', badgeBg = '#facc15', badgeColor = '#1e293b',
+          pillBg = 'rgba(255,255,255,0.96)', textColor = '#1e293b', borderColor = '#cbd5e1'
+        } = opts;
+        const tex = createCanvasTexture((ctx, cw, ch) => {
+          ctx.fillStyle = pillBg;
+          ctx.beginPath();
+          ctx.roundRect(8, 8, cw - 16, ch - 16, (ch - 16) / 2);
+          ctx.fill();
+          ctx.lineWidth = 6;
+          ctx.strokeStyle = borderColor;
+          ctx.stroke();
+
+          let textStartX = cw * 0.5;
+          if (badgeText) {
+            const r = (ch - 32) * 0.5;
+            const bx = 22 + r;
+            const by = ch * 0.5;
+            ctx.beginPath();
+            ctx.arc(bx, by, r, 0, Math.PI * 2);
+            ctx.fillStyle = badgeBg;
+            ctx.fill();
+            ctx.lineWidth = 5;
+            ctx.strokeStyle = '#ffffff';
+            ctx.stroke();
+            ctx.fillStyle = badgeColor;
+            ctx.font = '900 54px "PingFang TC", "Noto Sans TC", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(badgeText, bx, by + 2);
+            textStartX = (bx + r + cw - 18) * 0.5;
+          }
+          ctx.fillStyle = textColor;
+          ctx.font = '900 46px "PingFang TC", "Noto Sans TC", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(text, textStartX, ch * 0.5 + 2);
+        }, 560, 140);
+
+        const mesh = new THREE.Mesh(
+          new THREE.PlaneGeometry(w, h),
+          new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4 })
+        );
+        mesh.rotation.order = 'YXZ';
+        mesh.rotation.x = -Math.PI / 2;
+        mesh.rotation.y = rot;
+        mesh.position.set(x, y, z);
+        parent.add(mesh);
+        return mesh;
+      }
+
       function addGroundCircleBadge(parent, label, x, z, opts = {}) {
         const { y = 0.82, size = 12, bg = '#1e3a8a', color = '#ffffff', ring = '#ffffff', rot = 0 } = opts;
         const tex = createCanvasTexture((ctx, cw, ch) => {
@@ -7012,27 +7066,284 @@ body.lite-mode #tab-venue #vm-legendToggle {
         parent.add(base);
       }
 
-      function addFlatRoad(parent, points, width = 11, color = 0xebeff4, y = 0.42, borderColor = 0xd5dce6) {
+      // 車道繪製器：柏油路面、磚紅人行道／路緣石、雙向中央分隔線與行車箭頭
+      function addDrivewayRoad(parent, points, opts = {}) {
+        const {
+          width = 12,
+          asphaltColor = 0x525d6e,
+          curbColor = 0xdbe3ec,
+          y = 0.44,
+          centerLine = 'dashed',
+          edgeLines = true,
+          arrows = []
+        } = opts;
+
         const curve = new THREE.CatmullRomCurve3(points.map(([x, z]) => new THREE.Vector3(x, y, z)));
-        const segs = Math.max(24, points.length * 14);
-        function buildRibbon(w, yPos, col) {
+        const segs = Math.max(36, points.length * 18);
+
+        function buildStrip(w, yPos, col, offsetLateral = 0, tStart = 0, tEnd = 1) {
           const positions = [], indices = [], half = w * 0.5;
-          for (let i = 0; i <= segs; i++) {
-            const t = i / segs, p = curve.getPoint(t), tan = curve.getTangent(t).normalize();
+          const steps = Math.max(4, Math.round(segs * (tEnd - tStart)));
+          for (let i = 0; i <= steps; i++) {
+            const t = tStart + (i / steps) * (tEnd - tStart);
+            const p = curve.getPoint(t);
+            const tan = curve.getTangent(t).normalize();
             const nx = -tan.z, nz = tan.x;
-            positions.push(p.x + nx * half, yPos, p.z + nz * half);
-            positions.push(p.x - nx * half, yPos, p.z - nz * half);
-            if (i < segs) { const a = i * 2, b = a + 1, c = a + 2, d = a + 3; indices.push(a, b, c, b, d, c); }
+            const cx = p.x + nx * offsetLateral;
+            const cz = p.z + nz * offsetLateral;
+            positions.push(cx + nx * half, yPos, cz + nz * half);
+            positions.push(cx - nx * half, yPos, cz - nz * half);
+            if (i < steps) {
+              const a = i * 2, b = a + 1, c = a + 2, d = a + 3;
+              indices.push(a, b, c, b, d, c);
+            }
           }
           const geo = new THREE.BufferGeometry();
           geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-          geo.setIndex(indices); geo.computeVertexNormals();
-          const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: col, roughness: 0.9, side: THREE.DoubleSide }));
+          geo.setIndex(indices);
+          geo.computeVertexNormals();
+          const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: col, roughness: 0.88, side: THREE.DoubleSide }));
           m.receiveShadow = true;
           parent.add(m);
         }
-        if (borderColor) buildRibbon(width + 1.6, y - 0.04, borderColor);
-        buildRibbon(width, y, color);
+
+        if (curbColor) buildStrip(width + 3.2, y - 0.05, curbColor);
+        buildStrip(width, y, asphaltColor);
+
+        if (edgeLines && width >= 8) {
+          const edgeOff = width * 0.43;
+          buildStrip(0.32, y + 0.03, 0xf8fafc, edgeOff);
+          buildStrip(0.32, y + 0.03, 0xf8fafc, -edgeOff);
+        }
+
+        if (centerLine === 'doubleYellow') {
+          buildStrip(0.28, y + 0.035, 0xfacc15, 0.32);
+          buildStrip(0.28, y + 0.035, 0xfacc15, -0.32);
+        } else if (centerLine === 'dashed') {
+          const totalLen = curve.getLength();
+          const dashCount = Math.max(4, Math.floor(totalLen / 7.5));
+          for (let d = 0; d < dashCount; d++) {
+            const t0 = d / dashCount + 0.012;
+            const t1 = Math.min(1, (d + 0.48) / dashCount);
+            if (t1 > t0) buildStrip(0.34, y + 0.035, 0xffffff, 0, t0, t1);
+          }
+        }
+
+        if (arrows && arrows.length > 0) {
+          const arrowTex = createCanvasTexture((ctx, cw, ch) => {
+            ctx.fillStyle = 'rgba(255,255,255,0.92)';
+            ctx.beginPath();
+            ctx.moveTo(cw * 0.5, ch * 0.12);
+            ctx.lineTo(cw * 0.84, ch * 0.48);
+            ctx.lineTo(cw * 0.63, ch * 0.48);
+            ctx.lineTo(cw * 0.63, ch * 0.88);
+            ctx.lineTo(cw * 0.37, ch * 0.88);
+            ctx.lineTo(cw * 0.37, ch * 0.48);
+            ctx.lineTo(cw * 0.16, ch * 0.48);
+            ctx.closePath();
+            ctx.fill();
+          }, 128, 128);
+          arrows.forEach(({ t, dir = 1, lateral = 0 }) => {
+            const pt = curve.getPoint(t);
+            const tan = curve.getTangent(t).normalize();
+            const nx = -tan.z, nz = tan.x;
+            const yaw = Math.atan2(tan.x * dir, tan.z * dir) + Math.PI;
+            const am = new THREE.Mesh(
+              new THREE.PlaneGeometry(3.2, 4.2),
+              new THREE.MeshBasicMaterial({ map: arrowTex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 })
+            );
+            am.rotation.order = 'YXZ';
+            am.rotation.x = -Math.PI / 2;
+            am.rotation.y = yaw;
+            am.position.set(pt.x + nx * lateral, y + 0.05, pt.z + nz * lateral);
+            parent.add(am);
+          });
+        }
+        return curve;
+      }
+
+      // 斑馬線行人穿越道
+      function addCrosswalk(parent, x, z, rotY, width = 12, length = 5.5, y = 0.48) {
+        const grp = new THREE.Group();
+        const stripeMat = new THREE.MeshBasicMaterial({ color: 0xffffff, polygonOffset: true, polygonOffsetFactor: -2 });
+        const count = Math.max(4, Math.floor(width / 1.65));
+        const step = width / count;
+        for (let i = 0; i < count; i++) {
+          const offset = -width / 2 + step * (i + 0.5);
+          const bar = new THREE.Mesh(new THREE.PlaneGeometry(step * 0.54, length), stripeMat);
+          bar.rotation.x = -Math.PI / 2;
+          bar.position.set(offset, 0, 0);
+          grp.add(bar);
+        }
+        grp.position.set(x, y, z);
+        grp.rotation.y = rotY;
+        parent.add(grp);
+      }
+
+      // 國立體育大學「校門」牌樓構造（僅設於文化一路交會處校門）
+      function addSchoolGateStructure(parent, x, z, rotY) {
+        const span = 16;
+        const g = new THREE.Group();
+        const pillarMat = new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.55 });
+        const trimMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.4 });
+        const beamMat = new THREE.MeshStandardMaterial({ color: 0x1e3a8a, roughness: 0.45, metalness: 0.15 });
+
+        [-span / 2, span / 2].forEach(px => {
+          const col = new THREE.Mesh(new THREE.BoxGeometry(2.4, 7.6, 2.8), pillarMat);
+          col.position.set(px, 3.8, 0);
+          col.castShadow = true;
+          col.receiveShadow = true;
+          const cap = new THREE.Mesh(new THREE.BoxGeometry(2.9, 0.7, 3.3), trimMat);
+          cap.position.set(px, 7.8, 0);
+          g.add(col, cap);
+        });
+
+        const island = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.5, 6.2), trimMat);
+        island.position.set(0, 0.25, 0);
+        g.add(island);
+
+        const gateBox = new THREE.Mesh(
+          new THREE.BoxGeometry(0.9, 2.2, 0.9),
+          new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.4 })
+        );
+        gateBox.position.set(0, 1.3, 0.6);
+        g.add(gateBox);
+
+        const armTex = createCanvasTexture((ctx, cw, ch) => {
+          const stripes = 8;
+          for (let i = 0; i < stripes; i++) {
+            ctx.fillStyle = i % 2 === 0 ? '#ef4444' : '#ffffff';
+            ctx.fillRect((cw / stripes) * i, 0, cw / stripes, ch);
+          }
+        }, 256, 32);
+        const arm = new THREE.Mesh(
+          new THREE.BoxGeometry(span * 0.36, 0.24, 0.24),
+          new THREE.MeshBasicMaterial({ map: armTex })
+        );
+        arm.position.set(span * 0.2, 2.1, 0.6);
+        g.add(arm);
+
+        const lintel = new THREE.Mesh(new THREE.BoxGeometry(span + 3.4, 1.7, 2.2), beamMat);
+        lintel.position.set(0, 8.4, 0);
+        lintel.castShadow = true;
+        g.add(lintel);
+
+        const signTex = createCanvasTexture((ctx, cw, ch) => {
+          ctx.fillStyle = '#0f172a';
+          ctx.fillRect(0, 0, cw, ch);
+          ctx.strokeStyle = '#fbbf24';
+          ctx.lineWidth = 8;
+          ctx.strokeRect(6, 6, cw - 12, ch - 12);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 52px "PingFang TC", "Noto Sans TC", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('國立體育大學 校門', cw / 2, ch * 0.38);
+          ctx.fillStyle = '#fde68a';
+          ctx.font = '700 26px "PingFang TC", "Noto Sans TC", sans-serif';
+          ctx.fillText('CAMPUS GATE・A7機捷步行入口', cw / 2, ch * 0.74);
+        }, 512, 128);
+        const signBoard = new THREE.Mesh(
+          new THREE.PlaneGeometry(span * 0.86, 1.45),
+          new THREE.MeshBasicMaterial({ map: signTex, side: THREE.DoubleSide })
+        );
+        signBoard.position.set(0, 8.4, 1.15);
+        const signBoardBack = signBoard.clone();
+        signBoardBack.position.z = -1.15;
+        signBoardBack.rotation.y = Math.PI;
+        g.add(signBoard, signBoardBack);
+
+        // 校門側邊警衛室
+        const guard = new THREE.Mesh(
+          new THREE.BoxGeometry(4.4, 4.2, 5.2),
+          new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.55 })
+        );
+        guard.position.set(-span / 2 - 3.6, 2.1, 0);
+        guard.castShadow = true;
+        const guardRoof = new THREE.Mesh(
+          new THREE.BoxGeometry(5.2, 0.6, 6.0),
+          new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.5 })
+        );
+        guardRoof.position.set(-span / 2 - 3.6, 4.4, 0);
+        g.add(guard, guardRoof);
+
+        g.position.set(x, 0.35, z);
+        g.rotation.y = rotY;
+        parent.add(g);
+        return g;
+      }
+
+      // 體育館主體出入口門廊（雨遮 + 雙開玻璃門 + 入口橫幅）
+      function addArenaEntrancePortal(parent, angleRad, radius, opts = {}) {
+        const {
+          label = '大門',
+          sub = 'MAIN ENTRANCE',
+          accentHex = 0xf59e0b,
+          bannerBg = '#b45309'
+        } = opts;
+        const g = new THREE.Group();
+        const px = Math.cos(angleRad) * radius;
+        const pz = Math.sin(angleRad) * radius;
+
+        const stepBase = new THREE.Mesh(
+          new THREE.BoxGeometry(10.5, 0.7, 6.8),
+          new THREE.MeshStandardMaterial({ color: 0xdbe2ec, roughness: 0.75 })
+        );
+        stepBase.position.set(0, 0.35, 2.0);
+        stepBase.receiveShadow = true;
+        g.add(stepBase);
+
+        const colMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.5 });
+        [-4.2, 4.2].forEach(ox => {
+          const p = new THREE.Mesh(new THREE.BoxGeometry(1.0, 5.8, 1.1), colMat);
+          p.position.set(ox, 2.9, 3.2);
+          p.castShadow = true;
+          g.add(p);
+        });
+
+        const canopy = new THREE.Mesh(
+          new THREE.BoxGeometry(11.2, 0.85, 5.8),
+          new THREE.MeshStandardMaterial({ color: accentHex, roughness: 0.4, metalness: 0.1 })
+        );
+        canopy.position.set(0, 5.9, 2.2);
+        canopy.castShadow = true;
+        g.add(canopy);
+
+        const doorFrame = new THREE.Mesh(
+          new THREE.BoxGeometry(7.2, 4.5, 0.6),
+          new THREE.MeshStandardMaterial({ color: 0x0ea5e9, roughness: 0.25, metalness: 0.3 })
+        );
+        doorFrame.position.set(0, 2.4, 0.3);
+        g.add(doorFrame);
+
+        const bannerTex = createCanvasTexture((ctx, cw, ch) => {
+          ctx.fillStyle = bannerBg;
+          ctx.beginPath();
+          ctx.roundRect(4, 4, cw - 8, ch - 8, 16);
+          ctx.fill();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 6;
+          ctx.stroke();
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 46px "PingFang TC", "Noto Sans TC", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(label, cw / 2, ch * 0.38);
+          ctx.fillStyle = '#fef3c7';
+          ctx.font = '700 24px "PingFang TC", "Noto Sans TC", sans-serif';
+          ctx.fillText(sub, cw / 2, ch * 0.74);
+        }, 512, 128);
+        const banner = new THREE.Mesh(
+          new THREE.PlaneGeometry(10.2, 2.1),
+          new THREE.MeshBasicMaterial({ map: bannerTex, side: THREE.DoubleSide })
+        );
+        banner.position.set(0, 7.1, 3.4);
+        g.add(banner);
+
+        g.position.set(px, 0.25, pz);
+        g.rotation.y = Math.atan2(px, pz);
+        parent.add(g);
+        return g;
       }
 
       function createWorldPolygon(pts, depth, color, y = 0, roughness = 0.82) {
@@ -7057,51 +7368,264 @@ body.lite-mode #tab-venue #vm-legendToggle {
       grass.receiveShadow = true;
       outdoorFixedGroup.add(grass);
 
+      // 校外聯外道路南側區域基底
       outdoorFixedGroup.add(createWorldPolygon([
         [-190, 155], [-108, 60], [-18, 128], [130, 128], [190, 102], [190, 210], [-190, 210]
       ], 0.12, 0xe8ece8, 0.02, 0.95));
 
+      // 體育館中央環形大廣場（含外圈人行鋪面）
+      const arenaPlazaOuter = new THREE.Mesh(
+        new THREE.CylinderGeometry(62, 63, 0.42, 60),
+        new THREE.MeshStandardMaterial({ color: 0xd8dfe8, roughness: 0.9 })
+      );
+      arenaPlazaOuter.position.set(ARENA_X, 0.21, ARENA_Z);
+      arenaPlazaOuter.receiveShadow = true;
+      outdoorFixedGroup.add(arenaPlazaOuter);
+
       const arenaPlaza = new THREE.Mesh(
         new THREE.CylinderGeometry(58, 59, 0.48, 56),
-        new THREE.MeshStandardMaterial({ color: 0xe7ebf0, roughness: 0.88 })
+        new THREE.MeshStandardMaterial({ color: 0xebeef3, roughness: 0.86 })
       );
       arenaPlaza.position.set(ARENA_X, 0.24, ARENA_Z);
       arenaPlaza.receiveShadow = true;
       outdoorFixedGroup.add(arenaPlaza);
 
+      // 東側帳篷廣場鋪面（官方周邊／票務／寄物區）
       outdoorFixedGroup.add(createWorldPolygon([
         [76, -10], [98, -12], [96, 66], [62, 76], [54, 48]
-      ], 0.44, 0xe7ebf0, 0.02, 0.88));
+      ], 0.44, 0xebeef3, 0.02, 0.88));
 
-      addFlatRoad(outdoorFixedGroup, [[-165, 148], [-134, 96], [-110, 52]], 15, 0xf1f5f9, 0.44);
-      addFlatRoad(outdoorFixedGroup, [[-110, 52], [-122, 10], [-122, -32], [-106, -78], [-82, -106], [-56, -120]], 11.5, 0xf1f5f9, 0.44);
-      addFlatRoad(outdoorFixedGroup, [[-82, -106], [-32, -90], [26, -86], [92, -88], [148, -114], [180, -126]], 11, 0xf1f5f9, 0.44);
-      addFlatRoad(outdoorFixedGroup, [[-110, 52], [-64, 53], [-38, 60], [-16, 86], [26, 105], [76, 106], [126, 94], [175, 76]], 11, 0xf1f5f9, 0.44);
-      addFlatRoad(outdoorFixedGroup, [[-116, 68], [-82, 86], [-18, 122], [68, 126], [134, 122], [182, 100]], 12, 0xf1f5f9, 0.42);
-      addFlatRoad(outdoorFixedGroup, [[16, -86], [42, -52], [82, -26], [94, 24], [84, 72], [66, 105]], 7.5, 0xedf1f6, 0.40);
-      addFlatRoad(outdoorFixedGroup, [[110, -88], [94, -56], [102, -38]], 7.5, 0xedf1f6, 0.40);
+      // 2. 完整聯外道路與園區車道系統
+      // (A) 文化一路（聯外主幹道：連接機捷 A7 站與體大校門）
+      addDrivewayRoad(outdoorFixedGroup, [[-172, 156], [-136, 98], [-110, 52]], {
+        width: 17,
+        asphaltColor: 0x475569,
+        curbColor: 0xd98a7c,
+        centerLine: 'doubleYellow',
+        arrows: [
+          { t: 0.35, dir: 1, lateral: 3.6 },
+          { t: 0.72, dir: -1, lateral: -3.6 }
+        ]
+      });
 
-      addGroundText(outdoorFixedGroup, '文化一路', -134, 106, { rot: 1.04, w: 38, h: 11, fontSize: 56, color: '#0f172a' });
-      addGroundText(outdoorFixedGroup, '← A7機捷', -105, 114, { rot: 0.72, w: 36, h: 10, fontSize: 48, color: '#1e293b' });
-      addGroundText(outdoorFixedGroup, '體大一路', -122, -16, { rot: Math.PI / 2, w: 32, h: 9.5, fontSize: 46, color: '#475569' });
-      addGroundText(outdoorFixedGroup, '體大三路', 22, -86, { rot: 0.02, w: 34, h: 9.5, fontSize: 46, color: '#475569' });
-      addGroundText(outdoorFixedGroup, '體大二路', -66, 51, { rot: -0.05, w: 32, h: 9, fontSize: 44, color: '#475569' });
-      addGroundText(outdoorFixedGroup, '體大二路', 34, 104, { rot: 0.02, w: 32, h: 9, fontSize: 44, color: '#475569' });
-      addGroundText(outdoorFixedGroup, '振興路', 142, 124, { rot: 0, w: 34, h: 11, fontSize: 58, color: '#0f172a' });
+      // (B) 振興路（南側聯外主幹道：獨立幹道，不設入口牌樓）
+      addDrivewayRoad(outdoorFixedGroup, [[-122, 66], [-82, 86], [-18, 122], [68, 126], [134, 122], [186, 98]], {
+        width: 15,
+        asphaltColor: 0x475569,
+        curbColor: 0xdbe3ec,
+        centerLine: 'doubleYellow',
+        arrows: [
+          { t: 0.32, dir: 1, lateral: 3.2 },
+          { t: 0.68, dir: -1, lateral: -3.2 }
+        ]
+      });
 
-      const gateHouse = new THREE.Mesh(
-        new THREE.BoxGeometry(11, 5.5, 14),
-        new THREE.MeshStandardMaterial({ color: 0xef8a6c, roughness: 0.65 })
+      // (C) 體大一路（西側園區主車道：自校門向北延伸）
+      addDrivewayRoad(outdoorFixedGroup, [[-110, 52], [-122, 10], [-122, -32], [-106, -78], [-82, -106], [-56, -120]], {
+        width: 12.5,
+        asphaltColor: 0x525d6e,
+        curbColor: 0xd98a7c,
+        centerLine: 'dashed',
+        arrows: [
+          { t: 0.28, dir: 1, lateral: 2.5 },
+          { t: 0.65, dir: -1, lateral: -2.5 }
+        ]
+      });
+
+      // (D) 體大三路（北側環場車道）
+      addDrivewayRoad(outdoorFixedGroup, [[-82, -106], [-32, -90], [26, -86], [92, -88], [148, -114], [182, -126]], {
+        width: 11.5,
+        asphaltColor: 0x525d6e,
+        centerLine: 'dashed',
+        arrows: [
+          { t: 0.38, dir: 1, lateral: 2.3 },
+          { t: 0.72, dir: -1, lateral: -2.3 }
+        ]
+      });
+
+      // (E) 體大二路（校門直通噴水池圓環與南側環場車道）
+      addDrivewayRoad(outdoorFixedGroup, [[-110, 52], [-64, 53], [-42, 56]], {
+        width: 15.5,
+        asphaltColor: 0x525d6e,
+        curbColor: 0xd98a7c,
+        centerLine: 'doubleYellow',
+        arrows: [
+          { t: 0.45, dir: 1, lateral: 3.2 },
+          { t: 0.65, dir: -1, lateral: -3.2 }
+        ]
+      });
+      addDrivewayRoad(outdoorFixedGroup, [[-6, 70], [26, 102], [76, 106], [126, 94], [178, 74]], {
+        width: 12,
+        asphaltColor: 0x525d6e,
+        curbColor: 0xd98a7c,
+        centerLine: 'dashed',
+        arrows: [
+          { t: 0.35, dir: 1, lateral: 2.4 },
+          { t: 0.75, dir: -1, lateral: -2.4 }
+        ]
+      });
+
+      // (F) 噴水池圓環連通北側／東側環場車道（圓環北向出口車道）
+      addDrivewayRoad(outdoorFixedGroup, [[-24, 34], [-14, 14], [16, -24], [42, -52], [82, -26], [94, 24], [84, 72], [66, 105]], {
+        width: 10.5,
+        asphaltColor: 0x525d6e,
+        curbColor: 0xd98a7c,
+        centerLine: 'dashed',
+        arrows: [
+          { t: 0.14, dir: 1, lateral: 2.1 },
+          { t: 0.48, dir: 1, lateral: 2.1 },
+          { t: 0.82, dir: 1, lateral: 2.1 }
+        ]
+      });
+
+      // (G) 圓環北出口往北側體大三路聯絡車道
+      addDrivewayRoad(outdoorFixedGroup, [[-14, 14], [-8, -28], [16, -86]], {
+        width: 9.5,
+        asphaltColor: 0x5c6778,
+        centerLine: 'dashed',
+        arrows: [{ t: 0.5, dir: 1, lateral: 1.9 }]
+      });
+
+      // (H) 東北側校區聯絡支線車道
+      addDrivewayRoad(outdoorFixedGroup, [[110, -88], [94, -56], [102, -38]], {
+        width: 8,
+        asphaltColor: 0x5c6778,
+        centerLine: 'none'
+      });
+
+      // (I) 停車場內部聯絡通道（不設出入口文字標示）
+      addDrivewayRoad(outdoorFixedGroup, [[-118, -14], [-96, -14], [-84, -14]], {
+        width: 8.5,
+        asphaltColor: 0x4b5563,
+        centerLine: 'dashed'
+      });
+      addDrivewayRoad(outdoorFixedGroup, [[-56, 53], [-56, 36], [-56, 22]], {
+        width: 8.5,
+        asphaltColor: 0x4b5563,
+        centerLine: 'dashed'
+      });
+
+      // 3. 噴水池圓環（完整環形雙車道、可通行路面、紅磚外圈步道、下車處黃線路緣與鋸齒水池）
+      const RX = -24, RZ = 56;
+      const roundaboutGroup = new THREE.Group();
+      roundaboutGroup.position.set(RX, 0, RZ);
+
+      // 外圈磚紅人行步道環（R=23.5 ~ 26.8）
+      const outerWalkRing = new THREE.Mesh(
+        new THREE.RingGeometry(23.5, 26.8, 64),
+        new THREE.MeshStandardMaterial({ color: 0xd98a7c, roughness: 0.85, side: THREE.DoubleSide })
       );
-      gateHouse.position.set(-124, 2.75, 50);
-      gateHouse.castShadow = true;
-      gateHouse.receiveShadow = true;
-      outdoorFixedGroup.add(gateHouse);
+      outerWalkRing.rotation.x = -Math.PI / 2;
+      outerWalkRing.position.y = 0.45;
+      outerWalkRing.receiveShadow = true;
+      roundaboutGroup.add(outerWalkRing);
+
+      // 圓環柏油車道主體（R=12.6 ~ 23.6，全圈皆為可通行車道）
+      const roundaboutRoad = new THREE.Mesh(
+        new THREE.RingGeometry(12.6, 23.6, 64),
+        new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.86, side: THREE.DoubleSide })
+      );
+      roundaboutRoad.rotation.x = -Math.PI / 2;
+      roundaboutRoad.position.y = 0.47;
+      roundaboutRoad.receiveShadow = true;
+      roundaboutGroup.add(roundaboutRoad);
+
+      // 圓環內外白色車道邊線
+      [13.1, 23.1].forEach(r => {
+        const edge = new THREE.Mesh(
+          new THREE.RingGeometry(r - 0.16, r + 0.16, 64),
+          new THREE.MeshBasicMaterial({ color: 0xf8fafc, side: THREE.DoubleSide })
+        );
+        edge.rotation.x = -Math.PI / 2;
+        edge.position.y = 0.49;
+        roundaboutGroup.add(edge);
+      });
+
+      // 圓環中央雙車道白色虛線（R=18.1）
+      const dashSegs = 28;
+      for (let i = 0; i < dashSegs; i++) {
+        const a0 = (i / dashSegs) * Math.PI * 2;
+        const aLen = (Math.PI * 2 / dashSegs) * 0.48;
+        const dash = new THREE.Mesh(
+          new THREE.RingGeometry(17.92, 18.28, 8, 1, a0, aLen),
+          new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
+        );
+        dash.rotation.x = -Math.PI / 2;
+        dash.position.y = 0.495;
+        roundaboutGroup.add(dash);
+      }
+
+      // 下車處（西側黃線路緣弧線：靠體育館大門側路緣）
+      const dropoffYellow = new THREE.Mesh(
+        new THREE.RingGeometry(22.7, 23.4, 24, 1, -0.35, 1.05),
+        new THREE.MeshBasicMaterial({ color: 0xfacc15, side: THREE.DoubleSide })
+      );
+      dropoffYellow.rotation.x = -Math.PI / 2;
+      dropoffYellow.position.y = 0.51;
+      roundaboutGroup.add(dropoffYellow);
+
+      // 圓環中心綠植邊框（R=11.4 ~ 12.7）
+      const centerGreenRim = new THREE.Mesh(
+        new THREE.CylinderGeometry(12.6, 12.8, 0.72, 48),
+        new THREE.MeshStandardMaterial({ color: 0x3f7d32, roughness: 0.8 })
+      );
+      centerGreenRim.position.y = 0.36;
+      centerGreenRim.receiveShadow = true;
+      roundaboutGroup.add(centerGreenRim);
+
+      // 噴水池水盤（簡潔圓形水池造型）
+      const fountainPool = new THREE.Mesh(
+        new THREE.CylinderGeometry(11.4, 11.4, 0.82, 48),
+        new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.5 })
+      );
+      fountainPool.position.y = 0.41;
+      roundaboutGroup.add(fountainPool);
+
+      const fountainWater = new THREE.Mesh(
+        new THREE.CylinderGeometry(10.3, 10.3, 0.90, 48),
+        new THREE.MeshStandardMaterial({ color: 0x0ea5e9, roughness: 0.22, metalness: 0.08 })
+      );
+      fountainWater.position.y = 0.45;
+      roundaboutGroup.add(fountainWater);
+
+      const fountainInnerRing = new THREE.Mesh(
+        new THREE.RingGeometry(3.6, 4.1, 36),
+        new THREE.MeshBasicMaterial({ color: 0xbae6fd, side: THREE.DoubleSide })
+      );
+      fountainInnerRing.rotation.x = -Math.PI / 2;
+      fountainInnerRing.position.y = 0.92;
+      roundaboutGroup.add(fountainInnerRing);
+
+
+
+      outdoorFixedGroup.add(roundaboutGroup);
+
+
+
+      // 關鍵路口斑馬線行人穿越道
+      addCrosswalk(outdoorFixedGroup, -118, 66, 0.96, 14, 5.2);     // 文化一路／校門口斑馬線
+      addCrosswalk(outdoorFixedGroup, -46, 55, Math.PI / 2, 13, 4.8);   // 校門直通圓環入口斑馬線
+      addCrosswalk(outdoorFixedGroup, -13, 33, -0.58, 11, 4.8);         // 圓環往體育館大門階梯斑馬線
+      addCrosswalk(outdoorFixedGroup, -2, 74, 0.78, 11, 4.8);           // 圓環東南側往廣場斑馬線
+      addCrosswalk(outdoorFixedGroup, 89, 2, 0.15, 8.5, 4.5);           // 東側 A 區入口前斑馬線
+
+      // 4. 國立體育大學「校門」（文化一路 × 體大一路／二路交會處）
+      addSchoolGateStructure(outdoorFixedGroup, -104, 52, Math.PI / 2);
+
+      // 道路名稱與方向地標文字
+      addGroundText(outdoorFixedGroup, '文化一路', -138, 108, { rot: 1.04, w: 38, h: 11, fontSize: 56, color: '#0f172a' });
+      addGroundText(outdoorFixedGroup, '← A7機捷方向', -106, 116, { rot: 0.72, w: 38, h: 10, fontSize: 48, color: '#1d4ed8' });
+      addGroundText(outdoorFixedGroup, '體大一路（西側車道）', -125, -18, { rot: Math.PI / 2, w: 38, h: 9.5, fontSize: 42, color: '#334155' });
+      addGroundText(outdoorFixedGroup, '體大三路（北側車道）', 22, -88, { rot: 0.02, w: 38, h: 9.5, fontSize: 42, color: '#334155' });
+      addGroundText(outdoorFixedGroup, '體大二路（校門主車道）', -74, 51, { rot: 0, w: 36, h: 8.8, fontSize: 38, color: '#334155' });
+      addGroundText(outdoorFixedGroup, '體大二路', 46, 104, { rot: 0.02, w: 32, h: 9, fontSize: 44, color: '#334155' });
+      addGroundText(outdoorFixedGroup, '振興路（聯外主幹道）', 142, 126, { rot: 0, w: 42, h: 11, fontSize: 52, color: '#0f172a' });
 
       addGroundCircleBadge(outdoorFixedGroup, 'A', -138, 50, { bg: '#4f86b5', size: 11, rot: Math.PI / 2 });
-      addGroundText(outdoorFixedGroup, '校門', -108, 52, { rot: Math.PI / 2, w: 22, h: 9, fontSize: 56, color: '#be185d' });
-      addGroundText(outdoorFixedGroup, 'You Bike', -92, 51, { rot: Math.PI / 2, w: 26, h: 8, fontSize: 42, color: '#0f172a' });
+      addGroundText(outdoorFixedGroup, '校門', -114, 52, { rot: Math.PI / 2, w: 22, h: 9, fontSize: 56, color: '#be185d' });
+      addGroundText(outdoorFixedGroup, 'You Bike', -90, 63, { rot: 0, w: 24, h: 7.5, fontSize: 40, color: '#0f172a', bg: 'rgba(255,255,255,0.88)', border: '#cbd5e1', stroke: null });
 
+      // 5. 大停車場 P 區（無出入口標示）
       outdoorFixedGroup.add(createWorldPolygon([
         [-90, -76], [16, -54], [12, -32], [-8, -12], [-16, 12], [-22, 34], [-106, 20], [-112, -26]
       ], 0.45, 0xdbe2ea, 0.04, 0.88));
@@ -7127,24 +7651,9 @@ body.lite-mode #tab-venue #vm-legendToggle {
       outdoorFixedGroup.add(laneGroup);
 
       addGroundCircleBadge(outdoorFixedGroup, 'P', -60, -18, { bg: '#1e3a8a', size: 14, y: 0.88, rot: Math.PI / 2 });
-      addGroundText(outdoorFixedGroup, '停車場 P 區', -60, -3, { y: 0.84, w: 30, h: 8.5, fontSize: 40, color: '#1e3a8a' });
+      addGroundText(outdoorFixedGroup, '停車場', -60, -3, { y: 0.84, w: 26, h: 8.5, fontSize: 44, color: '#1e3a8a' });
 
-      const fountainRim = new THREE.Mesh(
-        new THREE.CylinderGeometry(13.5, 14.5, 1.0, 36),
-        new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.6 })
-      );
-      fountainRim.position.set(-24, 0.5, 56);
-      fountainRim.receiveShadow = true;
-      outdoorFixedGroup.add(fountainRim);
-
-      const fountainWater = new THREE.Mesh(
-        new THREE.CylinderGeometry(12, 12, 1.15, 36),
-        new THREE.MeshStandardMaterial({ color: 0x0ea5e9, roughness: 0.2, metalness: 0.1 })
-      );
-      fountainWater.position.set(-24, 0.58, 56);
-      outdoorFixedGroup.add(fountainWater);
-      addGroundText(outdoorFixedGroup, '噴水池', -24, 56, { y: 1.25, rot: Math.PI / 2, w: 18, h: 7.5, fontSize: 46, color: '#ffffff', stroke: '#0369a1', strokeWidth: 8 });
-
+      // 6. 志清湖與榮耀光環地標
       outdoorFixedGroup.add(createWorldPolygon([
         [-96, -145], [-26, -145], [-20, -112], [-42, -98], [-74, -104], [-94, -124]
       ], 0.35, 0x7dd3fc, 0.05, 0.25));
@@ -7160,6 +7669,7 @@ body.lite-mode #tab-venue #vm-legendToggle {
       outdoorFixedGroup.add(ringSculp);
       addGroundText(outdoorFixedGroup, '榮耀光環', -64, -106, { rot: Math.PI / 2, y: 0.72, w: 24, h: 7.5, fontSize: 42, color: '#475569' });
 
+      // 7. 周邊校園建築
       const bldgMat = new THREE.MeshStandardMaterial({ color: 0xf4a482, roughness: 0.62 });
       const bldgRoofMat = new THREE.MeshStandardMaterial({ color: 0xf7b99d, roughness: 0.55 });
       function addCampusBuilding(x, z, w, h, d, rotY, labelText, badgeChar) {
@@ -7180,13 +7690,28 @@ body.lite-mode #tab-venue #vm-legendToggle {
       addCampusBuilding(128, -22, 42, 16, 62, 0.54, '周邊場館', '9');
       addCampusBuilding(134, 64, 52, 17, 74, -0.08, '教學／綜合館', '8');
 
+      // 8. 固定廁所圖示與出入口地面引導標記
       addFixedWcIcon(outdoorFixedGroup, 54, -56, false);
-      addFixedWcIcon(outdoorFixedGroup, -36, 36, false);
+      addFixedWcIcon(outdoorFixedGroup, -46, 30, false);
       addFixedWcIcon(outdoorFixedGroup, 88, 78, true);
 
-      addGroundText(outdoorFixedGroup, '≪ A、黃區入口', 82, -16, { y: 0.85, rot: 0.25, w: 38, h: 10.5, fontSize: 48, color: '#dc2626', stroke: '#ffffff', strokeWidth: 12 });
-      addGroundText(outdoorFixedGroup, 'B、橙區入口 ≫', -14, 46, { y: 0.85, rot: 0.35, w: 38, h: 10.5, fontSize: 48, color: '#dc2626', stroke: '#ffffff', strokeWidth: 12 });
+      // 體育館西側前庭扇形階梯平台（連接噴水池圓環與體育館大門／東側入口／北側入口）
+      const westTerrace = new THREE.Mesh(
+        new THREE.CylinderGeometry(52, 53.5, 0.72, 48, 1, false, Math.PI * 0.62, Math.PI * 0.68),
+        new THREE.MeshStandardMaterial({ color: 0xcbd5e1, roughness: 0.78 })
+      );
+      westTerrace.position.set(ARENA_X, 0.36, ARENA_Z);
+      westTerrace.receiveShadow = true;
+      outdoorFixedGroup.add(westTerrace);
 
+      // 僅保留「大門」黃圓「入」徽章膠囊牌，並保留原本的 B區／橙區出入口標示
+      addMapPillSign(outdoorFixedGroup, '大門', -6, 22, {
+        y: 1.15, w: 16, h: 5.5, badgeText: '入', badgeBg: '#facc15', badgeColor: '#1e293b'
+      });
+
+
+
+      // 9. 校園行道樹
       const trunkGeo = new THREE.CylinderGeometry(0.6, 0.85, 3.4, 7);
       const trunkMat = new THREE.MeshStandardMaterial({ color: 0x7c4a21, roughness: 0.9 });
       const crownGeo = new THREE.DodecahedronGeometry(3.8, 1);
@@ -7194,7 +7719,8 @@ body.lite-mode #tab-venue #vm-legendToggle {
       [
         [-116, -104], [-126, -92], [-124, -48], [-110, -86],
         [-16, -106], [42, -70], [62, -68], [108, -74], [122, -88],
-        [104, -52], [116, 108], [94, 114], [-60, 80], [-74, 68]
+        [104, -52], [116, 108], [94, 114], [-60, 80], [-74, 68],
+        [-94, 42], [-94, 66], [4, 62], [16, 74]
       ].forEach(([tx, tz]) => {
         const tg = new THREE.Group();
         const tr = new THREE.Mesh(trunkGeo, trunkMat); tr.position.y = 1.7; tr.castShadow = true;
@@ -7204,7 +7730,7 @@ body.lite-mode #tab-venue #vm-legendToggle {
         outdoorFixedGroup.add(tg);
       });
 
-      // 林口體育館本體外觀（僅作場外地圖建築主體標示）
+      // 10. 林口體育館本體外觀（含 A／黃區、B／橙區大門、東側入口、北側入口門廊）
       const outerBase = new THREE.Mesh(
         new THREE.CylinderGeometry(45.5, 47, 11, 56),
         new THREE.MeshStandardMaterial({ color: 0x3f4756, roughness: 0.6, metalness: 0.12 })
@@ -7238,6 +7764,14 @@ body.lite-mode #tab-venue #vm-legendToggle {
       roofCap.position.y = 13.4;
       roofCap.receiveShadow = true;
       arenaGroup.add(roofCap);
+
+      // 體育館西側：大門入口門廊
+      addArenaEntrancePortal(arenaGroup, 3.08, 45.2, {
+        label: '大門',
+        sub: 'MAIN GATE',
+        accentHex: 0xfacc15,
+        bannerBg: '#854d0e'
+      });
 
       addGroundText(arenaGroup, '林口體育館', 0, 0, { y: 14.55, w: 40, h: 12, fontSize: 58, color: '#0f172a', stroke: '#ffffff', strokeWidth: 10 });
 
@@ -7292,9 +7826,10 @@ body.lite-mode #tab-venue #vm-legendToggle {
 
       if (legendEl) {
         legendEl.innerHTML = `
-          <div class="vm-leg-title">場外活動攤位圖例（目前僅為預估示意）</div>
-          <div class="vm-leg-row"><span class="vm-leg-swatch" style="background:#1d4ed8"></span>A7 機捷方向（左下文化一路）</div>
-          <div class="vm-leg-row"><span class="vm-leg-swatch" style="background:#ea580c"></span>B／橙區入口（左）｜A／黃區（右）</div>
+          <div class="vm-leg-title">場外地圖圖例（目前僅為預估示意）</div>
+          <div class="vm-leg-row"><span class="vm-leg-swatch" style="background:#475569"></span>校門／噴水池圓環雙向車道與斑馬線</div>
+          <div class="vm-leg-row"><span class="vm-leg-swatch" style="background:#facc15"></span>大門／下車黃線路緣</div>
+          <div class="vm-leg-row"><span class="vm-leg-swatch" style="background:#ea580c"></span>B／橙區入口（西側）｜A／黃區（東側）</div>
           <div class="vm-leg-row"><span class="vm-leg-swatch" style="background:#0ea5e9"></span>官方周邊商品販售處</div>
           <div class="vm-leg-row"><span class="vm-leg-swatch" style="background:#8b5cf6"></span>VIP／親簽海報福利兌換・票務</div>
           <div class="vm-leg-row"><span class="vm-leg-swatch" style="background:#f59e0b"></span>ONEDOOR ZONE／應援拍照區</div>
