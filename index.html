@@ -1372,6 +1372,61 @@ body.lite-mode #tab-venue #vm-legendToggle {
       </div>
     </section>
 
+       <!-- ===================================================================
+         頁籤：六小門（暖心追星宣導、六扇門開鍋應援週區域合作導流與演唱會前注意事項）
+         預設隱藏，僅管理員可見並可透過最上方防呆開關切換全域公開
+         =================================================================== -->
+    <section id="tab-sixdoors" class="tab-content hidden">
+      <div class="space-y-4 mb-4">
+
+        <!-- 管理員專屬：全域公開防呆開關（僅管理員可見；全域公開後訪客與攤主亦不會看到此開關） -->
+        <div id="sixdoorsAdminBar" class="hidden glass-panel rounded-3xl p-3.5 sm:p-4 border-rose-200 bg-rose-50/70 shadow-sm">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-start space-x-2.5 min-w-0">
+              <div class="w-9 h-9 rounded-xl bg-rose-100 border border-rose-200 text-rose-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <i class="fa-solid fa-shield-halved text-sm"></i>
+              </div>
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <span class="text-xs sm:text-sm font-black text-rose-800">管理員專屬・六小門頁面防呆開關</span>
+                  <span id="sixdoorsStatusBadge" class="text-[10px] font-black px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 whitespace-nowrap">
+                    <i class="fa-solid fa-eye-slash mr-1"></i>目前：隱藏中（僅管理員可見）
+                  </span>
+                </div>
+                <p class="text-[11px] text-slate-600 mt-1 leading-relaxed">
+                  開啟後，<strong>全域訪客與攤主</strong>皆可於導覽列看到「六小門」並瀏覽本頁內容，但<strong>看不到此開關區塊</strong>。切換須經過兩道防呆確認。
+                </p>
+              </div>
+            </div>
+            <button type="button" id="btnToggleSixdoors" onclick="openSixdoorsToggle()" class="px-4 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs shadow-sm transition inline-flex items-center justify-center space-x-1.5 whitespace-nowrap flex-shrink-0">
+              <i id="sixdoorsToggleBtnIcon" class="fa-solid fa-toggle-off text-sm"></i>
+              <span id="sixdoorsToggleBtnText">切換為全域公開</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ==================== 第一區塊：精簡反私生暖心宣導（置頂、不佔版面高度） ==================== -->
+        <div class="glass-panel rounded-3xl p-3.5 sm:p-4 border-rose-200 bg-rose-50/45 space-y-2">
+          <div class="flex flex-wrap items-center justify-between gap-1.5">
+            <h2 class="text-xs sm:text-sm font-black text-rose-800 flex items-center">
+              <i class="fa-solid fa-hand-holding-heart text-rose-500 mr-1.5"></i>ONEDOOR 暖心追星公約・拒絕私生行為
+            </h2>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/90 text-rose-600 border border-rose-200 whitespace-nowrap">
+              一起守護台灣溫暖又善良的追星環境
+            </span>
+          </div>
+          <div class="text-[11px] sm:text-xs text-slate-700 leading-relaxed space-y-1">
+            <p class="flex items-start space-x-1.5">
+              <i class="fa-solid fa-ban text-rose-500 mt-0.5 flex-shrink-0 text-[11px]"></i>
+              <span><strong>請勿進行任何私生行為：</strong>不跟車、不蹲點飯店或非公開行程、不打探與散播藝人私人資訊。</span>
+            </p>
+            <p class="flex items-start space-x-1.5">
+              <i class="fa-solid fa-people-arrows text-rose-500 mt-0.5 flex-shrink-0 text-[11px]"></i>
+              <span><strong>如巧遇藝人請留給他們空間：</strong>不要推擠、不要尖叫或圍堵；若真的想發文分享，<strong>請務必等他們安全離開後再發</strong>，一起保持台灣溫暖又善良的追星環境！</span>
+            </p>
+          </div>
+        </div>
+
 <!-- ==================== 第二區塊：六扇門 × 離峰開鍋應援（指定 4 家試辦門市合作優惠） ==================== -->
 <div class="glass-panel rounded-3xl p-4 sm:p-6 border-amber-200 space-y-4">
   <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-amber-200/80">
