@@ -1372,8 +1372,8 @@ body.lite-mode #tab-venue #vm-legendToggle {
       </div>
     </section>
 
-    <!-- ===================================================================
-         頁籤：六小門（暖心追星宣導、演唱會前注意事項與六扇門活動優惠導流）
+<!-- ===================================================================
+         頁籤：六小門（暖心追星宣導、六扇門開鍋應援週區域合作導流與演唱會前注意事項）
          預設隱藏，僅管理員可見並可透過最上方防呆開關切換全域公開
          =================================================================== -->
     <section id="tab-sixdoors" class="tab-content hidden">
@@ -1427,56 +1427,199 @@ body.lite-mode #tab-venue #vm-legendToggle {
           </div>
         </div>
 
-        <!-- ==================== 第二區塊：六扇門活動優惠導流（方便結帳快速出示與搜尋門市） ==================== -->
+        <!-- ==================== 第二區塊：六扇門 × 開鍋應援週（指定 8 家核心門市區域合作） ==================== -->
         <div class="glass-panel rounded-3xl p-4 sm:p-6 border-amber-200 space-y-4">
           <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-amber-200/80">
             <div>
-              <div class="flex items-center space-x-2 mb-0.5">
-                <span class="text-[10px] font-black px-2 py-0.5 rounded-full bg-rose-500 text-white shadow-2xs">限定開鍋優惠</span>
-                <span class="text-[11px] font-bold text-amber-700">2027/1/4（一）– 1/10（日）</span>
+              <div class="flex flex-wrap items-center gap-1.5 mb-0.5">
+                <span class="text-[10px] font-black px-2 py-0.5 rounded-full bg-rose-500 text-white shadow-2xs">指定 8 店限定</span>
+                <span class="text-[11px] font-bold text-amber-700">2027/1/4（一）– 1/10（日）共 7 日</span>
               </div>
               <h2 class="text-base sm:text-xl font-black text-slate-800 flex items-center">
-                <i class="fa-solid fa-fire-flame-curved text-rose-500 mr-2"></i>六扇門活動優惠・全台開鍋應援週
+                <i class="fa-solid fa-fire-flame-curved text-rose-500 mr-2"></i>六扇門 × 開鍋應援週・指定 8 家門市限定
               </h2>
             </div>
             <span class="text-xs font-black px-3 py-1 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 whitespace-nowrap">
-              憑紙本票根單鍋折抵 NT$5
+              點鍋招待指定 30 元餃類一份
             </span>
           </div>
 
-          <!-- 暖心開鍋引言 -->
-          <div class="rounded-2xl p-3.5 sm:p-4 bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-md space-y-1">
+          <!-- 暖心開鍋主標語 -->
+          <div class="rounded-2xl p-3.5 sm:p-4 bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-md space-y-1.5">
             <p class="text-xs sm:text-sm font-black tracking-wide leading-relaxed">
-              「不只有今天 I LOVE YOU，冬天來吃麻辣鍋絕對不會後悔！」
+              「不只有今天 I LOVE YOU，一月天冷來六扇門吃麻辣鍋絕對不會後悔！」
             </p>
-            <p class="text-[11px] sm:text-xs text-white/95 font-medium">
-              一月天冷看演唱會，開演前先暖胃，散場後再開鍋——不論一個人追星，還是帶朋友家人一起吃，都能就近開鍋！
+            <p class="text-[11px] sm:text-xs text-white/95 font-medium leading-relaxed">
+              看演唱會前先來長庚醫院站暖胃！一人追星不孤單，帶朋友一起吃鍋更暖心——一鍋 180 元起，自助吧無限享用，開演前快速飽餐、散場後免排長隊直接開鍋！
             </p>
           </div>
 
-          <!-- 活動公告主文 -->
-          <div class="glass-card rounded-2xl p-4 sm:p-5 border-amber-200 bg-white/95 space-y-3">
+          <!-- 活動公告主文與規則卡 -->
+          <div class="glass-card rounded-2xl p-4 sm:p-5 border-amber-200 bg-white/95 space-y-3.5">
             <p class="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
-              各位灣豆大家好，我們提案向<strong class="text-rose-600">六扇門</strong>進行合作！<br>
-              凡是持有 <strong class="text-skyBlue-700 font-mono">1/8–1/10</strong> 演唱會票根者，於 <strong class="text-rose-600 font-mono">1/4–1/10</strong> 皆可至<strong>全台門市</strong>用餐享有<strong>折抵 5 元</strong>的優惠，<strong>惟一鍋限抵一張</strong>，歡迎大家帶著周邊至六扇門打卡！
+              各位灣豆大家好，我們提案與<strong class="text-rose-600">六扇門</strong>推出為期一週的區域合作試辦！<br>
+              於 <strong class="text-rose-600 font-mono">2027/1/4（一）– 1/10（日）</strong> 至下方<strong>指定 8 家核心門市</strong>內用點購任一鍋物，結帳時出示演出日期為 <strong class="text-skyBlue-700 font-mono">2027/1/8–1/10</strong> 之<strong>有效實體紙本演唱會票根（不限藝人或場館）</strong>，即可免費招待「<strong class="text-rose-600">指定 30 元火鍋餃類一份</strong>（依門市當日備貨品項為準）」。
             </p>
 
             <!-- 重點規則三小卡 -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 text-xs">
               <div class="p-3 rounded-xl bg-amber-50/80 border border-amber-200/80">
-                <div class="text-[10px] font-bold text-amber-700 mb-0.5"><i class="fa-regular fa-calendar-check mr-1"></i>優惠使用期間</div>
+                <div class="text-[10px] font-bold text-amber-700 mb-0.5"><i class="fa-regular fa-calendar-check mr-1"></i>活動期間（共 7 日）</div>
                 <div class="font-black text-slate-800 font-mono">2027/1/4 – 1/10</div>
-                <div class="text-[10px] text-slate-500 mt-0.5">取票暖身到散場整週可用</div>
+                <div class="text-[10px] text-slate-500 mt-0.5">取票聚餐到散場消夜整週適用</div>
               </div>
               <div class="p-3 rounded-xl bg-rose-50/80 border border-rose-200/80">
-                <div class="text-[10px] font-bold text-rose-700 mb-0.5"><i class="fa-solid fa-ticket mr-1"></i>適用憑證與折抵</div>
-                <div class="font-black text-slate-800">單鍋折抵 5 元</div>
-                <div class="text-[10px] text-slate-500 mt-0.5">持 1/8–1/10 紙本票根・一鍋限抵一張</div>
+                <div class="text-[10px] font-bold text-rose-700 mb-0.5"><i class="fa-solid fa-ticket mr-1"></i>憑證與一秒核銷</div>
+                <div class="font-black text-slate-800">招待 30 元餃類一份</div>
+                <div class="text-[10px] text-slate-500 mt-0.5">持 1/8–1/10 紙本票根・目視確認不收走・一鍋限兌換一份</div>
               </div>
               <div class="p-3 rounded-xl bg-skyBlue-50/80 border border-skyBlue-200/80">
-                <div class="text-[10px] font-bold text-skyBlue-700 mb-0.5"><i class="fa-solid fa-clock mr-1"></i>門市營業時間亮點</div>
-                <div class="font-black text-slate-800">全台門市就近吃</div>
-                <div class="text-[10px] text-slate-500 mt-0.5">多數營業至 22:00–23:00，散場也能暖胃</div>
+                <div class="text-[10px] font-bold text-skyBlue-700 mb-0.5"><i class="fa-solid fa-clock mr-1"></i>推薦用餐黃金時段</div>
+                <div class="font-black text-slate-800">開演前 15:30–17:30</div>
+                <div class="text-[10px] text-slate-500 mt-0.5">離峰最順暢；8 店週末營業至 23:00（約 22:30 截止點餐）</div>
+              </div>
+            </div>
+
+            <!-- 核銷與用餐動線小提示 -->
+            <div class="p-3 rounded-xl bg-skyBlue-50/60 border border-skyBlue-100 text-[11px] sm:text-xs text-slate-700 leading-relaxed space-y-1">
+              <p><i class="fa-solid fa-bolt text-amber-500 mr-1.5"></i><strong>一秒核銷超輕鬆：</strong>結帳主動出示 <strong>2027/1/8–1/10 實體紙本票根</strong>即可（不限藝人或場館、<strong>不收走票根</strong>、<strong>免出示本網站頁面</strong>、<strong>免留 Google 評論</strong>）；同行無票親友正常點鍋用餐不適用贈送。</p>
+              <p><i class="fa-solid fa-camera-retro text-rose-500 mr-1.5"></i><strong>歡迎帶娃打卡分享：</strong>歡迎帶著官方玩偶（帶娃）、小卡或應援物開鍋吃飯，於 Threads／IG 加上 <strong class="text-skyBlue-700">#六扇門開鍋應援</strong>、<strong class="text-skyBlue-700">#吃麻辣鍋應援</strong> 分享認證照！（非兌換條件，純同好交流）</p>
+            </div>
+          </div>
+
+          <!-- 指定 8 家合作門市總表 -->
+          <div class="glass-card rounded-2xl p-4 sm:p-5 border-skyBlue-200 bg-white/95 space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-200">
+              <h3 class="text-xs sm:text-sm font-black text-slate-800 flex items-center">
+                <i class="fa-solid fa-store text-rose-500 mr-1.5"></i>指定 8 家合作門市一覽（桃園龜山＋雙北 7 店）
+              </h3>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                預估最後點餐為打烊前 30 分鐘
+              </span>
+            </div>
+
+            <!-- 場館直達核心熱區（置頂強調） -->
+            <div class="p-3 sm:p-3.5 rounded-2xl bg-rose-50/75 border border-rose-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+              <div class="space-y-0.5 text-xs min-w-0">
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <span class="text-[10px] font-black px-2 py-0.5 rounded-full bg-rose-500 text-white">場館直達核心熱區</span>
+                  <strong class="text-sm text-slate-800">1. 桃園龜山文化店</strong>
+                </div>
+                <p class="text-[11px] text-slate-600"><i class="fa-solid fa-train-subway text-skyBlue-500 mr-1"></i>機捷 <strong>A8 長庚醫院站</strong>步行約 6–8 分（距林口體育館最近）</p>
+                <p class="text-[11px] text-slate-600"><i class="fa-regular fa-clock text-amber-600 mr-1"></i>每日 <strong>11:00–23:00</strong>（預估 22:30 截止點餐）｜推薦 <strong>15:30–17:30 開演前暖胃</strong>＆散場第一波消夜</p>
+              </div>
+              <a href="https://www.google.com/maps/search/?api=1&query=%E5%85%AD%E6%89%87%E9%96%80+%E6%A1%83%E5%9C%92%E9%BE%9C%E5%B1%B1%E6%96%87%E5%8C%96%E5%BA%97" target="_blank" rel="noopener noreferrer" class="px-3 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-[11px] shadow-xs transition inline-flex items-center justify-center space-x-1 whitespace-nowrap flex-shrink-0">
+                <i class="fa-solid fa-location-dot"></i>
+                <span>地圖導航</span>
+              </a>
+            </div>
+
+            <!-- 雙北 7 家核心門市（兩欄卡片網格） -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+              <!-- 2. 新北新莊化成店 -->
+              <div class="p-3 rounded-xl bg-white border border-slate-200 flex flex-col justify-between gap-2">
+                <div class="space-y-0.5">
+                  <div class="flex items-center justify-between gap-1.5">
+                    <strong class="text-slate-800">2. 新北新莊化成店</strong>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-skyBlue-50 text-skyBlue-700 border border-skyBlue-200 whitespace-nowrap">機捷轉乘</span>
+                  </div>
+                  <p class="text-[11px] text-slate-600">機捷與新莊生活圈轉乘動線</p>
+                  <p class="text-[11px] text-slate-500">平日 <strong class="text-slate-700">11:00–22:00</strong>（約 21:30 截止）<br>五六日 <strong class="text-slate-700">11:00–23:00</strong>（約 22:30 截止）</p>
+                </div>
+                <a href="https://www.google.com/maps/search/?api=1&query=%E5%85%AD%E6%89%87%E9%96%80+%E6%96%B0%E5%8C%97%E6%96%B0%E8%8E%8A%E5%8C%96%E6%88%90%E5%BA%97" target="_blank" rel="noopener noreferrer" class="text-[11px] font-bold text-skyBlue-600 hover:text-skyBlue-700 inline-flex items-center space-x-1">
+                  <i class="fa-solid fa-map-pin"></i><span>Google 地圖查看門市</span><i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                </a>
+              </div>
+
+              <!-- 3. 台北中正福州店 -->
+              <div class="p-3 rounded-xl bg-white border border-slate-200 flex flex-col justify-between gap-2">
+                <div class="space-y-0.5">
+                  <div class="flex items-center justify-between gap-1.5">
+                    <strong class="text-slate-800">3. 台北中正福州店</strong>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-skyBlue-50 text-skyBlue-700 border border-skyBlue-200 whitespace-nowrap">北市樞紐</span>
+                  </div>
+                  <p class="text-[11px] text-slate-600">北捷中正紀念堂站（步行約 5 分）</p>
+                  <p class="text-[11px] text-slate-500">每日 <strong class="text-slate-700">11:00–23:00</strong>（預估約 22:30 截止）</p>
+                </div>
+                <a href="https://www.google.com/maps/search/?api=1&query=%E5%85%AD%E6%89%87%E9%96%80+%E5%8F%B0%E5%8C%97%E4%B8%AD%E6%AD%A3%E7%A6%8F%E5%B7%9E%E5%BA%97" target="_blank" rel="noopener noreferrer" class="text-[11px] font-bold text-skyBlue-600 hover:text-skyBlue-700 inline-flex items-center space-x-1">
+                  <i class="fa-solid fa-map-pin"></i><span>Google 地圖查看門市</span><i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                </a>
+              </div>
+
+              <!-- 4. 台北中山農安店 -->
+              <div class="p-3 rounded-xl bg-white border border-slate-200 flex flex-col justify-between gap-2">
+                <div class="space-y-0.5">
+                  <div class="flex items-center justify-between gap-1.5">
+                    <strong class="text-slate-800">4. 台北中山農安店</strong>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-skyBlue-50 text-skyBlue-700 border border-skyBlue-200 whitespace-nowrap">北市商圈</span>
+                  </div>
+                  <p class="text-[11px] text-slate-600">中山區核心餐飲商圈</p>
+                  <p class="text-[11px] text-slate-500">每日 <strong class="text-slate-700">11:00–23:00</strong>（預估約 22:30 截止）</p>
+                </div>
+                <a href="https://www.google.com/maps/search/?api=1&query=%E5%85%AD%E6%89%87%E9%96%80+%E5%8F%B0%E5%8C%97%E4%B8%AD%E5%B1%B1%E8%BE%B2%E5%AE%89%E5%BA%97" target="_blank" rel="noopener noreferrer" class="text-[11px] font-bold text-skyBlue-600 hover:text-skyBlue-700 inline-flex items-center space-x-1">
+                  <i class="fa-solid fa-map-pin"></i><span>Google 地圖查看門市</span><i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                </a>
+              </div>
+
+              <!-- 5. 台北北投懷德店 -->
+              <div class="p-3 rounded-xl bg-white border border-slate-200 flex flex-col justify-between gap-2">
+                <div class="space-y-0.5">
+                  <div class="flex items-center justify-between gap-1.5">
+                    <strong class="text-slate-800">5. 台北北投懷德店</strong>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">淡水信義線</span>
+                  </div>
+                  <p class="text-[11px] text-slate-600">北捷明德站（步行約 2 分，出站即達）</p>
+                  <p class="text-[11px] text-slate-500">每日 <strong class="text-slate-700">11:00–23:00</strong>（預估約 22:30 截止）</p>
+                </div>
+                <a href="https://www.google.com/maps/search/?api=1&query=%E5%85%AD%E6%89%87%E9%96%80+%E5%8F%B0%E5%8C%97%E5%8C%97%E6%8A%95%E6%87%B7%E5%BE%B7%E5%BA%97" target="_blank" rel="noopener noreferrer" class="text-[11px] font-bold text-skyBlue-600 hover:text-skyBlue-700 inline-flex items-center space-x-1">
+                  <i class="fa-solid fa-map-pin"></i><span>Google 地圖查看門市</span><i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                </a>
+              </div>
+
+              <!-- 6. 新北板橋民治店 -->
+              <div class="p-3 rounded-xl bg-white border border-slate-200 flex flex-col justify-between gap-2">
+                <div class="space-y-0.5">
+                  <div class="flex items-center justify-between gap-1.5">
+                    <strong class="text-slate-800">6. 新北板橋民治店</strong>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">板橋生活圈</span>
+                  </div>
+                  <p class="text-[11px] text-slate-600">板橋江子翠／新埔生活圈（步行約 8 分）</p>
+                  <p class="text-[11px] text-slate-500">每日 <strong class="text-slate-700">11:00–23:00</strong>（預估約 22:30 截止）</p>
+                </div>
+                <a href="https://www.google.com/maps/search/?api=1&query=%E5%85%AD%E6%89%87%E9%96%80+%E6%96%B0%E5%8C%97%E6%9D%BF%E6%A9%8B%E6%B0%91%E6%B2%BB%E5%BA%97" target="_blank" rel="noopener noreferrer" class="text-[11px] font-bold text-skyBlue-600 hover:text-skyBlue-700 inline-flex items-center space-x-1">
+                  <i class="fa-solid fa-map-pin"></i><span>Google 地圖查看門市</span><i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                </a>
+              </div>
+
+              <!-- 7. 新北蘆洲光華店 -->
+              <div class="p-3 rounded-xl bg-white border border-slate-200 flex flex-col justify-between gap-2">
+                <div class="space-y-0.5">
+                  <div class="flex items-center justify-between gap-1.5">
+                    <strong class="text-slate-800">7. 新北蘆洲光華店</strong>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">三重蘆洲</span>
+                  </div>
+                  <p class="text-[11px] text-slate-600">北捷三民高中站（步行約 9 分・近機捷三重）</p>
+                  <p class="text-[11px] text-slate-500">每日 <strong class="text-slate-700">11:00–23:00</strong>（預估約 22:30 截止）</p>
+                </div>
+                <a href="https://www.google.com/maps/search/?api=1&query=%E5%85%AD%E6%89%87%E9%96%80+%E6%96%B0%E5%8C%97%E8%98%86%E6%B4%B2%E5%85%89%E8%8F%AF%E5%BA%97" target="_blank" rel="noopener noreferrer" class="text-[11px] font-bold text-skyBlue-600 hover:text-skyBlue-700 inline-flex items-center space-x-1">
+                  <i class="fa-solid fa-map-pin"></i><span>Google 地圖查看門市</span><i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                </a>
+              </div>
+
+              <!-- 8. 新北三峽學成店 -->
+              <div class="p-3 rounded-xl bg-white border border-slate-200 flex flex-col justify-between gap-2 sm:col-span-2">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div class="space-y-0.5">
+                    <div class="flex flex-wrap items-center gap-1.5">
+                      <strong class="text-slate-800">8. 新北三峽學成店</strong>
+                      <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 whitespace-nowrap">台北大學學區</span>
+                    </div>
+                    <p class="text-[11px] text-slate-600">台北大學學區（步行約 3 分）｜每日 <strong class="text-slate-700">11:00–23:00</strong>（預估約 22:30 截止）</p>
+                  </div>
+                  <a href="https://www.google.com/maps/search/?api=1&query=%E5%85%AD%E6%89%87%E9%96%80+%E6%96%B0%E5%8C%97%E4%B8%89%E5%B3%BD%E5%AD%B8%E6%88%90%E5%BA%97" target="_blank" rel="noopener noreferrer" class="text-[11px] font-bold text-skyBlue-600 hover:text-skyBlue-700 inline-flex items-center space-x-1 whitespace-nowrap">
+                    <i class="fa-solid fa-map-pin"></i><span>Google 地圖查看門市</span><i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                  </a>
+                </div>
               </div>
             </div>
 
@@ -1484,7 +1627,7 @@ body.lite-mode #tab-venue #vm-legendToggle {
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
               <a href="https://maps.app.goo.gl/9wKGXCY2GYmfMGyi6" target="_blank" rel="noopener noreferrer" class="py-3 px-4 rounded-2xl bg-gradient-to-r from-skyBlue-500 to-skyBlue-600 hover:from-skyBlue-600 text-white font-black text-xs sm:text-sm shadow-md shadow-skyBlue-500/25 transition flex items-center justify-center space-x-2">
                 <i class="fa-solid fa-location-dot text-base"></i>
-                <span>Google 地圖搜尋最近的六扇門</span>
+                <span>Google 地圖搜尋附近六扇門</span>
                 <i class="fa-solid fa-arrow-up-right-from-square text-[11px] opacity-85"></i>
               </a>
               <a href="https://www.6owldoor.com/" target="_blank" rel="noopener noreferrer" class="py-3 px-4 rounded-2xl bg-white hover:bg-amber-50 text-slate-800 border-2 border-amber-300 font-black text-xs sm:text-sm shadow-sm transition flex items-center justify-center space-x-2">
@@ -1496,9 +1639,10 @@ body.lite-mode #tab-venue #vm-legendToggle {
           </div>
 
           <!-- 貼心小提醒與合規聲明 -->
-          <div class="rounded-2xl p-3 bg-slate-50/90 border border-slate-200 text-[11px] text-slate-500 leading-relaxed space-y-1">
-            <p><i class="fa-solid fa-circle-info text-skyBlue-500 mr-1"></i><strong>溫馨提醒：</strong>林口場館周邊（如桃園龜山文化店）及機捷／捷運沿線門市尖峰人潮較多，建議提早確認各門市實際營業時間與末班點餐時間；歡迎帶著應援物、小卡或娃娃開心打卡，也請記得保持用餐禮貌與環境整潔。</p>
-            <p class="text-[10px] text-slate-400">※ 本活動為粉絲應援提案之餐飲優惠合作，非藝人、經紀公司或演唱會主辦單位官方活動；實際優惠核銷細節與適用門市請以六扇門官方公告為準。</p>
+          <div class="rounded-2xl p-3 bg-slate-50/90 border border-slate-200 text-[11px] text-slate-500 leading-relaxed space-y-1.5">
+            <p><i class="fa-solid fa-circle-info text-skyBlue-500 mr-1"></i><strong>現場零海報提醒：</strong>本次合作採零物宣設計，8 家指定門市現場<strong>不會懸掛活動海報或立牌</strong>，結帳時直接主動出示 2027/1/8–1/10 有效實體紙本演唱會票根即可兌換。</p>
+            <p><i class="fa-solid fa-clock text-amber-500 mr-1"></i><strong>點餐時間與禮貌提醒：</strong>各店實際最後點餐時間（Last Order）以現場門市公告為準（預估為打烊前 30 分鐘；新莊化成店平日約 21:30、其餘及週末 8 店約 22:30），尖峰時段建議優先選擇開演前 15:30–17:30 用餐，也請大家維持用餐禮貌與環境整潔。</p>
+            <p class="text-[10px] text-slate-400">※ 本活動為粉絲社群自發提案之區域實測餐飲優惠合作，非藝人、經紀公司、售票平台或演唱會主辦單位之官方聯名活動；本網站不作為門市核銷憑證，亦不要求留下 Google 評論。指定招待之 30 元餃類品項依各門市當日備貨為準，實際適用門市、營業時間與核銷細節請以六扇門官方公告為準。</p>
           </div>
         </div>
 
@@ -1526,7 +1670,7 @@ body.lite-mode #tab-venue #vm-legendToggle {
               </h4>
               <p class="text-slate-600">
                 • 本場次<strong>僅採紙本實體票券入場（無實名制）</strong>，出門前務必再三確認紙本票券已放入隨身包，並建議裝入票夾或拉鍊袋，避免折損、淋濕或遺失（遺失恕不補發）。<br>
-                • 入場後請妥善收好<strong>紙本票根</strong>，除了留念外，1/4–1/10 期間也可憑票根至全台六扇門享單鍋折抵 5 元優惠；若有身障席或主辦規定需查驗之福利資格，再依公告攜帶相關證明文件。<br>
+                • 入場前後請妥善收好<strong>實體紙本票根</strong>，除了留念外，1/4–1/10 期間也可憑 1/8–1/10 有效紙本票根至<strong>指定 8 家六扇門合作門市</strong>享內用點鍋免費招待指定 30 元餃類一份（目視確認日期、不收走票根）；若有身障席或主辦規定需查驗之福利資格，再依公告攜帶相關證明文件。<br>
                 • 請提早確認各場開演時間：<strong>1/8（五）19:00、1/9（六）18:00、1/10（日）17:00</strong>，以及搖滾區整隊截止時間。
               </p>
             </div>
@@ -1586,7 +1730,7 @@ body.lite-mode #tab-venue #vm-legendToggle {
 
     <!-- 頁尾維護聲明 -->
     <footer class="mt-auto pt-4 pb-2 text-center text-[11px] text-slate-400 space-y-1">
-      <p class="font-bold text-slate-500">From @onedoor_boice_0820 ｜ 該網站由 @onedoor_boice_0820 維護，非官方正式應援團隊維護。</p>
+      <p class="font-bold text-slate-500">該網站由 @onedoor_boice_0820 維護，非官方正式應援團隊維護。</p>
       <p>此畫面僅供參考｜資料留存期限至 2027/01/17 將全數刪除</p>
       <p><button onclick="openFaqModal()" class="inline-flex items-center px-3 py-1 rounded-full bg-white/80 border border-slate-200 text-skyBlue-600 font-bold hover:bg-white transition"><i class="fa-regular fa-circle-question mr-1.5"></i>常見 Q&amp;A</button></p>
     </footer>
