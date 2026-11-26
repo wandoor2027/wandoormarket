@@ -1372,6 +1372,218 @@ body.lite-mode #tab-venue #vm-legendToggle {
       </div>
     </section>
 
+    <!-- ===================================================================
+         頁籤：六小門（暖心追星宣導、演唱會前注意事項與六扇門活動優惠導流）
+         預設隱藏，僅管理員可見並可透過最上方防呆開關切換全域公開
+         =================================================================== -->
+    <section id="tab-sixdoors" class="tab-content hidden">
+      <div class="space-y-4 mb-4">
+
+        <!-- 管理員專屬：全域公開防呆開關（僅管理員可見；全域公開後訪客與攤主亦不會看到此開關） -->
+        <div id="sixdoorsAdminBar" class="hidden glass-panel rounded-3xl p-3.5 sm:p-4 border-rose-200 bg-rose-50/70 shadow-sm">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-start space-x-2.5 min-w-0">
+              <div class="w-9 h-9 rounded-xl bg-rose-100 border border-rose-200 text-rose-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <i class="fa-solid fa-shield-halved text-sm"></i>
+              </div>
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <span class="text-xs sm:text-sm font-black text-rose-800">管理員專屬・六小門頁面防呆開關</span>
+                  <span id="sixdoorsStatusBadge" class="text-[10px] font-black px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 whitespace-nowrap">
+                    <i class="fa-solid fa-eye-slash mr-1"></i>目前：隱藏中（僅管理員可見）
+                  </span>
+                </div>
+                <p class="text-[11px] text-slate-600 mt-1 leading-relaxed">
+                  開啟後，<strong>全域訪客與攤主</strong>皆可於導覽列看到「六小門」並瀏覽本頁內容，但<strong>看不到此開關區塊</strong>。切換須經過兩道防呆確認。
+                </p>
+              </div>
+            </div>
+            <button type="button" id="btnToggleSixdoors" onclick="openSixdoorsToggle()" class="px-4 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs shadow-sm transition inline-flex items-center justify-center space-x-1.5 whitespace-nowrap flex-shrink-0">
+              <i id="sixdoorsToggleBtnIcon" class="fa-solid fa-toggle-off text-sm"></i>
+              <span id="sixdoorsToggleBtnText">切換為全域公開</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ==================== 第一區塊：精簡反私生暖心宣導（置頂、不佔版面高度） ==================== -->
+        <div class="glass-panel rounded-3xl p-3.5 sm:p-4 border-rose-200 bg-rose-50/45 space-y-2">
+          <div class="flex flex-wrap items-center justify-between gap-1.5">
+            <h2 class="text-xs sm:text-sm font-black text-rose-800 flex items-center">
+              <i class="fa-solid fa-hand-holding-heart text-rose-500 mr-1.5"></i>ONEDOOR 暖心追星公約・拒絕私生行為
+            </h2>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/90 text-rose-600 border border-rose-200 whitespace-nowrap">
+              一起守護台灣溫暖又善良的追星環境
+            </span>
+          </div>
+          <div class="text-[11px] sm:text-xs text-slate-700 leading-relaxed space-y-1">
+            <p class="flex items-start space-x-1.5">
+              <i class="fa-solid fa-ban text-rose-500 mt-0.5 flex-shrink-0 text-[11px]"></i>
+              <span><strong>請勿進行任何私生行為：</strong>不跟車、不蹲點飯店或非公開行程、不打探與散播藝人私人資訊。</span>
+            </p>
+            <p class="flex items-start space-x-1.5">
+              <i class="fa-solid fa-people-arrows text-rose-500 mt-0.5 flex-shrink-0 text-[11px]"></i>
+              <span><strong>如巧遇藝人請留給他們空間：</strong>不要推擠、不要尖叫或圍堵；若真的想發文分享，<strong>請務必等他們安全離開後再發</strong>，一起保持台灣溫暖又善良的追星環境！</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- ==================== 第二區塊：六扇門活動優惠導流（方便結帳快速出示與搜尋門市） ==================== -->
+        <div class="glass-panel rounded-3xl p-4 sm:p-6 border-amber-200 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-amber-200/80">
+            <div>
+              <div class="flex items-center space-x-2 mb-0.5">
+                <span class="text-[10px] font-black px-2 py-0.5 rounded-full bg-rose-500 text-white shadow-2xs">限定開鍋優惠</span>
+                <span class="text-[11px] font-bold text-amber-700">2027/1/4（一）– 1/10（日）</span>
+              </div>
+              <h2 class="text-base sm:text-xl font-black text-slate-800 flex items-center">
+                <i class="fa-solid fa-fire-flame-curved text-rose-500 mr-2"></i>六扇門活動優惠・全台開鍋應援週
+              </h2>
+            </div>
+            <span class="text-xs font-black px-3 py-1 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 whitespace-nowrap">
+              憑紙本票根單鍋折抵 NT$5
+            </span>
+          </div>
+
+          <!-- 暖心開鍋引言 -->
+          <div class="rounded-2xl p-3.5 sm:p-4 bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-md space-y-1">
+            <p class="text-xs sm:text-sm font-black tracking-wide leading-relaxed">
+              「不只有今天 I LOVE YOU，冬天來吃麻辣鍋絕對不會後悔！」
+            </p>
+            <p class="text-[11px] sm:text-xs text-white/95 font-medium">
+              一月天冷看演唱會，開演前先暖胃，散場後再開鍋——不論一個人追星，還是帶朋友家人一起吃，都能就近開鍋！
+            </p>
+          </div>
+
+          <!-- 活動公告主文 -->
+          <div class="glass-card rounded-2xl p-4 sm:p-5 border-amber-200 bg-white/95 space-y-3">
+            <p class="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
+              各位灣豆大家好，我們提案向<strong class="text-rose-600">六扇門</strong>進行合作！<br>
+              凡是持有 <strong class="text-skyBlue-700 font-mono">1/8–1/10</strong> 演唱會票根者，於 <strong class="text-rose-600 font-mono">1/4–1/10</strong> 皆可至<strong>全台門市</strong>用餐享有<strong>折抵 5 元</strong>的優惠，<strong>惟一鍋限抵一張</strong>，歡迎大家帶著周邊至六扇門打卡！
+            </p>
+
+            <!-- 重點規則三小卡 -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 text-xs">
+              <div class="p-3 rounded-xl bg-amber-50/80 border border-amber-200/80">
+                <div class="text-[10px] font-bold text-amber-700 mb-0.5"><i class="fa-regular fa-calendar-check mr-1"></i>優惠使用期間</div>
+                <div class="font-black text-slate-800 font-mono">2027/1/4 – 1/10</div>
+                <div class="text-[10px] text-slate-500 mt-0.5">取票暖身到散場整週可用</div>
+              </div>
+              <div class="p-3 rounded-xl bg-rose-50/80 border border-rose-200/80">
+                <div class="text-[10px] font-bold text-rose-700 mb-0.5"><i class="fa-solid fa-ticket mr-1"></i>適用憑證與折抵</div>
+                <div class="font-black text-slate-800">單鍋折抵 5 元</div>
+                <div class="text-[10px] text-slate-500 mt-0.5">持 1/8–1/10 紙本票根・一鍋限抵一張</div>
+              </div>
+              <div class="p-3 rounded-xl bg-skyBlue-50/80 border border-skyBlue-200/80">
+                <div class="text-[10px] font-bold text-skyBlue-700 mb-0.5"><i class="fa-solid fa-clock mr-1"></i>門市營業時間亮點</div>
+                <div class="font-black text-slate-800">全台門市就近吃</div>
+                <div class="text-[10px] text-slate-500 mt-0.5">多數營業至 22:00–23:00，散場也能暖胃</div>
+              </div>
+            </div>
+
+            <!-- 導流大按鈕區 -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
+              <a href="https://maps.app.goo.gl/9wKGXCY2GYmfMGyi6" target="_blank" rel="noopener noreferrer" class="py-3 px-4 rounded-2xl bg-gradient-to-r from-skyBlue-500 to-skyBlue-600 hover:from-skyBlue-600 text-white font-black text-xs sm:text-sm shadow-md shadow-skyBlue-500/25 transition flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-location-dot text-base"></i>
+                <span>Google 地圖搜尋最近的六扇門</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-[11px] opacity-85"></i>
+              </a>
+              <a href="https://www.6owldoor.com/" target="_blank" rel="noopener noreferrer" class="py-3 px-4 rounded-2xl bg-white hover:bg-amber-50 text-slate-800 border-2 border-amber-300 font-black text-xs sm:text-sm shadow-sm transition flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-bowl-food text-amber-500 text-base"></i>
+                <span>前往六扇門官方網站</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-[11px] text-slate-400"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- 貼心小提醒與合規聲明 -->
+          <div class="rounded-2xl p-3 bg-slate-50/90 border border-slate-200 text-[11px] text-slate-500 leading-relaxed space-y-1">
+            <p><i class="fa-solid fa-circle-info text-skyBlue-500 mr-1"></i><strong>溫馨提醒：</strong>林口場館周邊（如桃園龜山文化店）及機捷／捷運沿線門市尖峰人潮較多，建議提早確認各門市實際營業時間與末班點餐時間；歡迎帶著應援物、小卡或娃娃開心打卡，也請記得保持用餐禮貌與環境整潔。</p>
+            <p class="text-[10px] text-slate-400">※ 本活動為粉絲應援提案之餐飲優惠合作，非藝人、經紀公司或演唱會主辦單位官方活動；實際優惠核銷細節與適用門市請以六扇門官方公告為準。</p>
+          </div>
+        </div>
+
+        <!-- ==================== 第三區塊：詳細演唱會行前注意事項 ==================== -->
+        <div class="glass-panel rounded-3xl p-4 sm:p-6 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-200">
+            <div>
+              <h2 class="text-sm sm:text-lg font-black text-slate-800 flex items-center">
+                <i class="fa-solid fa-clipboard-check text-skyBlue-500 mr-2"></i>演唱會行前注意事項（2027/1/8–1/10 林口體育館）
+              </h2>
+              <p class="text-[11px] sm:text-xs text-slate-500 mt-0.5">
+                出發前逐項確認，開開心心見六小門、平平安安回家！
+              </p>
+            </div>
+            <span class="text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-full bg-skyBlue-50 text-skyBlue-600 border border-skyBlue-200 whitespace-nowrap">
+              <i class="fa-solid fa-list-check mr-1"></i>出發前檢核清單
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs leading-relaxed">
+            <!-- 注意事項 1：紙本票券保管與入場確認 -->
+            <div class="glass-card rounded-2xl p-3.5 sm:p-4 border-skyBlue-100 space-y-1.5">
+              <h4 class="font-black text-skyBlue-800 flex items-center text-xs sm:text-sm">
+                <i class="fa-solid fa-ticket text-skyBlue-500 mr-2"></i>1. 紙本票券保管與入場確認
+              </h4>
+              <p class="text-slate-600">
+                • 本場次<strong>僅採紙本實體票券入場（無實名制）</strong>，出門前務必再三確認紙本票券已放入隨身包，並建議裝入票夾或拉鍊袋，避免折損、淋濕或遺失（遺失恕不補發）。<br>
+                • 入場後請妥善收好<strong>紙本票根</strong>，除了留念外，1/4–1/10 期間也可憑票根至全台六扇門享單鍋折抵 5 元優惠；若有身障席或主辦規定需查驗之福利資格，再依公告攜帶相關證明文件。<br>
+                • 請提早確認各場開演時間：<strong>1/8（五）19:00、1/9（六）18:00、1/10（日）17:00</strong>，以及搖滾區整隊截止時間。
+              </p>
+            </div>
+
+            <!-- 注意事項 2：應援物與隨身必備 -->
+            <div class="glass-card rounded-2xl p-3.5 sm:p-4 border-skyBlue-100 space-y-1.5">
+              <h4 class="font-black text-skyBlue-800 flex items-center text-xs sm:text-sm">
+                <i class="fa-solid fa-wand-magic-sparkles text-amber-500 mr-2"></i>2. 手燈電池與必備小物
+              </h4>
+              <p class="text-slate-600">
+                • <strong>官方手燈＋全新備用電池：</strong>開演前先在家測試開機與藍牙連線，並多帶一組<strong>全新未開封電池</strong>（切忌新舊電池混裝以免漏液或中途沒電）；現場亦可至場外手燈配對處檢測。<br>
+                • <strong>充飽電的行動電源與充電線：</strong>人潮集中區網路搜尋較耗電，建議隨身備妥行充。<br>
+                • <strong>實用隨身小物：</strong>手燈掛繩（避免甩飛）、喉糖、護唇膏、衛生紙、小型摺疊傘、輕便購物袋（裝周邊及創作者應援物超好用）。
+              </p>
+            </div>
+
+            <!-- 注意事項 3：冬季林口保暖穿搭 -->
+            <div class="glass-card rounded-2xl p-3.5 sm:p-4 border-skyBlue-100 space-y-1.5">
+              <h4 class="font-black text-skyBlue-800 flex items-center text-xs sm:text-sm">
+                <i class="fa-solid fa-snowflake text-skyBlue-500 mr-2"></i>3. 一月林口防風保暖穿搭
+              </h4>
+              <p class="text-slate-600">
+                • 林口體育館位處高台地，<strong>1 月東北季風強勁且體感溫度比台北市區更低</strong>，室外排隊買周邊、領應援及搖滾區整隊時風寒非常有感。<br>
+                • 強烈建議採<strong>洋蔥式穿搭</strong>（發熱衣＋防風保暖外套＋圍巾＋暖暖包），進場後室內溫暖方便穿脫。<br>
+                • 站區與上下階梯步行量大，請優先穿著<strong>好走、防滑、久站不累的運動鞋或平底鞋</strong>。
+              </p>
+            </div>
+
+            <!-- 注意事項 4：交通動線與散場安全 -->
+            <div class="glass-card rounded-2xl p-3.5 sm:p-4 border-skyBlue-100 space-y-1.5">
+              <h4 class="font-black text-skyBlue-800 flex items-center text-xs sm:text-sm">
+                <i class="fa-solid fa-train-subway text-emerald-500 mr-2"></i>4. 交通動線與散場規劃
+              </h4>
+              <p class="text-slate-600">
+                • 搭乘桃園機場捷運至 <strong>A7 體育大學站</strong> 後步行約 10–15 分鐘即可抵達校門（可搭配本站「場館地圖」確認方向）。<br>
+                • 請<strong>提前儲值悠遊卡／一卡通</strong>，避免散場時排隊加值耗時；跨縣市返家者請預先確認末班機捷、高鐵、客運或接駁車時間。<br>
+                • 散場時人潮眾多且夜間視線較暗，行走階梯與馬路請放慢腳步、切勿推擠奔跑。
+              </p>
+            </div>
+
+            <!-- 注意事項 5：觀演禮儀與場外應援禮貌（橫跨兩欄） -->
+            <div class="glass-card rounded-2xl p-3.5 sm:p-4 border-skyBlue-100 space-y-1.5 md:col-span-2">
+              <h4 class="font-black text-skyBlue-800 flex items-center text-xs sm:text-sm">
+                <i class="fa-solid fa-hands-clapping text-rose-500 mr-2"></i>5. 場內觀演與場外領取應援禮儀
+              </h4>
+              <p class="text-slate-600">
+                • <strong>遵守場館安檢規定：</strong>勿攜帶長柄雨傘、大型應援板、專業攝錄影設備及主辦禁止之違禁品入場；大型行李箱請先寄放於場外行李寄放處或捷運站置物櫃。<br>
+                • <strong>尊重前後左右視線：</strong>應援手幅、扇子與手燈請保持在胸口至肩線高度，<strong>勿高舉超過頭頂</strong>擋住後方觀眾；遵守主辦單位拍攝與飲食規範。<br>
+                • <strong>領取創作者應援物禮儀：</strong>場外創作者皆為用愛發電準備免費應援，領取時請依序排隊、禮貌道謝、不插隊不重複代領，並隨手將垃圾帶走，共同維護校園與場館整潔！
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
     <!-- 頁尾維護聲明 -->
     <footer class="mt-auto pt-4 pb-2 text-center text-[11px] text-slate-400 space-y-1">
       <p class="font-bold text-slate-500">From @onedoor_boice_0820 ｜ 該網站由 @onedoor_boice_0820 維護，非官方正式應援團隊維護。</p>
@@ -1583,7 +1795,7 @@ body.lite-mode #tab-venue #vm-legendToggle {
   </div>
 
   <!-- 底部固定導覽列（地圖版：攤位地圖、應援時序、場館地圖｜無攤位版：應援時序、場館地圖） -->
-  <nav class="fixed bottom-3 left-0 right-0 z-40 max-w-[360px] xs:max-w-sm sm:max-w-md mx-auto px-2 sm:px-4">
+  <nav class="fixed bottom-3 left-0 right-0 z-40 max-w-[400px] xs:max-w-md sm:max-w-lg mx-auto px-2 sm:px-4">
     <div class="glass-panel rounded-2xl py-2 px-2.5 sm:px-3 flex items-center justify-around gap-1 shadow-lg border border-white/80">
       <button onclick="selectTab('map')" id="nav-btn-map" class="nav-item hidden flex-col items-center text-slate-400 hover:text-slate-600 transition min-w-0 flex-1">
         <i class="fa-solid fa-table-cells-large text-base sm:text-lg mb-0.5"></i>
@@ -1598,6 +1810,11 @@ body.lite-mode #tab-venue #vm-legendToggle {
       <button onclick="selectTab('venue')" id="nav-btn-venue" class="nav-item flex flex-col items-center text-slate-400 hover:text-slate-600 transition min-w-0 flex-1">
         <i class="fa-solid fa-map-location-dot text-base sm:text-lg mb-0.5"></i>
         <span class="text-[10px] whitespace-nowrap">場館地圖</span>
+      </button>
+
+      <button onclick="selectTab('sixdoors')" id="nav-btn-sixdoors" class="nav-item hidden flex-col items-center text-slate-400 hover:text-slate-600 transition min-w-0 flex-1">
+        <i class="fa-solid fa-door-open text-base sm:text-lg mb-0.5"></i>
+        <span class="text-[10px] whitespace-nowrap">六小門</span>
       </button>
 
       <button onclick="selectTab('vendor')" id="nav-btn-vendor" class="nav-item hidden flex-col items-center text-slate-400 hover:text-slate-600 transition min-w-0 flex-1">
@@ -1835,6 +2052,23 @@ body.lite-mode #tab-venue #vm-legendToggle {
 
       <div class="mt-4 pt-2.5 border-t border-slate-200/80 text-center text-[10px] text-slate-400">
         該網站由 @onedoor_boice_0820 維護，非官方正式應援團隊維護。
+      </div>
+    </div>
+  </div>
+
+  <!-- 彈窗：管理員「六小門」頁面公開狀態兩道防呆確認 -->
+  <div id="sixdoorsToggleModal" class="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden">
+    <div class="glass-panel w-full max-w-sm rounded-3xl p-5 border-white shadow-2xl">
+      <div class="text-[10px] font-black text-rose-600 mb-1" id="sixdoorsToggleStepLabel">第 1 / 2 道防呆確認</div>
+      <h3 class="text-base font-black text-slate-800 mb-2" id="sixdoorsToggleTitle"></h3>
+      <p class="text-xs text-slate-600 leading-relaxed mb-3" id="sixdoorsToggleBody"></p>
+      <div id="sixdoorsToggleTypeWrap" class="hidden mb-3">
+        <label class="block text-[11px] font-bold text-slate-700 mb-1" id="sixdoorsToggleInputLabel">請輸入確認字樣後才能送出：</label>
+        <input id="sixdoorsToggleInput" oninput="sixdoorsToggleCheckInput()" class="w-full bg-white rounded-xl p-2.5 border border-rose-200 text-xs text-slate-800 focus:outline-none focus:border-rose-400" autocomplete="off">
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <button type="button" onclick="closeSixdoorsToggle()" class="py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">取消</button>
+        <button type="button" id="sixdoorsToggleNextBtn" onclick="sixdoorsToggleNext()" class="py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold transition">我了解，下一步</button>
       </div>
     </div>
   </div>
@@ -2293,6 +2527,16 @@ body.lite-mode #tab-venue #vm-legendToggle {
       vendor: ['timeline', 'map', 'venue', 'vendor'],
       admin: ['timeline', 'map', 'venue', 'vendor', 'admin']
     };
+
+    let SIXDOORS_PUBLIC = false;
+    function canAccessSixdoors(role = currentRole) {
+      return role === 'admin' || SIXDOORS_PUBLIC === true;
+    }
+    function getAllowedTabs(role = currentRole) {
+      const base = [...(ROLE_PERMISSIONS[role] || ['timeline'])];
+      if (canAccessSixdoors(role) && !base.includes('sixdoors')) base.push('sixdoors');
+      return base;
+    }
 
     let activeTab = 'timeline';
 
@@ -3637,7 +3881,8 @@ body.lite-mode #tab-venue #vm-legendToggle {
           mapDays: MAP_DAYS,
           timeoutMode: TIMEOUT_MODE,
           stallCtl: STALL_CTL,
-          venueMapConfig: VENUE_MAP_CONFIG
+          venueMapConfig: VENUE_MAP_CONFIG,
+          sixdoorsPublic: SIXDOORS_PUBLIC
         }));
       } catch (e) {}
     }
@@ -4021,7 +4266,10 @@ body.lite-mode #tab-venue #vm-legendToggle {
       if (window.VenueMapApp && typeof window.VenueMapApp.syncRole === 'function') {
         window.VenueMapApp.syncRole();
       }
-      const allowedTabs = ROLE_PERMISSIONS[role] || ['timeline'];
+      if (typeof syncSixdoorsUI === 'function') {
+        syncSixdoorsUI();
+      }
+      const allowedTabs = getAllowedTabs(role);
       if (!allowedTabs.includes(activeTab)) {
         selectTab('timeline');
       } else {
@@ -4039,7 +4287,11 @@ body.lite-mode #tab-venue #vm-legendToggle {
         showToast('目前為無攤位自由發放模式，未開啟攤位地圖');
         tab = 'timeline';
       }
-      const allowedTabs = ROLE_PERMISSIONS[currentRole] || ['timeline'];
+      if (tab === 'sixdoors' && !canAccessSixdoors()) {
+        showToast('此頁面目前為隱藏狀態，僅限管理員檢視');
+        tab = 'timeline';
+      }
+      const allowedTabs = getAllowedTabs(currentRole);
       if (!allowedTabs.includes(tab)) {
         showToast('權限不足，無法造訪該頁面');
         tab = 'timeline';
@@ -5949,8 +6201,10 @@ body.lite-mode #tab-venue #vm-legendToggle {
           window.VenueMapApp.applyConfig(VENUE_MAP_CONFIG);
         }
       }
+      SIXDOORS_PUBLIC = Boolean(d && d.sixdoorsPublic === true);
+      try { localStorage.setItem('kk_sixdoors_public', SIXDOORS_PUBLIC ? '1' : '0'); } catch (e) {}
       try { localStorage.setItem('kk_map_days', JSON.stringify(MAP_DAYS)); } catch (e) {}
-      renderMapDayRows(); syncMapMode();
+      renderMapDayRows(); syncMapMode(); syncSixdoorsUI();
     }
     function renderMapDayRows() {
       const box = $id('mapDayRows'); if (!box) return;
@@ -6399,6 +6653,142 @@ body.lite-mode #tab-venue #vm-legendToggle {
       showToast(`${day} 場次已切換為${target ? '地圖版（實體攤位）' : '自由發放版'}`);
     }
 
+    /* ---------- 六小門頁面：權限顯示同步與兩道防呆開關 ---------- */
+    function initSixdoorsMode() {
+      try {
+        SIXDOORS_PUBLIC = (localStorage.getItem('kk_sixdoors_public') === '1');
+      } catch (e) {
+        SIXDOORS_PUBLIC = false;
+      }
+      syncSixdoorsUI();
+    }
+
+    function syncSixdoorsUI() {
+      const navBtn = $id('nav-btn-sixdoors');
+      const adminBar = $id('sixdoorsAdminBar');
+      const statusBadge = $id('sixdoorsStatusBadge');
+      const toggleText = $id('sixdoorsToggleBtnText');
+      const toggleIcon = $id('sixdoorsToggleBtnIcon');
+      const toggleBtn = $id('btnToggleSixdoors');
+
+      const isAdmin = (currentRole === 'admin');
+      const showNav = isAdmin || SIXDOORS_PUBLIC === true;
+
+      if (navBtn) {
+        navBtn.classList.toggle('hidden', !showNav);
+        navBtn.classList.toggle('flex', showNav);
+      }
+      if (adminBar) {
+        adminBar.classList.toggle('hidden', !isAdmin);
+      }
+      if (statusBadge) {
+        if (SIXDOORS_PUBLIC) {
+          statusBadge.className = 'text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap';
+          statusBadge.innerHTML = '<i class="fa-solid fa-earth-asia mr-1"></i>目前：全域公開中（全體可見）';
+        } else {
+          statusBadge.className = 'text-[10px] font-black px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 whitespace-nowrap';
+          statusBadge.innerHTML = '<i class="fa-solid fa-eye-slash mr-1"></i>目前：隱藏中（僅管理員可見）';
+        }
+      }
+      if (toggleText) {
+        toggleText.textContent = SIXDOORS_PUBLIC ? '切換為隱藏（僅管理員）' : '切換為全域公開';
+      }
+      if (toggleIcon) {
+        toggleIcon.className = SIXDOORS_PUBLIC ? 'fa-solid fa-toggle-on text-sm' : 'fa-solid fa-toggle-off text-sm';
+      }
+      if (toggleBtn) {
+        toggleBtn.className = SIXDOORS_PUBLIC
+          ? 'px-4 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-800 text-white font-bold text-xs shadow-sm transition inline-flex items-center justify-center space-x-1.5 whitespace-nowrap flex-shrink-0'
+          : 'px-4 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs shadow-sm transition inline-flex items-center justify-center space-x-1.5 whitespace-nowrap flex-shrink-0';
+      }
+
+      if (!showNav && activeTab === 'sixdoors') {
+        selectTab('timeline');
+      }
+    }
+
+    let sixdoorsToggleStep = 0, sixdoorsToggleTarget = false;
+    function getSixdoorsConfirmPhrase(target) {
+      return target ? '確認公開' : '確認隱藏';
+    }
+    function openSixdoorsToggle() {
+      if (currentRole !== 'admin') {
+        showToast('僅管理者可操作此開關');
+        return;
+      }
+      sixdoorsToggleTarget = !SIXDOORS_PUBLIC;
+      sixdoorsToggleStep = 1;
+      renderSixdoorsToggleStep();
+      const modal = $id('sixdoorsToggleModal');
+      if (modal) modal.classList.remove('hidden');
+    }
+    function closeSixdoorsToggle() {
+      sixdoorsToggleStep = 0;
+      const modal = $id('sixdoorsToggleModal');
+      if (modal) modal.classList.add('hidden');
+    }
+    function renderSixdoorsToggleStep() {
+      const btn = $id('sixdoorsToggleNextBtn');
+      const phrase = getSixdoorsConfirmPhrase(sixdoorsToggleTarget);
+      $id('sixdoorsToggleStepLabel').textContent = `第 ${sixdoorsToggleStep} / 2 道防呆確認`;
+      if (sixdoorsToggleStep === 1) {
+        $id('sixdoorsToggleTitle').textContent = sixdoorsToggleTarget
+          ? '要將「六小門」頁面切換為全域公開嗎？'
+          : '要將「六小門」頁面切換回隱藏狀態嗎？';
+        $id('sixdoorsToggleBody').innerHTML = sixdoorsToggleTarget
+          ? '開啟後，<strong>全體訪客與攤主</strong>都會在導覽列（場館地圖右側）看到「六小門」並可瀏覽宣導與六扇門優惠內容；但<strong>僅管理員看得到此防呆開關</strong>，訪客與攤主不會看到開關。'
+          : '關閉後，<strong>訪客與攤主將立即看不到</strong>導覽列上的「六小門」按鈕與該頁面，僅保留管理員檢視與編輯預覽。';
+        $id('sixdoorsToggleTypeWrap').classList.add('hidden');
+        btn.textContent = '我了解，下一步';
+        btn.disabled = false;
+        btn.className = 'py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold transition';
+      } else {
+        $id('sixdoorsToggleTitle').textContent = sixdoorsToggleTarget
+          ? '最後防呆確認：確定全域公開？'
+          : '最後防呆確認：確定隱藏頁面？';
+        $id('sixdoorsToggleBody').textContent = sixdoorsToggleTarget
+          ? '送出後將同步寫入雲端並對全體訪客與攤主開放「六小門」頁面。'
+          : '送出後將同步寫入雲端並對非管理員隱藏「六小門」頁面。';
+        $id('sixdoorsToggleInputLabel').textContent = `請輸入「${phrase}」四個字後才能送出：`;
+        $id('sixdoorsToggleTypeWrap').classList.remove('hidden');
+        const inp = $id('sixdoorsToggleInput');
+        if (inp) { inp.value = ''; inp.placeholder = `請輸入：${phrase}`; }
+        btn.textContent = sixdoorsToggleTarget ? '確認全域公開' : '確認隱藏頁面';
+        sixdoorsToggleCheckInput();
+      }
+    }
+    function sixdoorsToggleCheckInput() {
+      const phrase = getSixdoorsConfirmPhrase(sixdoorsToggleTarget);
+      const ok = ($id('sixdoorsToggleInput').value || '').trim() === phrase;
+      const btn = $id('sixdoorsToggleNextBtn');
+      btn.disabled = !ok;
+      btn.className = 'py-2.5 rounded-xl bg-rose-500 text-white text-xs font-bold transition' + (ok ? ' hover:bg-rose-600' : ' opacity-40 cursor-not-allowed');
+    }
+    async function sixdoorsToggleNext() {
+      if (sixdoorsToggleStep === 1) {
+        sixdoorsToggleStep = 2;
+        renderSixdoorsToggleStep();
+        return;
+      }
+      const phrase = getSixdoorsConfirmPhrase(sixdoorsToggleTarget);
+      if (sixdoorsToggleStep !== 2 || currentRole !== 'admin' || ($id('sixdoorsToggleInput').value || '').trim() !== phrase) return;
+      const target = sixdoorsToggleTarget;
+      if (!DEMO_MODE && backendReady) {
+        try {
+          await FB().setDoc(FB().doc(firestoreDb, 'market_public', 'live'), { sixdoorsPublic: target }, { merge: true });
+        } catch (e) {
+          showToast('切換失敗：' + backendErrMsg(e));
+          return;
+        }
+      }
+      SIXDOORS_PUBLIC = target;
+      try { localStorage.setItem('kk_sixdoors_public', target ? '1' : '0'); } catch (e) {}
+      savePublicLiveCache(PUBLIC_LIVE_MAP);
+      closeSixdoorsToggle();
+      syncSixdoorsUI();
+      showToast(target ? '已將「六小門」頁面設為全域公開！（訪客與攤主看不到開關）' : '已將「六小門」頁面恢復隱藏（僅管理員可見）');
+    }
+
     /* ---------- 掛鉤既有函式（不改動原邏輯） ---------- */
     const _renderTimelineOrig = renderTimeline;
     renderTimeline = function () { _renderTimelineOrig(); renderStallMap(); };
@@ -6435,6 +6825,7 @@ body.lite-mode #tab-venue #vm-legendToggle {
       syncDateSelect();
       initFirebaseLive();
       initMapMode();
+      initSixdoorsMode();
       setAppRole('guest');
       renderTimeline();
       updateVendorUI();
